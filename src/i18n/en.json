@@ -47,5 +47,10 @@
   "module.recycler": "Recycler",
   "module.greenhouse": "Greenhouse",
   "module.shield": "Shielding",
-  "module.workshop": "Workshop"
+  "module.workshop": "Workshop",
+  "tablet.execute": "Run day",
+  "tablet.resolving": "Resolving the day…",
+  "debrief.win": "Mission accomplished",
+  "debrief.loss": "Mission aborted on day {dia}",
+  "debrief.again": "Play again"
 }

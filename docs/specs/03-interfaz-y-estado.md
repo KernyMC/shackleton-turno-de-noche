@@ -26,7 +26,16 @@ interact(targetId)               // la escena llama aquí; decide qué significa
 exitToMenu(), toggleTablet()
 ```
 
-Hoy existen: `screen`, `game`, `nearModule`, `tabletOpen`, `startGame`, `exitToMenu`, `toggleTablet`.
+**Estado: implementado (C-01)** con 13 tests en `src/state/store.test.ts`. Además de lo anterior exporta
+`lastOutcome`, `budget` y `preview` (computed), `restart()`, `requestRepair(id | null)` y la constante
+`RESOLVE_MS`. Todas las acciones devuelven `boolean` (true = tuvo efecto; en `setPlanValue` y
+`applyPreset`, true = hubo que recortar). Detalles de comportamiento:
+
+- El plan vuelve a `EMPTY_PLAN` al empezar cada día; "Repetir plan de ayer" lo recupera.
+- Tras elegir `repair`/`send` o llamar `requestRepair`, el store reserva 10 de energía en el taller automáticamente.
+- Al abrirse un evento, `tabletOpen` pasa a true y `toggleTablet` no la cierra hasta decidir.
+- Con `prefers-reduced-motion` el día se resuelve sin espera.
+- `?seed=123` en la URL fija la semilla. En desarrollo, `window.__store` da acceso desde la consola.
 
 ## Componentes
 

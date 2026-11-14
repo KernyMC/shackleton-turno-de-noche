@@ -3,7 +3,7 @@ import { effect } from '@preact/signals';
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { t } from '../i18n';
 import { getLight } from '../sim/engine';
-import { game, nearModule, tabletOpen, toggleTablet } from '../state/store';
+import { game, interact, nearTarget, tabletOpen, toggleTablet } from '../state/store';
 import type { World } from './world';
 
 export function Scene() {
@@ -18,8 +18,8 @@ export function Scene() {
     void import('./world').then(({ createWorld }) => {
       if (disposed || !host.current) return;
       const w = createWorld(host.current, {
-        onNearModule: (id) => (nearModule.value = id),
-        onInteract: () => toggleTablet(), // B-02: abrir la consola del módulo concreto
+        onNearModule: (id) => (nearTarget.value = id),
+        onInteract: (id) => interact(id),
         onLockChange: setLocked,
       });
       world.current = w;
@@ -41,7 +41,7 @@ export function Scene() {
       window.removeEventListener('keydown', onKey);
       world.current?.dispose();
       world.current = null;
-      nearModule.value = null;
+      nearTarget.value = null;
     };
   }, []);
 
@@ -50,7 +50,7 @@ export function Scene() {
     if (tabletOpen.value) world.current?.unlock();
   }, [tabletOpen.value]);
 
-  const near = nearModule.value;
+  const near = nearTarget.value;
   return (
     <div class="scene">
       <div class="scene__canvas" ref={host} aria-hidden="true" />

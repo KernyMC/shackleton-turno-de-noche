@@ -15,7 +15,14 @@ Leer antes: `docs/specs/01-motor-simulacion.md` (API del motor), `docs/specs/03-
 
 ---
 
-## C-01 · Store y bucle del día (P0) — desbloquea todo lo demás
+## C-01 · Store y bucle del día (P0) — **HECHA**
+
+Implementado en `src/state/store.ts` con tests. Ver el estado real en `docs/specs/03-interfaz-y-estado.md`.
+`App.tsx` tiene una tablet y un debrief **provisionales** (marcados así en el código) que usan el
+store: con ellos ya se juega una partida entera. C-03, C-04 y C-05 los reemplazan.
+Lo que sigue es la especificación original, como referencia.
+
+### Especificación original
 
 **Archivo:** `src/state/store.ts` (existe una versión mínima; ampliarla sin romper lo que ya exporta).
 

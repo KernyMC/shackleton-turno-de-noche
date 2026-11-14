@@ -44,7 +44,7 @@ Estados: `libre` · `en curso` · `hecha` · `bloqueada`. Prioridades: P0 impres
 | B-07 | Sonido por proximidad (Web Audio) | P1 | B-03 | | libre |
 | B-08 | Calidad automática y pérdida de WebGL | P2 | B-04 | | libre |
 | B-09 | Controles táctiles | P2 | B-02 | | libre |
-| C-01 | Store completo y bucle del día | P0 | A-01 | | libre |
+| C-01 | Store completo y bucle del día | P0 | A-01 | Claude | hecha |
 | C-02 | Visor de casco | P0 | C-01 | | libre |
 | C-03 | Tablet: planificador con vista previa | P0 | C-01 | | libre |
 | C-04 | Panel de evento en la tablet | P0 | C-03, A-03 | | libre |
@@ -68,7 +68,7 @@ Estados: `libre` · `en curso` · `hecha` · `bloqueada`. Prioridades: P0 impres
 
 El motor está completo. Lo que más acerca a un juego jugable, en este orden:
 
-1. **C-01** store y bucle del día (desbloquea toda la interfaz y B-04).
+1. ~~C-01~~ hecha: la partida completa ya se juega con la tablet provisional.
 2. En paralelo: **C-03** tablet · **C-02** visor · **B-01** terreno, sol y cielo.
 3. **C-04** eventos · **C-05** resumen y debrief · **C-06** menú → *partida completa jugable*.
 4. **B-02**, **B-03**, **B-04** → el mundo responde al juego.

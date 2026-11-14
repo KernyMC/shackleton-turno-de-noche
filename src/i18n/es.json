@@ -47,5 +47,10 @@
   "module.recycler": "Reciclador",
   "module.greenhouse": "Invernadero",
   "module.shield": "Blindaje",
-  "module.workshop": "Taller"
+  "module.workshop": "Taller",
+  "tablet.execute": "Ejecutar día",
+  "tablet.resolving": "Resolviendo el día…",
+  "debrief.win": "Misión cumplida",
+  "debrief.loss": "Misión abortada en el día {dia}",
+  "debrief.again": "Jugar de nuevo"
 }
