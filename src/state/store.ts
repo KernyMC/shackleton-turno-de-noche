@@ -26,6 +26,26 @@ export type Preset = 'repeat' | 'saving' | 'zero';
 /** Duración de la animación de resolución del día (ms). */
 export const RESOLVE_MS = 1500;
 
+const NAME_KEY = 'halosur:commander:v1';
+function loadName(): string {
+  try {
+    return localStorage.getItem(NAME_KEY) ?? '';
+  } catch {
+    return '';
+  }
+}
+/** Nombre que escribió la comandante (vacío = usar "Comandante"). Máximo 20 caracteres. */
+export const commanderName = signal<string>(loadName());
+export function setCommanderName(value: string): void {
+  const clean = value.replace(/\s+/g, ' ').trimStart().slice(0, 20);
+  commanderName.value = clean;
+  try {
+    localStorage.setItem(NAME_KEY, clean);
+  } catch {
+    // Sin almacenamiento: el nombre dura solo esta sesión.
+  }
+}
+
 export const screen = signal<Screen>('menu');
 export const game = signal<GameState | null>(null);
 /** Plan en edición del día actual. Siempre es válido para `game`. */

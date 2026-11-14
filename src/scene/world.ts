@@ -5,6 +5,8 @@
 
 import * as THREE from 'three';
 import type { ModuleId } from '../sim/types';
+import { createAstronaut } from './astronaut';
+import type { Astronaut } from './astronaut';
 import { createBase } from './base';
 import { createSky } from './sky';
 import type { ModuleVisualState } from './base';
@@ -17,6 +19,15 @@ export interface WorldCallbacks {
   onSelect(id: ModuleId): void;
   /** Qué recursos reales se cargaron (terreno CGI Moon Kit, modelos GLB). */
   onAssets?(assets: { terrain?: 'real' | 'procedural'; models?: string[] }): void;
+  /** Astronauta de la fila de presentación bajo el cursor (o null). */
+  onCrewHover?(id: string | null): void;
+  /** El jugador tocó un astronauta de la fila. */
+  onCrewSelect?(id: string): void;
+}
+
+export interface CrewLineupMember {
+  id: string;
+  color: number;
 }
 
 export interface World {
@@ -39,6 +50,15 @@ export interface World {
   /** Muestra u oculta los rótulos de los módulos. */
   setLabelsVisible(visible: boolean): void;
   setReducedMotion(reduced: boolean): void;
+  /**
+   * Pantalla de inicio: la tripulación en fila frente a la base y una cámara baja que hace un
+   * travelling lento. Con lista vacía se quita la fila y vuelve la cámara en órbita.
+   */
+  showCrew(members: CrewLineupMember[]): void;
+  /** Ilumina y adelanta a un astronauta de la fila (o a ninguno). */
+  setCrewFocus(id: string | null): void;
+  /** Vuela de la cámara baja a la vista de la base. Instantáneo con movimiento reducido. */
+  flyIn(durationMs: number): Promise<void>;
   dispose(): void;
 }
 
@@ -47,6 +67,11 @@ const AUTO_SPEED = 0.045; // rad/s
 const RESUME_AFTER_MS = 5000;
 const CLICK_SLOP_PX = 6;
 const STORM_TINT = 0xb48cff;
+/** Fila de presentación: delante de la base, mirando a la cámara. */
+const LINEUP_Z = 24;
+const LINEUP_SPACING = 2.3;
+const INTRO_EYE = new THREE.Vector3(0, 3.4, 43);
+const INTRO_TARGET = new THREE.Vector3(0, 2.2, 14);
 
 const damp = (current: number, target: number, k: number, dt: number): number =>
   current + (target - current) * (1 - Math.exp(-k * dt));
@@ -106,6 +131,18 @@ export function createWorld(container: HTMLElement, cb: WorldCallbacks): World {
   let shiftXShown = 0;
   let reducedMotion = false;
 
+  // --- Tripulación en fila (pantalla de inicio) ---
+  const crew = new Map<string, Astronaut>();
+  const crewGroup = new THREE.Group();
+  scene.add(crewGroup);
+  let crewHovered: string | null = null;
+  let crewFocused: string | null = null;
+  let introMode = false;
+  let fly: { start: number; duration: number; fromEye: THREE.Vector3; fromTarget: THREE.Vector3; resolve: () => void } | null = null;
+  const introEye = new THREE.Vector3();
+  const introTarget = new THREE.Vector3();
+  const orbitEye = new THREE.Vector3();
+
   // --- Cámara en órbita ---
   let angle = 0.6;
   let elevation = ORBIT.elevation;
@@ -114,10 +151,20 @@ export function createWorld(container: HTMLElement, cb: WorldCallbacks): World {
   let width = 1;
   let height = 1;
 
-  const placeCamera = (): void => {
+  const orbitPosition = (out: THREE.Vector3): THREE.Vector3 => {
     const flat = Math.cos(elevation) * radius;
-    camera.position.set(Math.sin(angle) * flat, Math.sin(elevation) * radius + lookAt.y, Math.cos(angle) * flat);
+    return out.set(Math.sin(angle) * flat, Math.sin(elevation) * radius + lookAt.y, Math.cos(angle) * flat);
+  };
+  const placeCamera = (): void => {
+    camera.position.copy(orbitPosition(orbitEye));
     camera.lookAt(lookAt);
+  };
+  /** Cámara baja de la presentación, con un travelling lateral muy lento. */
+  const introPose = (time: number): void => {
+    const travel = reducedMotion ? 0 : Math.sin(time * 0.09) * 3.2;
+    introEye.copy(INTRO_EYE).setX(travel);
+    introEye.y += terrain.heightAt(travel, INTRO_EYE.z);
+    introTarget.copy(INTRO_TARGET).setX(travel * 0.35);
   };
 
   // --- Puntero: arrastrar gira, tocar selecciona ---
@@ -127,10 +174,27 @@ export function createWorld(container: HTMLElement, cb: WorldCallbacks): World {
   let pointerDirty = false;
   let drag: { id: number; x: number; y: number; startX: number; startY: number; moved: boolean } | null = null;
 
-  const pick = (clientX: number, clientY: number): ModuleId | null => {
+  const aim = (clientX: number, clientY: number): void => {
     const rect = dom.getBoundingClientRect();
     pointer.set(((clientX - rect.left) / rect.width) * 2 - 1, -((clientY - rect.top) / rect.height) * 2 + 1);
     raycaster.setFromCamera(pointer, camera);
+  };
+  const pickCrew = (clientX: number, clientY: number): string | null => {
+    aim(clientX, clientY);
+    const pickables = [...crew.values()].flatMap((a) => a.pickables);
+    const hit = raycaster.intersectObjects(pickables, false)[0];
+    if (!hit) return null;
+    for (const [id, a] of crew) if (a.pickables.includes(hit.object)) return id;
+    return null;
+  };
+  const setCrewHovered = (id: string | null): void => {
+    if (id === crewHovered) return;
+    crewHovered = id;
+    dom.style.cursor = id ? 'pointer' : 'default';
+    cb.onCrewHover?.(id);
+  };
+  const pick = (clientX: number, clientY: number): ModuleId | null => {
+    aim(clientX, clientY);
     const hit = raycaster.intersectObjects(base.pickables, false)[0];
     return (hit?.object.userData.moduleId as ModuleId | undefined) ?? null;
   };
@@ -152,7 +216,7 @@ export function createWorld(container: HTMLElement, cb: WorldCallbacks): World {
     lastPointer = { x: e.clientX, y: e.clientY };
     if (drag && e.pointerId === drag.id) {
       if (Math.hypot(e.clientX - drag.startX, e.clientY - drag.startY) > CLICK_SLOP_PX) drag.moved = true;
-      if (drag.moved) {
+      if (drag.moved && !introMode) {
         angle -= (e.clientX - drag.x) * 0.006;
         elevation = THREE.MathUtils.clamp(elevation + (e.clientY - drag.y) * 0.004, ORBIT.minElevation, ORBIT.maxElevation);
         dom.style.cursor = 'grabbing';
@@ -170,13 +234,20 @@ export function createWorld(container: HTMLElement, cb: WorldCallbacks): World {
     drag = null;
     if (dom.hasPointerCapture(e.pointerId)) dom.releasePointerCapture(e.pointerId);
     dom.style.cursor = hovered ? 'pointer' : 'grab';
-    if (wasClick) {
+    if (wasClick && introMode) {
+      const id = pickCrew(e.clientX, e.clientY);
+      if (id) cb.onCrewSelect?.(id);
+    } else if (wasClick) {
       const id = pick(e.clientX, e.clientY);
       if (id) cb.onSelect(id);
     }
   };
-  const onPointerLeave = (): void => setHovered(null);
+  const onPointerLeave = (): void => {
+    setHovered(null);
+    if (introMode) setCrewHovered(null);
+  };
   const onWheel = (e: WheelEvent): void => {
+    if (introMode) return;
     e.preventDefault();
     radius = THREE.MathUtils.clamp(radius + e.deltaY * 0.03, ORBIT.minRadius, ORBIT.maxRadius);
     lastInteraction = performance.now();
@@ -223,8 +294,28 @@ export function createWorld(container: HTMLElement, cb: WorldCallbacks): World {
     const dt = Math.min(timer.getDelta(), 0.1);
     const time = timer.getElapsed();
 
-    if (!reducedMotion && !drag && performance.now() - lastInteraction > RESUME_AFTER_MS) angle += AUTO_SPEED * dt;
-    placeCamera();
+    if (fly) {
+      // Vuelo de la presentación a la base: posición y punto de mira interpolados con suavizado.
+      const t = Math.min(1, (performance.now() - fly.start) / fly.duration);
+      const e = t * t * (3 - 2 * t);
+      orbitPosition(orbitEye);
+      camera.position.lerpVectors(fly.fromEye, orbitEye, e);
+      camera.position.y += Math.sin(Math.PI * t) * 6; // pequeño arco
+      camera.lookAt(introTarget.lerpVectors(fly.fromTarget, lookAt, e));
+      if (t >= 1) {
+        const done = fly.resolve;
+        fly = null;
+        introMode = false;
+        done();
+      }
+    } else if (introMode) {
+      introPose(time);
+      camera.position.copy(introEye);
+      camera.lookAt(introTarget);
+    } else {
+      if (!reducedMotion && !drag && performance.now() - lastInteraction > RESUME_AFTER_MS) angle += AUTO_SPEED * dt;
+      placeCamera();
+    }
 
     sunShown = damp(sunShown, sunTarget, 1.6, dt);
     azimuthShown = damp(azimuthShown, azimuthTarget, 1.2, dt);
@@ -249,7 +340,12 @@ export function createWorld(container: HTMLElement, cb: WorldCallbacks): World {
 
     if (pointerDirty && !drag) {
       pointerDirty = false;
-      setHovered(pick(lastPointer.x, lastPointer.y));
+      if (introMode) setCrewHovered(pickCrew(lastPointer.x, lastPointer.y));
+      else setHovered(pick(lastPointer.x, lastPointer.y));
+    }
+    for (const [id, a] of crew) {
+      a.setFocus(id === crewFocused || id === crewHovered);
+      a.update(dt, time, reducedMotion);
     }
 
     base.update(dt, time, reducedMotion);
@@ -270,7 +366,44 @@ export function createWorld(container: HTMLElement, cb: WorldCallbacks): World {
     },
     setLabelsVisible: (visible) => base.setLabelsVisible(visible),
     setReducedMotion: (reduced) => void (reducedMotion = reduced),
+    showCrew(members) {
+      for (const a of crew.values()) {
+        crewGroup.remove(a.group);
+        a.dispose();
+      }
+      crew.clear();
+      members.forEach((m, i) => {
+        const a = createAstronaut(m.color, i * 1.7);
+        const x = (i - (members.length - 1) / 2) * LINEUP_SPACING;
+        a.group.position.set(x, terrain.heightAt(x, LINEUP_Z), LINEUP_Z);
+        a.group.scale.setScalar(1.05);
+        crewGroup.add(a.group);
+        crew.set(m.id, a);
+      });
+      introMode = members.length > 0;
+      dom.style.cursor = introMode ? 'default' : 'grab';
+      // La fila mira a la cámara: el Sol de la presentación los ilumina de frente y de lado.
+      if (introMode) azimuthTarget = azimuthShown = 0.55;
+    },
+    setCrewFocus: (id) => void (crewFocused = id),
+    flyIn(durationMs) {
+      if (!introMode) return Promise.resolve();
+      if (reducedMotion || durationMs <= 0 || !running) {
+        introMode = false;
+        return Promise.resolve();
+      }
+      return new Promise<void>((resolve) => {
+        fly = {
+          start: performance.now(),
+          duration: durationMs,
+          fromEye: camera.position.clone(),
+          fromTarget: introTarget.clone(),
+          resolve,
+        };
+      });
+    },
     dispose() {
+      for (const a of crew.values()) a.dispose();
       renderer.setAnimationLoop(null);
       resize.disconnect();
       document.removeEventListener('visibilitychange', onVisibility);

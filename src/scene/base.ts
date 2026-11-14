@@ -160,8 +160,59 @@ export function createBase(heightAt: (x: number, z: number) => number = () => 0)
   const pickables: THREE.Object3D[] = [];
   const parts = new Map<ModuleId, ModuleParts>();
 
-  const tubeGeo = new THREE.CylinderGeometry(0.9, 0.9, 1, 12);
+  // Pasillos: tubo con anillos estructurales, esclusas en ambos extremos y apoyos al suelo.
+  const tubeGeo = new THREE.CylinderGeometry(0.85, 0.85, 1, 20);
+  const collarGeo = new THREE.CylinderGeometry(1.15, 1.15, 1, 20);
+  const ringGeo = new THREE.TorusGeometry(0.9, 0.08, 6, 20);
+  const legGeo = new THREE.BoxGeometry(0.22, 1, 0.5);
   const tubeMat = new THREE.MeshStandardMaterial({ color: HULL, roughness: 0.85 });
+  const frameMat = new THREE.MeshStandardMaterial({ color: 0x6a6b6e, roughness: 0.55, metalness: 0.35 });
+  const UP = new THREE.Vector3(0, 1, 0);
+  const AXIS_Z = new THREE.Vector3(0, 0, 1);
+  /** Distancia desde el centro a la que el pasillo entra en el refugio (dentro de su montículo). */
+  const HUB_RADIUS = 4.1;
+  /** Distancia desde el centro de cada módulo a la que el pasillo se acopla. */
+  const MODULE_RADIUS = 3.7;
+  const TUBE_Y = 1.0;
+  const corridor = (mx: number, mz: number): void => {
+    const dist = Math.hypot(mx, mz);
+    const dir = new THREE.Vector3(mx / dist, 0, mz / dist);
+    const at = (r: number, lift = TUBE_Y): THREE.Vector3 => {
+      const v = dir.clone().multiplyScalar(r);
+      return v.setY(heightAt(v.x, v.z) + lift);
+    };
+    const along = new THREE.Quaternion().setFromUnitVectors(UP, dir);
+    const across = new THREE.Quaternion().setFromUnitVectors(AXIS_Z, dir);
+    const r0 = HUB_RADIUS;
+    const r1 = dist - MODULE_RADIUS;
+    const piece = (geo: THREE.BufferGeometry, mat: THREE.Material, pos: THREE.Vector3, q: THREE.Quaternion, length?: number): THREE.Mesh => {
+      const mesh = new THREE.Mesh(geo, mat);
+      mesh.position.copy(pos);
+      mesh.quaternion.copy(q);
+      if (length !== undefined) mesh.scale.y = length;
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+      group.add(mesh);
+      return mesh;
+    };
+    piece(tubeGeo, tubeMat, at((r0 + r1) / 2), along, r1 - r0);
+    // Esclusas: el tubo entra en un collarín más ancho en cada extremo.
+    piece(collarGeo, frameMat, at(r0 + 0.3), along, 0.9);
+    piece(collarGeo, frameMat, at(r1 - 0.3), along, 0.9);
+    // Anillos cada ~2,2 m y patas que apoyan el tubo en el suelo.
+    const span = r1 - r0 - 1.4;
+    const count = Math.max(1, Math.round(span / 2.2));
+    for (let i = 0; i <= count; i++) {
+      const r = r0 + 0.7 + (span * i) / count;
+      piece(ringGeo, frameMat, at(r), across);
+      if (i % 2 === 1) {
+        const ground = at(r, 0).y;
+        const top = at(r).y - 0.75;
+        const leg = piece(legGeo, frameMat, at(r, 0).setY((ground + top) / 2), across);
+        leg.scale.y = Math.max(0.1, top - ground);
+      }
+    }
+  };
   const labels = new Map<ModuleId, ModuleLabel>();
   const shapes = new Map<ModuleId, THREE.Group>();
 
@@ -198,14 +249,7 @@ export function createBase(heightAt: (x: number, z: number) => number = () => 0)
     }
 
     // Pasillo hacia el refugio central.
-    const length = Math.hypot(m.x, m.z) - 5.5;
-    const tube = new THREE.Mesh(tubeGeo, tubeMat);
-    tube.scale.y = length;
-    tube.position.set(m.x * 0.5, y + 0.9, m.z * 0.5);
-    tube.rotation.z = Math.PI / 2;
-    tube.rotation.y = -Math.atan2(m.z, m.x);
-    tube.castShadow = true;
-    group.add(tube);
+    corridor(m.x, m.z);
 
     parts.set(m.id, { material, band, lamp, target: { efficiency: 0, broken: false }, shown: 0, hover: 0 });
   }
@@ -323,7 +367,7 @@ export function createBase(heightAt: (x: number, z: number) => number = () => 0)
       try {
         const gltf = await loader.loadAsync(SHELTER_MODEL_URL);
         if (!disposed) {
-          fitModel(gltf.scene, 3.4);
+          fitModel(gltf.scene, 4.1);
           gltf.scene.traverse((o) => {
             o.castShadow = true;
             o.receiveShadow = true;

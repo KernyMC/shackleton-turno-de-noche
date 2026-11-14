@@ -16,5 +16,6 @@ Registro honesto de qué se hizo con ayuda de IA. Añade una línea por sesión 
 | 2026-11-14 | Gemini y otro generador de imágenes (equipo) | Imágenes conceptuales de los 7 elementos de la base, usadas solo como referencia visual | Equipo |
 | 2026-11-14 | Claude Code (Anthropic) | Script de Blender que recrea los 7 modelos a partir de esas referencias y los exporta a GLB | Pendiente de revisión del equipo |
 | 2026-11-14 | Claude Code (Anthropic) | Texturas procedurales de los modelos y unión de mallas por material | Pendiente de revisión del equipo |
+| 2026-11-14 | Claude Code (Anthropic) | P1 tripulación: pantalla "Conoce a tu tripulación", 4 astronautas low-poly con animación, vuelo de cámara a la base, retratos SVG; pasillos con esclusas | Pendiente de revisión del equipo |
 
 Si se usan modelos 3D o audio generados (por ejemplo Tripo o Suno), anotarlos aquí y en `CREDITS.md`.

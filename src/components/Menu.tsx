@@ -1,109 +1,155 @@
-// Menú de inicio: la base lunar viva de fondo, el título y dos formas de empezar.
-// Debe enganchar en segundos: una imagen, una frase y un botón grande.
-import { useEffect, useRef } from 'preact/hooks';
+// Pantalla de inicio "Conoce a tu tripulación": los cuatro astronautas en fila frente a la base,
+// una cámara baja que hace travelling, el nombre de la comandante y la dificultad.
+// Al comenzar, la cámara vuela hacia la base. Funciona con teclado, en celular y sin 3D.
+import { useEffect, useRef, useState } from 'preact/hooks';
+import { CREW, crewById } from '../data/crew';
+import type { CrewId } from '../data/crew';
 import { lang, t } from '../i18n';
-import { defaultConfig } from '../sim/config';
-import type { Difficulty } from '../sim/types';
 import type { World } from '../scene/world';
+import type { Difficulty } from '../sim/types';
 import { loadSpaceWeather } from '../state/spaceWeather';
-import { startGame } from '../state/store';
+import { commanderName, setCommanderName, startGame } from '../state/store';
 import { helpOpen } from '../state/tutorial';
-import { Icon } from './icons';
-import type { IconName } from './icons';
+import { CrewPortrait } from './CrewPortrait';
 import { SunStatus } from './SunStatus';
 
-/** La base de fondo: misma maqueta del juego, girando sola y con sus luces encendidas. */
-function Backdrop() {
+const FLY_MS = 1500;
+const NAME_MAX = 20;
+
+export function Menu() {
   const host = useRef<HTMLDivElement>(null);
+  const world = useRef<World | null>(null);
+  const [focused, setFocused] = useState<CrewId | null>(null);
+  const [difficulty, setDifficulty] = useState<Difficulty>('cadete');
+  const [launching, setLaunching] = useState(false);
+  const [has3d, setHas3d] = useState(true);
+
+  // Consulta el Sol de hoy sin bloquear el menú.
+  useEffect(() => void loadSpaceWeather(), []);
+
+  // Escena 3D: la tripulación en fila frente a la base.
   useEffect(() => {
     let disposed = false;
-    let world: World | null = null;
     const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const wide = window.matchMedia('(min-width: 900px)');
-    // En pantallas anchas la base va a la derecha del texto; en estrechas, arriba.
-    const place = (): void => world?.setViewShift(wide.matches ? 0.04 : 0.24, wide.matches ? 0.24 : 0);
     void import('../scene/world')
       .then(({ createWorld }) => {
         if (disposed || !host.current) return;
-        // Solo decorativa: no avisa de toques ni cambia nada.
-        world = createWorld(host.current, { onHover: () => {}, onSelect: () => {} });
-        world.setReducedMotion(motion.matches);
-        world.setSunlight(0.55);
-        world.setSunAzimuth(0.9);
-        world.setModule('recycler', { efficiency: 0.9, broken: false });
-        world.setModule('greenhouse', { efficiency: 0.7, broken: false });
-        world.setModule('shield', { efficiency: 0.8, broken: false });
-        world.setModule('workshop', { efficiency: 0.5, broken: false });
-        world.setLabelsVisible(false);
+        const w = createWorld(host.current, {
+          onHover: () => {},
+          onSelect: () => {},
+          onCrewHover: (id) => setFocused((id as CrewId | null) ?? null),
+          onCrewSelect: (id) => setFocused(id as CrewId),
+        });
+        world.current = w;
+        w.setReducedMotion(motion.matches);
+        w.setSunlight(0.7);
+        w.setLabelsVisible(false);
+        CREW.forEach((c) => w.setModule(c.module, { efficiency: 0.8, broken: false }));
+        w.showCrew(CREW.map((c) => ({ id: c.id, color: c.color })));
+        // En pantallas anchas la tripulación queda a la derecha del panel.
+        const wide = window.matchMedia('(min-width: 761px)');
+        const place = (): void => w.setViewShift(0, wide.matches ? 0.17 : 0);
         place();
+        wide.addEventListener('change', place);
       })
-      .catch(() => {
-        // Sin WebGL el menú funciona igual, con fondo liso.
-      });
-    wide.addEventListener('change', place);
+      .catch(() => setHas3d(false)); // sin WebGL: la tripulación se ve en los retratos SVG
     return () => {
       disposed = true;
-      wide.removeEventListener('change', place);
-      world?.dispose();
+      world.current?.dispose();
+      world.current = null;
     };
   }, []);
-  return <div class="menu__backdrop" ref={host} aria-hidden="true" />;
-}
 
-/** Tres diferencias de cada dificultad, leídas de balance.json. */
-function facts(difficulty: Difficulty): [IconName, string][] {
-  const d = defaultConfig.balance.difficulty[difficulty];
-  return [
-    ['sun', t(d.stormCount === 1 ? 'menu.fact.storm' : 'menu.fact.storms', { n: d.stormCount })],
-    ['moon', t(d.nightLightBonus > 0 ? 'menu.fact.night_soft' : 'menu.fact.night_dark')],
-    ['dose', t('menu.fact.dose', { n: d.doseLimit })],
-  ];
-}
+  useEffect(() => world.current?.setCrewFocus(focused), [focused]);
 
-function MissionCard({ difficulty, recommended }: { difficulty: Difficulty; recommended?: boolean }) {
+  const launch = async (): Promise<void> => {
+    if (launching) return;
+    setLaunching(true);
+    setFocused(null);
+    try {
+      // Tope de tiempo: si la pestaña se oculta y la animación se pausa, la partida empieza igual.
+      await Promise.race([world.current?.flyIn(FLY_MS), new Promise((r) => setTimeout(r, FLY_MS + 400))]);
+    } finally {
+      startGame(difficulty);
+    }
+  };
+
+  const member = focused ? crewById(focused) : null;
+
   return (
-    <button
-      type="button"
-      class={`mission${recommended ? ' mission--recommended' : ''}`}
-      onClick={() => startGame(difficulty)}
-    >
-      <span class="mission__head">
-        <strong>{t(`menu.mission.${difficulty}`)}</strong>
-        {recommended && <span class="option__tag">{t('menu.recommended')}</span>}
-      </span>
-      <span class="mission__what">{t(`menu.mission.${difficulty}.what`)}</span>
-      <span class="mission__facts">
-        {facts(difficulty).map(([icon, text]) => (
-          <span key={text}>
-            <Icon name={icon} size={16} />
-            {text}
-          </span>
-        ))}
-      </span>
-      <span class="mission__go">{t('menu.start')}</span>
-    </button>
-  );
-}
+    <div class={`crewscreen${launching ? ' crewscreen--launching' : ''}${has3d ? '' : ' crewscreen--flat'}`}>
+      <div class="crewscreen__scene" ref={host} aria-hidden="true" />
 
-export function Menu() {
-  // Consulta el Sol de hoy sin bloquear el menú.
-  useEffect(() => void loadSpaceWeather(), []);
-  const days = defaultConfig.balance.days;
-  const crew = defaultConfig.balance.difficulty.cadete.crew;
-  return (
-    <div class="menu">
-      <Backdrop />
-      <main class="menu__content">
-        <header class="menu__title">
-          <p class="card__kicker">{t('menu.kicker')}</p>
-          <h1>{t('app.title')}</h1>
-          <p class="menu__subtitle">{t('menu.pitch', { dias: days, personas: crew })}</p>
-        </header>
+      <header class="crewscreen__title">
+        <p class="card__kicker">{t('menu.kicker')}</p>
+        <h1>{t('app.title')}</h1>
+      </header>
 
-        <div class="menu__missions">
-          <MissionCard difficulty="cadete" recommended />
-          <MissionCard difficulty="comandante" />
+
+      <main class="crewscreen__panel">
+        <h2>{t('crew.title')}</h2>
+        <ul class="crewlist" aria-label={t('crew.title')}>
+          {CREW.map((c) => (
+            <li key={c.id}>
+              <button
+                type="button"
+                class={`crewchip${focused === c.id ? ' crewchip--on' : ''}`}
+                style={{ '--crew': c.css }}
+                aria-pressed={focused === c.id}
+                onMouseEnter={() => setFocused(c.id)}
+                onFocus={() => setFocused(c.id)}
+                onClick={() => setFocused(c.id)}
+              >
+                <CrewPortrait color={c.css} size={44} />
+                <span class="crewchip__name">{t(`crew.${c.id}.short`)}</span>
+                <span class="crewchip__role">{t(`module.${c.module}`)}</span>
+              </button>
+            </li>
+          ))}
+        </ul>
+
+        {member && (
+          <aside class="crewcard" style={{ '--crew': member.css }} aria-live="polite">
+            <CrewPortrait color={member.css} size={64} />
+            <div>
+              <p class="crewcard__name">{t(`crew.${member.id}.name`)}</p>
+              <p class="crewcard__role">{t(`crew.${member.id}.role`)}</p>
+              <p class="crewcard__module">{t('crew.cares', { modulo: t(`module.${member.module}`) })}</p>
+              <p class="crewcard__quote">“{t(`crew.${member.id}.quote`)}”</p>
+            </div>
+          </aside>
+        )}
+        <label class="commander">
+          <span>{t('crew.commander_label')}</span>
+          <input
+            type="text"
+            maxLength={NAME_MAX}
+            value={commanderName.value}
+            placeholder={t('crew.commander_default')}
+            autoComplete="off"
+            onInput={(e) => setCommanderName(e.currentTarget.value)}
+          />
+        </label>
+
+        <div class="difficulty" role="radiogroup" aria-label={t('crew.difficulty')}>
+          {(['cadete', 'comandante'] as Difficulty[]).map((d) => (
+            <button
+              key={d}
+              type="button"
+              role="radio"
+              aria-checked={difficulty === d}
+              class={`difficulty__btn${difficulty === d ? ' difficulty__btn--on' : ''}`}
+              onClick={() => setDifficulty(d)}
+            >
+              <strong>{t(`menu.mission.${d}`)}</strong>
+              <span>{t(`menu.mission.${d}.what`)}</span>
+            </button>
+          ))}
         </div>
+
+        <button type="button" class="btn btn--primary crewscreen__go" disabled={launching} onClick={launch}>
+          {t('crew.start')}
+        </button>
 
         <div class="menu__row">
           <button type="button" class="btn btn--small" onClick={() => (helpOpen.value = true)}>

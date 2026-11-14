@@ -3,7 +3,7 @@
 import { useEffect, useRef } from 'preact/hooks';
 import { t } from '../i18n';
 import { defaultConfig } from '../sim/config';
-import { game } from '../state/store';
+import { commanderName, game } from '../state/store';
 import { ackTutorial, helpOpen, skipTutorial, TUTORIAL_MIN, tutorialStep } from '../state/tutorial';
 import type { TutorialStep } from '../state/tutorial';
 import { Icon } from './icons';
@@ -44,7 +44,7 @@ function Welcome() {
     <div class="overlay">
       <section class="card" role="dialog" aria-modal="true" aria-labelledby="welcome-title">
         <p class="card__kicker">{t('coach.voice')}</p>
-        <h2 id="welcome-title">{t('coach.welcome.title')}</h2>
+        <h2 id="welcome-title">{t('coach.welcome.title_named', { nombre: commanderName.value.trim() || t('crew.commander_default') })}</h2>
         <ul class="card__list">
           {lines.map(([icon, key]) => (
             <li key={key}>
