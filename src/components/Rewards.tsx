@@ -62,6 +62,20 @@ function Float({ item, index }: { item: FloatItem; index: number }) {
   );
 }
 
+/** Brote listo para cosechar: dibujo propio a color, como una ficha de juego. */
+function HarvestArt() {
+  return (
+    <svg class="harvest__art" viewBox="0 0 48 48" width="46" height="46" aria-hidden="true">
+      <ellipse cx="24" cy="40" rx="13" ry="4.5" fill="#6b5340" stroke="#0b0c0e" stroke-width="2" />
+      <path d="M24 39V21" stroke="#2f7a2c" stroke-width="3.4" stroke-linecap="round" />
+      <path d="M24 27C13.5 27 8 20 8 11.5c9.5 0 16 5 16 15.5Z" fill="#6cc45c" stroke="#0b0c0e" stroke-width="2" stroke-linejoin="round" />
+      <path d="M24 22.5c0-9.5 6-15 16-15 0 9.5-5.5 15-16 15Z" fill="#a9ec8f" stroke="#0b0c0e" stroke-width="2" stroke-linejoin="round" />
+      <path d="M12.5 15.5l9 9M35.5 11.5l-9 8.5" stroke="#2f7a2c" stroke-width="1.7" stroke-linecap="round" fill="none" />
+      <path d="M30 10.5c2.2-.9 4.4-1.2 6.6-1" stroke="#e9ffd9" stroke-width="1.6" stroke-linecap="round" fill="none" />
+    </svg>
+  );
+}
+
 function HarvestBubble() {
   const h = harvest.value;
   const el = useRef<HTMLButtonElement>(null);
@@ -82,7 +96,7 @@ function HarvestBubble() {
           if (r.top + r.height / 2 < H / 2) floor = Math.max(floor, r.bottom);
           else ceiling = Math.min(ceiling, r.top);
         });
-      const half = 30;
+      const half = 38;
       const x = Math.min(window.innerWidth - half - 8, Math.max(half + 8, p.x));
       const y = Math.max(floor + half + 10, Math.min(ceiling - half - 10, p.y - 30));
       el.current.style.left = `${x}px`;
@@ -104,7 +118,8 @@ function HarvestBubble() {
         collectHarvest(true);
       }}
     >
-      <Icon name="food" size={24} />
+      <HarvestArt />
+      <span class="harvest__plus" aria-hidden="true">+</span>
     </button>
   );
 }

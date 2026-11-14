@@ -984,3 +984,83 @@ html .game:has(.crewp) .scene__hint { display: none; }
   html .tablet .eflow__note, html .tablet .share__left { display: none; }
   html .tablet .share { margin: 0.2rem 0 0.4rem; }
 }
+
+/* ============ Veredicto del plan en el pie fijo del panel (siempre a la vista, sin scroll) ============ */
+html .tablet__actions .forecast {
+  flex: 1 1 100%; display: flex; align-items: center; gap: 0.6rem; margin: 0; padding: 0.35rem 0.5rem;
+  border-width: 2px; border-radius: var(--radius);
+}
+html .tablet__actions .forecast__stamp {
+  display: inline-flex; align-items: center; gap: 0.3rem; min-width: 0; flex: none; padding: 0.25rem 0.5rem; border-radius: 4px;
+  font-family: var(--font-display); font-size: 1rem; text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap;
+}
+html .tablet__actions .forecast__words { margin: 0; flex: 1; min-width: 0; font-size: 0.8rem; line-height: 1.25; }
+html .tablet__actions .forecast--tight { border-color: var(--warn); }
+html .tablet__actions .forecast--critical { border-color: var(--danger); }
+
+/* ============ Foco del tutorial: todo se oscurece menos lo que señala la guía ============ */
+html .onb-dim { position: fixed; inset: 0; z-index: 9; pointer-events: none; background: rgb(0 0 0 / 0.72); }
+html .onb-spot { border-radius: var(--r-panel); box-shadow: none; animation: onb-focus 1.4s ease-in-out infinite; }
+html .onb-spot--round { border-radius: 50%; }
+@keyframes onb-focus { 50% { border-color: #ffe0a8; } }
+@media (prefers-reduced-motion: reduce) { html .onb-spot { animation: none; } }
+/* Al traer algo a la vista dentro del panel, se deja libre el alto del pie fijo. */
+html .tablet { scroll-padding-bottom: 9.5rem; }
+
+/* ============ Tarjetas de recursos: lo que hará el plan (contador vivo + tramo fantasma) ============ */
+html .res__plan {
+  margin-left: 0.5rem; padding: 0.1rem 0.35rem; border-radius: 4px; align-self: center;
+  font-family: var(--font-mono); font-weight: 700; font-size: 0.95rem; font-variant-numeric: tabular-nums; white-space: nowrap;
+  background: var(--panel-deep); box-shadow: inset 0 0 0 2px currentColor;
+}
+html .res__plan--up { color: var(--ok); }
+html .res__plan--down { color: var(--warn); }
+html .res .hud__bar { position: relative; }
+html .hud__ghost { position: absolute; top: 0; bottom: 0; transition: left 250ms, width 250ms; }
+html .hud__ghost--up { background: color-mix(in srgb, var(--res, var(--text)) 45%, transparent); }
+html .hud__ghost--down { background: repeating-linear-gradient(135deg, #000 0 3px, transparent 3px 6px); }
+@media (prefers-reduced-motion: reduce) { html .hud__ghost { transition: none; } }
+@media (max-width: 1100px) {
+  html .res__plan { margin-left: 0.3rem; padding: 0.05rem 0.25rem; font-size: 0.8rem; }
+}
+/* Sin sitio para «/ 120» y el contador a la vez: mientras se planifica manda el contador. */
+html .res--planning.res--battery .hud__dim { display: none; }
+
+/* Móvil: el pie fijo ocupa lo mínimo (sello y línea más pequeños, botón más bajo). */
+@media (max-width: 899px) {
+  html .tablet__actions { gap: 0.35rem 0.5rem; }
+  html .tablet__actions .forecast { padding: 0.2rem 0.4rem; gap: 0.4rem; }
+  html .tablet__actions .forecast__stamp { font-size: 0.85rem; padding: 0.15rem 0.35rem; }
+  html .tablet__actions .forecast__words { font-size: 0.72rem; line-height: 1.15; }
+  html .tablet__actions .btn--execute { min-height: 46px; }
+}
+
+/* ============ Cosecha y números flotantes: fichas de juego (opacas, borde y sombra dura) ============ */
+html .harvest {
+  width: 72px; height: 72px; border: 3px solid #7ccf6a; background: var(--panel); color: #7ccf6a;
+  box-shadow: 0 5px 0 #2f6b2b, inset 0 0 0 3px var(--panel-deep), inset 0 3px 0 3px rgb(255 255 255 / 0.08);
+}
+html .harvest:hover { background: #24321f; color: #7ccf6a; }
+html .harvest:active { box-shadow: 0 2px 0 #2f6b2b, inset 0 0 0 3px var(--panel-deep); }
+html .harvest__art { display: block; }
+html .harvest__plus {
+  position: absolute; top: -6px; right: -6px; display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%;
+  background: var(--accent); color: #1a1206; border: 2px solid #0b0c0e; font-family: var(--font-display); font-weight: 700; font-size: 1.2rem; line-height: 1;
+}
+html .float {
+  padding: 0.25rem 0.6rem 0.25rem 0.45rem; border-radius: var(--radius); background: var(--panel);
+  border: 2px solid currentColor; box-shadow: 0 3px 0 #000; font-size: 1.2rem;
+}
+html .float .icon { width: 22px; height: 22px; }
+/* Con un módulo iluminado en la maqueta, la burbuja de la guía se aparta de su hueco. */
+@media (min-width: 900px) {
+  html .game.game:has(.onb-spot--round) .coach { top: var(--coach-top, 12rem); bottom: auto; }
+}
+/* El contador nunca desborda la tarjeta: número de batería algo menor mientras se planifica. */
+html .res__body { overflow: hidden; }
+html .res__plan { margin-left: 0.35rem; padding: 0.05rem 0.3rem; font-size: 0.85rem; }
+html .res--planning.res--battery .res__value b { font-size: 1.6rem; }
+@media (max-width: 1100px) {
+  html .res__plan { margin-left: 0.25rem; padding: 0.05rem 0.2rem; font-size: 0.75rem; }
+  html .res--planning.res--battery .res__value b { font-size: 1.35rem; }
+}

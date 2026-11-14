@@ -63,6 +63,8 @@ function earthTexture(): THREE.CanvasTexture {
 
 /** Posición de la Tierra cuando se mira al cielo: ~22° sobre el horizonte desde la cámara, por encima del borde del cráter. */
 export const EARTH_SKY = new THREE.Vector3(-190, 201, -330);
+/** Cuánto crece la Tierra al mirar al cielo (0.7 = 70 % más grande). */
+const SKY_GROW = 0.7;
 
 export function createSky(scene: THREE.Scene): Sky {
   const group = new THREE.Group();
@@ -85,8 +87,10 @@ export function createSky(scene: THREE.Scene): Sky {
       varying vec2 vUv;
       varying vec3 vNormalW;
       varying vec3 vViewW;
+      varying vec3 vObj;
       void main() {
         vUv = uv;
+        vObj = normalize(position);
         vec4 world = modelMatrix * vec4(position, 1.0);
         vNormalW = normalize(mat3(modelMatrix) * normal);
         vViewW = normalize(cameraPosition - world.xyz);
@@ -98,35 +102,69 @@ export function createSky(scene: THREE.Scene): Sky {
       varying vec2 vUv;
       varying vec3 vNormalW;
       varying vec3 vViewW;
+      varying vec3 vObj;
+      float hash(vec3 p) {
+        p = fract(p * 0.3183099 + 0.1);
+        p *= 17.0;
+        return fract(p.x * p.y * p.z * (p.x + p.y + p.z));
+      }
+      float noise(vec3 p) {
+        vec3 i = floor(p);
+        vec3 f = fract(p);
+        f = f * f * (3.0 - 2.0 * f);
+        return mix(
+          mix(mix(hash(i), hash(i + vec3(1, 0, 0)), f.x), mix(hash(i + vec3(0, 1, 0)), hash(i + vec3(1, 1, 0)), f.x), f.y),
+          mix(mix(hash(i + vec3(0, 0, 1)), hash(i + vec3(1, 0, 1)), f.x), mix(hash(i + vec3(0, 1, 1)), hash(i + vec3(1, 1, 1)), f.x), f.y),
+          f.z);
+      }
+      float fbm(vec3 p) {
+        float v = 0.0;
+        float a = 0.5;
+        for (int i = 0; i < 4; i++) {
+          v += a * noise(p);
+          p = p * 2.03 + 11.7;
+          a *= 0.5;
+        }
+        return v;
+      }
       void main() {
         vec3 n = normalize(vNormalW);
         vec3 albedo = texture2D(map, vUv).rgb;
+        // El mar del mapa es azul muy saturado: se acerca un poco al gris para que no domine.
+        albedo = mix(albedo, vec3(dot(albedo, vec3(0.3, 0.59, 0.11))), 0.22);
+        // Nubes dibujadas (no son datos): bandas y remolinos blancos, como se ve la Tierra desde fuera.
+        vec3 q = vObj * vec3(3.4, 5.2, 3.4);
+        q += 0.9 * vec3(noise(vObj * 2.1 + 3.0), 0.0, noise(vObj * 2.1 + 9.0));
+        float clouds = smoothstep(0.5, 0.74, fbm(q));
+        albedo = mix(albedo, vec3(0.93, 0.94, 0.95), clouds * 0.82);
         float d = dot(n, lightDir);
         float day = smoothstep(-0.12, 0.3, d);
-        vec3 lit = albedo * (0.08 + 1.35 * max(d, 0.0));
+        vec3 lit = albedo * (0.07 + 1.5 * max(d, 0.0));
         // Brillo del Sol sobre el mar: un reflejo pequeño donde el agua es oscura y azul.
-        float water = smoothstep(0.12, 0.0, albedo.r - albedo.b * 0.5);
+        float water = smoothstep(0.12, 0.0, albedo.r - albedo.b * 0.5) * (1.0 - clouds);
         vec3 h = normalize(lightDir + vViewW);
         lit += vec3(1.0, 0.95, 0.85) * pow(max(dot(n, h), 0.0), 40.0) * 0.35 * water * day;
         vec3 night = albedo * 0.02 + vec3(0.004, 0.008, 0.02);
         vec3 col = mix(night, lit, day);
-        // Atmósfera: borde azul, más visible en la cara iluminada.
-        float rim = pow(1.0 - max(dot(n, vViewW), 0.0), 2.6);
-        col += vec3(0.32, 0.55, 1.0) * rim * (0.15 + 0.85 * day) * 0.9;
+        // Atmósfera: un filo azul fino, solo en la cara iluminada.
+        float rim = pow(1.0 - max(dot(n, vViewW), 0.0), 4.0);
+        col += vec3(0.4, 0.62, 1.0) * rim * day * 0.4;
         gl_FragColor = vec4(col, 1.0);
         #include <colorspace_fragment>
       }`,
   });
-  const earth = new THREE.Mesh(new THREE.SphereGeometry(16, 64, 32), earthMat);
+  const earth = new THREE.Mesh(new THREE.SphereGeometry(16, 48, 24), earthMat);
   const EARTH_HOME = new THREE.Vector3(-190, 62, -330);
   const homeNow = EARTH_HOME.clone();
   const heroPos = new THREE.Vector3();
   let heroE = 0;
   let heroScale = 1;
   let lift = 0;
+  let liftE = 0;
   const place = (): void => {
     earth.position.lerpVectors(homeNow, heroPos, heroE);
-    earth.scale.setScalar(1 + (heroScale - 1) * heroE);
+    // Al mirar al cielo la Tierra crece un poco para que se distinga bien.
+    earth.scale.setScalar((1 + (heroScale - 1) * heroE) * (1 + SKY_GROW * liftE * (1 - heroE)));
     earth.rotation.y = 1.1 + heroE * 0.9;
   };
   earth.position.copy(EARTH_HOME);
@@ -147,8 +185,8 @@ export function createSky(scene: THREE.Scene): Sky {
     },
   );
   // Halo de atmósfera: un velo azul muy fino alrededor del disco.
-  const haloMat = new THREE.MeshBasicMaterial({ color: 0x6fb4ff, transparent: true, opacity: 0.16, side: THREE.BackSide, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false });
-  const halo = new THREE.Mesh(new THREE.SphereGeometry(16.9, 48, 24), haloMat);
+  const haloMat = new THREE.MeshBasicMaterial({ color: 0x8fbfff, transparent: true, opacity: 0.06, side: THREE.BackSide, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false });
+  const halo = new THREE.Mesh(new THREE.SphereGeometry(16.6, 32, 16), haloMat);
   earth.add(halo);
 
   // Estrellas: dos capas (muchas pequeñas, pocas grandes) y una banda densa de Vía Láctea.
@@ -197,7 +235,8 @@ export function createSky(scene: THREE.Scene): Sky {
     setLift(amount) {
       if (Math.abs(amount - lift) < 0.0005) return;
       lift = amount;
-      homeNow.lerpVectors(EARTH_HOME, EARTH_SKY, lift * lift * (3 - 2 * lift));
+      liftE = lift * lift * (3 - 2 * lift);
+      homeNow.lerpVectors(EARTH_HOME, EARTH_SKY, liftE);
       place();
     },
     setDetail(fraction) {

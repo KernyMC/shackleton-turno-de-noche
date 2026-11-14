@@ -196,7 +196,7 @@ const QUALITY = {
 };
 /** Sombras: mapa grande en alta, la mitad de lado en media; se redibujan a esta cadencia o cuando se mueve el Sol. */
 const SHADOW_SIZE: Record<Tier, number> = { high: 2048, medium: 1024, low: 1024 };
-const SHADOW_REFRESH_MS = 66;
+const SHADOW_REFRESH_MS = 100;
 const SHADOW_REFRESH_INTRO_MS = 33;
 const SUN_SHADOW_EPS = 0.0015; // rad de cambio del Sol que obliga a redibujar sombras
 const DENSITY: Record<Tier, { dust: number; stars: number }> = {
@@ -209,8 +209,8 @@ const SAVER_AFTER_MS = 6000;
 const SAVER_FRAME_MS = 28;
 /** El hover (rayo contra los módulos) se resuelve como mucho a esta cadencia. */
 const HOVER_MS = 60;
-/** Mirar al cielo: la Tierra queda a esta fracción del medio campo de visión sobre el centro (tercio superior). */
-const SKY_EARTH_HEADROOM = 0.4;
+/** Mirar al cielo: la Tierra queda a esta fracción del medio campo de visión sobre el centro (casi centrada, libre de la barra y la meta). */
+const SKY_EARTH_HEADROOM = 0.06;
 const wrapAngle = (a: number): number => Math.atan2(Math.sin(a), Math.cos(a));
 
 export function createWorld(container: HTMLElement, cb: WorldCallbacks): World {
@@ -742,7 +742,13 @@ export function createWorld(container: HTMLElement, cb: WorldCallbacks): World {
       goodTime = 0;
     }
   };
-  applyStep(0);
+  // Arranque: no se empieza en lo más caro. En pantallas densas se parte de 1,5× (sube solo si sobra);
+  // en equipos modestos (pocos núcleos, poca memoria o táctil) se parte de calidad media.
+  const modest =
+    (navigator.hardwareConcurrency ?? 8) <= 4 ||
+    ((navigator as Navigator & { deviceMemory?: number }).deviceMemory ?? 8) <= 4 ||
+    window.matchMedia('(pointer: coarse)').matches;
+  applyStep(Math.max(0, ladder.findIndex((q) => (modest ? q.tier !== 'high' : q.pixelRatio <= 1.5))));
 
   const timer = new THREE.Timer();
   let lastFrameAt = 0;

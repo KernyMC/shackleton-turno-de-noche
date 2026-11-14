@@ -91,6 +91,56 @@ function seeded(seed: number): () => number {
   };
 }
 
+/** Pendiente del borde del cráter (altura = pendiente · distancia²). */
+const RIM_SLOPE = 0.0011;
+
+/** Mínimo suave entre dos alturas: redondea la cresta en vez de dejar una arista. */
+const smoothMin = (a: number, b: number, k: number): number => {
+  const h = Math.max(k - Math.abs(a - b), 0) / k;
+  return Math.min(a, b) - h * h * k * 0.25;
+};
+
+/**
+ * Disco de anillos con más detalle cerca del centro (donde está la base y mira la cámara).
+ * Sustituye al plano cuadrado: menos triángulos y sin esquinas que asomen en el horizonte.
+ * Las UV son las mismas que las de un plano de lado `uvSize`.
+ */
+function discGeometry(radius: number, rings: number, sectors: number, uvSize: number): THREE.BufferGeometry {
+  const count = 1 + rings * sectors;
+  const positions = new Float32Array(count * 3);
+  const uvs = new Float32Array(count * 2);
+  uvs[0] = 0.5;
+  uvs[1] = 0.5;
+  for (let i = 1; i <= rings; i++) {
+    const r = radius * Math.pow(i / rings, 1.4);
+    for (let j = 0; j < sectors; j++) {
+      const a = (j / sectors) * Math.PI * 2;
+      const k = 1 + (i - 1) * sectors + j;
+      const x = Math.cos(a) * r;
+      const z = Math.sin(a) * r;
+      positions[k * 3] = x;
+      positions[k * 3 + 2] = z;
+      uvs[k * 2] = x / uvSize + 0.5;
+      uvs[k * 2 + 1] = 0.5 - z / uvSize;
+    }
+  }
+  const index: number[] = [];
+  for (let j = 0; j < sectors; j++) index.push(0, 1 + ((j + 1) % sectors), 1 + j);
+  for (let i = 1; i < rings; i++) {
+    const inner = 1 + (i - 1) * sectors;
+    const outer = inner + sectors;
+    for (let j = 0; j < sectors; j++) {
+      const n = (j + 1) % sectors;
+      index.push(inner + j, inner + n, outer + j, outer + j, inner + n, outer + n);
+    }
+  }
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  geometry.setAttribute('uv', new THREE.BufferAttribute(uvs, 2));
+  geometry.setIndex(index);
+  return geometry;
+}
+
 interface Crater { x: number; z: number; r: number; depth: number }
 
 /** Cráteres repartidos fuera de la zona de la base (semilla fija: mismo paisaje siempre). */
@@ -160,12 +210,17 @@ export function createTerrain(options: TerrainOptions = {}): Terrain {
       const d = Math.hypot(x - c.x, z - c.z) / c.r;
       if (d < 1.6) h += c.depth * (d < 1 ? (d * d - 1) : 0) + c.depth * 0.35 * Math.exp(-((d - 1) ** 2) / 0.05);
     }
-    // Borde del cráter suave: deja ver mucho cielo (estrellas y la Tierra).
-    return h + far * far * 0.0011;
+    // Borde del cráter: sube suave, remata en una cresta irregular y cae por fuera. Así el
+    // horizonte es una sierra redonda y nunca se ve el final de la malla.
+    const ang = Math.atan2(z, x);
+    const crest = 33 + Math.sin(ang * 2 + 0.9) * 5 + Math.sin(ang * 5 + 2.2) * 3.5 + Math.sin(ang * 11 + 4.1) * 1.5;
+    const rise = smoothMin(far * far * RIM_SLOPE, crest, 9);
+    const crestRadius = baseRadius * 1.5 + Math.sqrt(crest / RIM_SLOPE);
+    const hills = Math.sin(x * 0.043 + z * 0.021 + 0.6) * Math.cos(z * 0.051 - x * 0.017) * Math.min(1, far / 90) * 2.2;
+    return h + hills + rise * (1 - 0.5 * smoothstep(crestRadius + 8, crestRadius + 110, r));
   };
 
-  const geometry = new THREE.PlaneGeometry(size * 3, size * 3, segments * 2, segments * 2);
-  geometry.rotateX(-Math.PI / 2);
+  const geometry = discGeometry(size * 1.65, Math.round(segments * 1.08), segments * 2 - 16, size * 3);
   const material = new THREE.MeshStandardMaterial({ color: 0x9a9892, roughness: 1, metalness: 0 });
   const grain = typeof document !== 'undefined' ? regolithTexture() : null;
   if (grain) {

@@ -840,5 +840,6 @@
   "challenge.relay.up": "Up",
   "challenge.relay.down": "Down",
   "challenge.relay.up_for": "Move {name}'s cursor up",
-  "challenge.relay.down_for": "Move {name}'s cursor down"
+  "challenge.relay.down_for": "Move {name}'s cursor down",
+  "hud.plan_delta": "Change at the end of today"
 }

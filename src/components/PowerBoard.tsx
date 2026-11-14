@@ -203,40 +203,21 @@ function ShareBar({ game: g, wasted }: { game: GameState; wasted: number }) {
 
 const STAMP: Record<Verdict['level'], IconName> = { safe: 'check', tight: 'alert', critical: 'alert' };
 
-/** Veredicto: sello de color + tres medidores de mañana. */
-function Forecast({ verdict, capacity }: { verdict: Verdict; capacity: number }) {
+/** Veredicto del plan: sello de color + una línea con lo que pasará hoy. Vive en el pie fijo del panel. */
+export function Forecast({ verdict }: { verdict: Verdict }) {
   const p = preview.value;
   const word = verdict.reason === 'blackout' ? 'tablet.verdict.blackout' : `tablet.verdict.${verdict.level}`;
-  const gauges: { key: string; icon: IconName; label: string; value: number; max: number; flag: boolean }[] = [
-    { key: 'life', icon: 'life_support', label: 'hud.life_support', value: verdict.lifeSupport, max: 100, flag: verdict.reason === 'life_support' },
-    { key: 'food', icon: 'food', label: 'hud.food', value: verdict.food, max: 100, flag: verdict.reason === 'food' },
-    { key: 'battery', icon: 'battery', label: 'hud.battery', value: verdict.battery, max: capacity, flag: verdict.reason === 'blackout' },
-  ];
   return (
     <div class={`forecast forecast--${verdict.level}`} role="status" aria-live="polite">
       <div class="forecast__stamp">
-        <Icon name={STAMP[verdict.level]} size={26} />
+        <Icon name={STAMP[verdict.level]} size={20} />
         <span>{t(word)}</span>
       </div>
-      <div class="forecast__gauges" aria-label={t('tablet.verdict.tomorrow')}>
-        <span class="forecast__label">{t('tablet.verdict.tomorrow')}</span>
-        {p && (
-          <p class="forecast__words">
-            {t('board.after_today', { aire: signed(p.lifeSupport), comida: signed(p.food), bateria: num(p.battery, 0) })}
-          </p>
-        )}
-        {gauges.map((gauge) => {
-          const level = gauge.value / gauge.max <= 0.1 ? 'critical' : gauge.value / gauge.max <= 0.25 ? 'low' : 'ok';
-          return (
-            <div key={gauge.key} class={`gauge gauge--${level}${gauge.flag ? ' gauge--flag' : ''}`} title={t(gauge.label)}>
-              <Icon name={gauge.icon} size={16} />
-              <span class="gauge__bar"><span style={{ width: `${Math.max(0, Math.min(100, (gauge.value / gauge.max) * 100))}%` }} /></span>
-              <b>{Math.round(gauge.value)}</b>
-              <span class="sr-only">{t(gauge.label)}</span>
-            </div>
-          );
-        })}
-      </div>
+      {p && (
+        <p class="forecast__words">
+          {t('board.after_today', { aire: signed(p.lifeSupport), comida: signed(p.food), bateria: num(p.battery, 0) })}
+        </p>
+      )}
     </div>
   );
 }
@@ -341,7 +322,6 @@ function SunForecast({ game: g }: { game: GameState }) {
 }
 
 export function PowerBoard({ game: g, verdict, onClamped }: { game: GameState; verdict: Verdict; onClamped(): void }) {
-  const capacity = defaultConfig.balance.difficulty[g.difficulty].batteryCapacity;
   return (
     <>
       <ShareBar game={g} wasted={verdict.wasted} />
@@ -352,7 +332,6 @@ export function PowerBoard({ game: g, verdict, onClamped }: { game: GameState; v
           <Column key={id} id={id} game={g} onClamped={onClamped} />
         ))}
       </div>
-      <Forecast verdict={verdict} capacity={capacity} />
       <SunForecast game={g} />
     </>
   );

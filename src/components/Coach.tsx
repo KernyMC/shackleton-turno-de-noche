@@ -2,6 +2,8 @@
 // Tutorial, tarjeta final del tutorial y la leyenda "¿Cómo se juega?", disponible siempre.
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { t } from '../i18n';
+import { sceneBridge } from '../scene/bridge';
+import type { ModuleId } from '../sim/types';
 import { defaultConfig } from '../sim/config';
 import { exitToMenu, game, resolving, screen, tabletOpen } from '../state/store';
 import { actCard, toast } from '../state/acts';
@@ -60,10 +62,28 @@ const SPEAKER: Record<TutorialStep, CrewId> = {
 };
 /** Lo que señala el aro de cada paso (si existe en pantalla; si no, no se dibuja). */
 const TARGET: Partial<Record<TutorialStep, string>> = {
+  pick_recycler: '.meter[data-module="recycler"]',
+  power_recycler: '.meter[data-module="recycler"]',
+  greenhouse: '.meter[data-module="greenhouse"]',
+  execute: '.tablet__actions',
   d2_flow: '.eflow',
+  d2_pass: '.btn--execute',
+  d3_harvest: '.tablet',
   d3_forecast: '.forecast',
+  d3_pass: '.btn--execute',
+  d4_dust: '.tablet',
   d4_workshop: '.meter[data-module="workshop"]',
+  d4_pass: '.btn--execute',
   d5_goal: '.act-pill',
+  d5_pass: '.btn--execute',
+};
+/** Módulo de la maqueta que se ilumina junto con lo del panel. */
+const FOCUS_MODULE: Partial<Record<TutorialStep, ModuleId>> = {
+  pick_recycler: 'recycler',
+  power_recycler: 'recycler',
+  greenhouse: 'greenhouse',
+  d3_harvest: 'greenhouse',
+  d4_workshop: 'workshop',
 };
 const WARN_TARGET: Record<string, string> = {
   recycler: '.meter[data-module="recycler"]',
@@ -93,7 +113,7 @@ function Bubble({ step }: { step: TutorialStep }) {
   }, []);
   return (
     <>
-      {target && tabletOpen.value && <Spot selector={target} />}
+      <Focus selector={tabletOpen.value ? target : undefined} module={FOCUS_MODULE[step] ?? null} />
       <div class="coach" role="status" aria-live="polite" style={{ '--crew': speaker.css }} key={step}>
         <span class="coach__portrait" aria-hidden="true">
           <CrewPortrait crew={speaker.id} color={speaker.css} size={48} mood="happy" />
@@ -211,25 +231,91 @@ function Help() {
   );
 }
 
-/** Aro que rodea lo que señala la pista; si no existe en pantalla, no se dibuja nada. */
-function Spot({ selector }: { selector: string }) {
-  const [box, setBox] = useState<{ x: number; y: number; w: number; h: number } | null>(null);
+interface Hole { x: number; y: number; w: number; h: number; round: boolean }
+
+/** Radio (px) del hueco redondo que ilumina un módulo en la maqueta. */
+const MODULE_HOLE = 84;
+
+/**
+ * Foco de la pista: oscurece la pantalla y deja a la vista lo señalado, que puede ser a la vez
+ * un elemento del panel y un módulo de la maqueta. Lo que no existe en pantalla no se dibuja.
+ */
+function Focus({ selector, module }: { selector?: string; module: ModuleId | null }) {
+  const [holes, setHoles] = useState<Hole[]>([]);
   useEffect(() => {
     const measure = (): void => {
-      const el = document.querySelector(selector);
+      const next: Hole[] = [];
+      const W = window.innerWidth;
+      const H = window.innerHeight;
+      const tablet = document.querySelector('.tablet:not(.tablet--away)')?.getBoundingClientRect();
+      const el = selector ? document.querySelector(selector) : null;
       const r = el?.getBoundingClientRect();
-      setBox(r && r.width > 0 && r.height > 0 ? { x: r.left, y: r.top, w: r.width, h: r.height } : null);
+      if (el && r && r.width > 0 && r.height > 0) {
+        // Solo cuenta la parte que se ve: dentro del panel con scroll y dentro de la ventana.
+        const clip = el.closest('.tablet')?.getBoundingClientRect();
+        // El pie fijo del panel tapa lo que queda debajo: el foco termina donde empieza el pie.
+        const foot = el.closest('.tablet__actions') ? null : el.closest('.tablet')?.querySelector('.tablet__actions')?.getBoundingClientRect();
+        const left = Math.max(r.left, clip?.left ?? 0, 0);
+        const top = Math.max(r.top, clip?.top ?? 0, 0);
+        const right = Math.min(r.right, clip?.right ?? W, W);
+        const bottom = Math.min(r.bottom, foot?.top ?? H, clip?.bottom ?? H, H);
+        if (right - left > 16 && bottom - top > 16) next.push({ x: left - 4, y: top - 4, w: right - left + 8, h: bottom - top + 8, round: false });
+      }
+      const p = module ? sceneBridge.project?.(module) : null;
+      if (p) {
+        const R = Math.min(MODULE_HOLE, Math.min(W, H) * 0.16);
+        const inside = p.x > R * 0.5 && p.x < W - R * 0.5 && p.y > R * 0.5 && p.y < H - R * 0.5;
+        // Si el panel tapa el módulo, no se abre un hueco encima del panel.
+        const covered = tablet && p.x + R > tablet.left && p.x - R < tablet.right && p.y + R > tablet.top && p.y - R < tablet.bottom;
+        if (inside && !covered) next.push({ x: p.x - R, y: p.y - R, w: R * 2, h: R * 2, round: true });
+      }
+      // La burbuja de la guía nunca tapa el módulo iluminado: se coloca debajo o encima de su hueco.
+      const round = next.find((h) => h.round);
+      const rootStyle = document.documentElement.style;
+      if (round) {
+        const coachH = document.querySelector('.coach')?.getBoundingClientRect().height ?? 130;
+        const below = round.y + round.h + 14;
+        const top = below + coachH < H - 12 ? below : Math.max(8, round.y - 14 - coachH);
+        rootStyle.setProperty('--coach-top', `${Math.round(top)}px`);
+      } else rootStyle.removeProperty('--coach-top');
+      setHoles((prev) => (JSON.stringify(prev) === JSON.stringify(next) ? prev : next));
     };
+    // Lo señalado se trae a la vista dentro del panel antes de medirlo.
+    const first = selector ? document.querySelector(selector) : null;
+    if (first?.closest('.tablet') && !first.matches('.tablet')) first.scrollIntoView({ block: 'nearest' });
     measure();
-    const id = window.setInterval(measure, 300);
+    const id = window.setInterval(measure, 120);
     window.addEventListener('resize', measure);
     return () => {
       window.clearInterval(id);
       window.removeEventListener('resize', measure);
+      document.documentElement.style.removeProperty('--coach-top');
     };
-  }, [selector]);
-  if (!box) return null;
-  return <div class="onb-spot" aria-hidden="true" style={{ left: `${box.x - 4}px`, top: `${box.y - 4}px`, width: `${box.w + 8}px`, height: `${box.h + 8}px` }} />;
+  }, [selector, module]);
+  if (holes.length === 0) return null;
+  const n = (v: number): string => v.toFixed(1);
+  // Pantalla completa con agujeros (regla par-impar): rectángulos para el panel, círculo para el módulo.
+  const cut = holes
+    .map((h) =>
+      h.round
+        ? `M${n(h.x)} ${n(h.y + h.h / 2)}a${n(h.w / 2)} ${n(h.h / 2)} 0 1 0 ${n(h.w)} 0a${n(h.w / 2)} ${n(h.h / 2)} 0 1 0 ${n(-h.w)} 0Z`
+        : `M${n(h.x)} ${n(h.y)}h${n(h.w)}v${n(h.h)}h${n(-h.w)}Z`,
+    )
+    .join('');
+  const clip = `path(evenodd, "M0 0H${window.innerWidth}V${window.innerHeight}H0Z${cut}")`;
+  return (
+    <>
+      <div class="onb-dim" aria-hidden="true" style={{ clipPath: clip }} />
+      {holes.map((h, i) => (
+        <div
+          key={i}
+          class={`onb-spot${h.round ? ' onb-spot--round' : ''}`}
+          aria-hidden="true"
+          style={{ left: `${h.x}px`, top: `${h.y}px`, width: `${h.w}px`, height: `${h.h}px` }}
+        />
+      ))}
+    </>
+  );
 }
 
 export function Coach() {

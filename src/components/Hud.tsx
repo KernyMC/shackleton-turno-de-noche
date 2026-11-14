@@ -16,7 +16,7 @@ import type { AlertLevel } from '../sim/thresholds';
 import type { GameState, LogEntry } from '../sim/types';
 import { muted, toggleMute } from '../audio/sfx';
 import { faceOf, moodOf } from '../state/rewards';
-import { exitToMenu, game, skyView, tabletOpen, toggleTablet } from '../state/store';
+import { exitToMenu, game, preview, resolving, skyView, tabletOpen, toggleTablet } from '../state/store';
 import { sourcesOpen } from '../state/sources';
 import { helpOpen } from '../state/tutorial';
 import { CrewPortrait } from './CrewPortrait';
@@ -42,8 +42,11 @@ function Status({ level, low, critical }: { level: Level; low: string; critical:
   );
 }
 
-function Bar({ value, max, level, label }: { value: number; max: number; level: Level; label: string }) {
+function Bar({ value, max, level, label, next = null }: { value: number; max: number; level: Level; label: string; next?: number | null }) {
   const pct = Math.max(0, Math.min(100, (value / max) * 100));
+  // Tramo fantasma: hasta dónde llegará la barra al terminar el día con el plan actual.
+  const nextPct = next === null ? pct : Math.max(0, Math.min(100, (next / max) * 100));
+  const ghost = Math.abs(nextPct - pct) >= 0.5;
   return (
     <div
       class={`hud__bar hud__bar--${level}`}
@@ -54,6 +57,12 @@ function Bar({ value, max, level, label }: { value: number; max: number; level: 
       aria-valuenow={Math.round(value)}
     >
       <span style={{ width: `${pct}%` }} />
+      {ghost && (
+        <i
+          class={`hud__ghost hud__ghost--${nextPct > pct ? 'up' : 'down'}`}
+          style={{ left: `${Math.min(pct, nextPct)}%`, width: `${Math.abs(nextPct - pct)}%` }}
+        />
+      )}
     </div>
   );
 }
@@ -63,6 +72,11 @@ function Bar({ value, max, level, label }: { value: number; max: number; level: 
  * Con movimiento reducido cambia de golpe. `onRise` avisa cuando el valor sube.
  */
 function CountUp({ value }: { value: number }) {
+  return <b>{num(useCount(value, 900))}</b>;
+}
+
+/** Valor que se acerca al nuevo con freno al final (de golpe con movimiento reducido). */
+function useCount(value: number, ms: number): number {
   const [shown, setShown] = useState(value);
   const from = useRef(value);
   useEffect(() => {
@@ -76,7 +90,7 @@ function CountUp({ value }: { value: number }) {
     let frame = 0;
     const t0 = performance.now();
     const tick = (now: number): void => {
-      const k = Math.min(1, (now - t0) / 900);
+      const k = Math.min(1, (now - t0) / ms);
       const eased = 1 - (1 - k) ** 3;
       setShown(start + (value - start) * eased);
       if (k < 1) frame = requestAnimationFrame(tick);
@@ -84,7 +98,20 @@ function CountUp({ value }: { value: number }) {
     frame = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(frame);
   }, [value]);
-  return <b>{num(shown)}</b>;
+  return shown;
+}
+
+/** Contador vivo junto al número: cuánto cambiará el recurso al terminar el día con el plan actual. */
+function PlanDelta({ delta }: { delta: number }) {
+  const shown = useCount(delta, 350);
+  const rounded = Math.round(delta);
+  if (rounded === 0) return null;
+  return (
+    <span class={`res__plan res__plan--${rounded > 0 ? 'up' : 'down'}`} title={t('hud.plan_delta')}>
+      <span aria-hidden="true">{rounded > 0 ? '▲' : '▼'}</span> {signed(Math.round(shown) || rounded)}
+      <span class="sr-only">{t('hud.plan_delta')}</span>
+    </span>
+  );
 }
 
 /** Cambio desde ayer. `goodUp` = subir es bueno (falso para la radiación). */
@@ -298,16 +325,18 @@ function Resources({ g, moods }: { g: GameState; moods: Record<CrewId, number> }
   const life = LEVEL[levels.lifeSupport];
   const food = LEVEL[levels.food];
   const battery: Level = levels.battery > 0 ? (noSun ? 'critical' : 'low') : 'ok';
+  // Con el panel abierto, cada tarjeta adelanta lo que hará el plan: contador y tramo fantasma en la barra.
+  const p = tabletOpen.value && !resolving.value ? preview.value : null;
   const items = [
-    { id: 'life', icon: 'life_support' as const, label: t('hud.life_support'), value: g.lifeSupport, max: 100, level: life, delta: lastDelta(g, 'lifeSupport'), crew: 'valeria' as const },
-    { id: 'food', icon: 'food' as const, label: t('hud.food'), value: g.food, max: 100, level: food, delta: lastDelta(g, 'food'), crew: 'mateo' as const },
-    { id: 'battery', icon: 'battery' as const, label: t('hud.battery'), value: g.battery, max: capacity, level: battery, delta: lastDelta(g, 'battery'), crew: 'lucia' as const },
+    { id: 'life', icon: 'life_support' as const, label: t('hud.life_support'), value: g.lifeSupport, max: 100, level: life, delta: lastDelta(g, 'lifeSupport'), crew: 'valeria' as const, plan: p ? p.lifeSupport : null },
+    { id: 'food', icon: 'food' as const, label: t('hud.food'), value: g.food, max: 100, level: food, delta: lastDelta(g, 'food'), crew: 'mateo' as const, plan: p ? p.food : null },
+    { id: 'battery', icon: 'battery' as const, label: t('hud.battery'), value: g.battery, max: capacity, level: battery, delta: lastDelta(g, 'battery'), crew: 'lucia' as const, plan: p ? p.battery - g.battery : null },
   ];
   return (
     <div class="resources">
       {items.map((it) => (
         // Una tarjeta por recurso: la cara de quien lo cuida a la izquierda, como avatar.
-        <div key={it.id} class={`res res--${it.id} res--${it.level}`}>
+        <div key={it.id} class={`res res--${it.id} res--${it.level}${it.plan !== null ? ' res--planning' : ''}`}>
           <span class="res__face">
             <Face crew={it.crew} mood={moods[it.crew]} />
           </span>
@@ -319,11 +348,12 @@ function Resources({ g, moods }: { g: GameState; moods: Record<CrewId, number> }
             <p class="res__value">
               <b>{Math.round(it.value)}</b>
               {it.id === 'battery' && <span class="hud__dim">/ {it.max}</span>}
+              {it.plan !== null && <PlanDelta delta={it.plan} />}
             </p>
-            <Bar value={it.value} max={it.max} level={it.level} label={it.label} />
+            <Bar value={it.value} max={it.max} level={it.level} label={it.label} next={it.plan !== null ? it.value + it.plan : null} />
             <p class="res__foot">
               <Status level={it.level} low="hud.status.low" critical="hud.status.critical" />
-              <Trend delta={it.delta} />
+              {it.plan === null && <Trend delta={it.delta} />}
             </p>
           </div>
         </div>

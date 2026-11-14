@@ -28,7 +28,7 @@ import { playCommit } from '../audio/sfx';
 import { EventPanel } from './EventPanel';
 import { num, signed } from './format';
 import { Icon } from './icons';
-import { PowerBoard } from './PowerBoard';
+import { Forecast, PowerBoard } from './PowerBoard';
 
 const NOTICE_MS = 2000;
 
@@ -78,6 +78,7 @@ function Planner({ game: g }: { game: GameState }) {
       </p>
 
       <div class="tablet__actions">
+        <Forecast verdict={verdict} />
         <button type="button" class="btn btn--primary btn--execute" disabled={resolving.value} onClick={commit}>
           <svg width="18" height="18" viewBox="0 0 20 20" aria-hidden="true"><path d="M6 4l10 6-10 6Z" fill="currentColor" /></svg>
           {resolving.value ? t('tablet.resolving') : t('tablet.execute', { dia: g.day })}

@@ -840,5 +840,6 @@
   "challenge.relay.up": "Subir",
   "challenge.relay.down": "Bajar",
   "challenge.relay.up_for": "Subir el cursor de {name}",
-  "challenge.relay.down_for": "Bajar el cursor de {name}"
+  "challenge.relay.down_for": "Bajar el cursor de {name}",
+  "hud.plan_delta": "Cambio al terminar hoy"
 }
