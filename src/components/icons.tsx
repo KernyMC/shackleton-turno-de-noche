@@ -14,6 +14,7 @@ export type IconName =
   | 'sun'
   | 'moon'
   | 'alert'
+  | 'check'
   | 'close';
 
 const PATHS: Record<IconName, JSX.Element> = {
@@ -80,6 +81,7 @@ const PATHS: Record<IconName, JSX.Element> = {
       <path d="M10 8v3.5M10 13.6v.2" />
     </>
   ),
+  check: <path d="M4 10.5l4 4 8-9" />,
   close: <path d="M5 5l10 10M15 5 5 15" />,
 };
 

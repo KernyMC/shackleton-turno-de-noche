@@ -60,3 +60,7 @@ Cuando haya valores, la idea es: tamaño del "100 %" del tanque = N días de con
 - 2026-11-14 · La tablet deja de ser un diálogo modal salvo durante un evento, y en pantallas estrechas es un panel inferior (56 %) en vez de pantalla completa. · El niño debe ver la luz del módulo mientras mueve el slider.
 - 2026-11-14 · Recursos opcionales (texturas, modelos) se declaran en `public/optional-assets.json`. · Evita peticiones 404 en la consola cuando no están instalados.
 - 2026-11-14 · Acuerdos del debate de expertos (cuenta atrás de 30 s con opción segura, un slider visible, demo de 3 minutos, sin fichas coleccionables ni rachas): ver `docs/DIVERSION.md`. · Pendiente de confirmar con niños reales.
+- 2026-11-14 · Panel de planificación rediseñado según el experto UX: un solo slider visible con 4 chips, veredicto con palabra (seguro / justo / peligroso) y valores de mañana, presupuesto en una frase; se quitan "Modo ahorro" y "Todo a cero". · El equipo lo encontró demasiado complejo.
+- 2026-11-14 · Guía de primera partida: bienvenida de 4 frases + 6 pasos en el día 1 que avanzan con las acciones del jugador + aviso de la noche el día 2. · Un jugador nuevo no entendía cómo se juega.
+- 2026-11-14 · El blindaje se explica como "radiación de hoy: X (sin blindaje: Y)" en vez de un número negativo. · "−0,6" se leía como daño.
+- 2026-11-14 · La tormenta ya no tiñe toda la escena de morado: resplandor suave y cielo violeta oscuro. · El tinte fuerte tapaba la base.

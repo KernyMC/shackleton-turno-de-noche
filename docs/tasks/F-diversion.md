@@ -17,7 +17,11 @@ y una mirada en el navegador (escritorio y 360 px de ancho).
 de cada módulo sigue al plan en vivo; avería = rojo que late lento; refugio = ámbar; el rover sale y vuelve.
 **Pendiente de comprobar a mano:** aspecto en celular vertical y que la luz se vea cambiar mientras se arrastra el slider.
 
-## F-02 · Veredicto en una línea y un slider con chips (4 h)
+## F-02 · Veredicto en una línea y un slider con chips — HECHA
+
+Hecho con la especificación del experto UX: `Tablet.tsx` (chips, veredicto, presupuesto en una frase, "Ver detalles"), `EnergySlider.tsx` (un solo slider, línea "qué hace", efecto sin signos confusos) y `src/sim/verdict.ts` (`planVerdict`, con tests). "Ejecutar día" queda fijo al fondo del panel.
+
+### Texto original
 
 **Problema:** 4 sliders, 4 textos de efecto y 4 números de vista previa a la vez; "+2,1 / −0,4" no dice si sobrevives.
 
@@ -45,7 +49,11 @@ de cada módulo sigue al plan en vivo; avería = rojo que late lento; refugio = 
 
 **Hecho cuando:** hay test de `nightReadiness`; la pregunta aparece solo en días clave; el resumen de cada día es una frase.
 
-## F-04 · Tormenta solar con tensión justa (3 h) — reemplaza el `EventPanel` provisional
+## F-04 · Tormenta solar con tensión justa — panel HECHO, falta la barra
+
+Hecho en `EventPanel.tsx`: título, fuerza de la tormenta, texto con el dato real, línea de fuente con enlace a NASA, y botones grandes con su consecuencia, etiqueta "Recomendada", razón si está deshabilitado y teclas 1/2. **Falta:** barra de 30 s con opción segura al vencer, botón "Sin tiempo" y alarma (puntos 3 y 6 de abajo).
+
+### Texto original
 
 1. Textos humanos por tipo de evento (`event.<kind>.title`, `.text`, `.option.<id>`) en ES y EN; nada de ids internos. Variables: nivel, módulo, fecha.
 2. Cada botón grande muestra su consecuencia antes de elegir. Tormenta: "Refugiarse — dosis +{X} mSv · invernadero y taller no producen hoy" / "Seguir trabajando — dosis +{Y} mSv" (`getStormDose`). Avería y hielo: coste de 10 de energía en el taller; opción deshabilitada con su razón (`disabledReason`).
@@ -64,6 +72,14 @@ de cada módulo sigue al plan en vivo; avería = rojo que late lento; refugio = 
 4. Derrota: "La misión fue abortada. La tripulación regresó a la Tierra en la nave de emergencia."
 
 **Hecho cuando:** tras perder, un toque devuelve a un día jugable con la causa visible; test del store para `rewindTo`.
+
+## F-09 · Bienvenida, guía del día 1 y ayuda — HECHA
+
+`src/state/tutorial.ts` (pasos que avanzan solos con las acciones del jugador, con tests), `src/components/Coach.tsx` (tarjeta de bienvenida de 4 frases, burbuja de Control de Misión, leyenda "¿Cómo se juega?"). Lo que la guía señala late en ámbar (`data-coach` en la tablet). Se guarda en `localStorage` (`halosur:tutorial:v1`) para no repetirla; `resetTutorial()` la reactiva.
+
+## F-10 · Aspecto de la maqueta — HECHA
+
+`src/scene/modules.ts` (silueta propia por módulo y rótulo con ícono), `sky.ts` (Tierra y estrellas nocturnas), `terrain.ts` (cráteres y textura de regolito procedural). Pendiente si hay tiempo: texturas reales del CGI Moon Kit (D-04), modelos GLB (D-05), postprocesado (B-06).
 
 ## F-07 · Demo de 3 minutos (3 h)
 

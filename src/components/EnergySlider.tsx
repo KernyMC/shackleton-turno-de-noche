@@ -1,10 +1,10 @@
-// Un módulo del planificador: slider de energía, efecto previsto y estado (averiado, refugio).
-// Solo muestra; las reglas viven en el motor y el store.
+// Tarjeta del módulo activo: nombre, valor grande, UN slider, qué hace y su efecto en vivo.
+// Solo muestra; las reglas viven en el motor y el store. Diseño: docs/DIVERSION.md (experto UX).
 import { t } from '../i18n';
 import { defaultConfig } from '../sim/config';
 import type { GameState, ModuleId } from '../sim/types';
-import { budget, focusModule, plan, requestRepair, resolving, setPlanValue } from '../state/store';
-import { signed } from './format';
+import { budget, plan, requestRepair, resolving, setPlanValue } from '../state/store';
+import { num, signed } from './format';
 import { Icon } from './icons';
 
 interface Props {
@@ -14,28 +14,40 @@ interface Props {
   onClamped(): void;
 }
 
-/** Texto del efecto previsto. Es solo para mostrar: el número real lo calcula previewDay. */
-function effectText(id: ModuleId, value: number, game: GameState, sheltered: boolean): string {
+export const isSheltered = (id: ModuleId, game: GameState): boolean =>
+  game.shelterToday && (id === 'greenhouse' || id === 'workshop');
+
+/**
+ * Efecto en vivo del módulo, con números. Es solo para mostrar: los valores reales del día los
+ * calcula el motor (previewDay). Sin signos confusos: el blindaje dice la radiación que queda.
+ */
+function effectText(id: ModuleId, value: number, game: GameState): { text: string; ready?: boolean } {
   const b = defaultConfig.balance;
   const fx = b.effects;
   const e = value / b.modules[id].maxEnergy;
-  if (sheltered && (id === 'greenhouse' || id === 'workshop')) return t('tablet.effect.sheltered');
+  if (isSheltered(id, game)) return { text: t('tablet.effect.sheltered') };
   switch (id) {
     case 'recycler':
-      return t('tablet.effect.life_support', { valor: signed(fx.recyclerLifeSupport * e) });
+      if (value === 0) return { text: t('tablet.effect.off') };
+      return { text: t('tablet.effect.life_support', { valor: signed(fx.recyclerLifeSupport * e) }) };
     case 'greenhouse':
-      return t('tablet.effect.greenhouse', {
-        comida: signed(fx.greenhouseFood * e),
-        agua: signed(-fx.greenhouseWaterCost * e),
-      });
-    case 'shield':
-      return t('tablet.effect.shield', {
-        valor: signed(-b.difficulty[game.difficulty].doseBaseDaily * fx.shieldReduction * e, 2),
-      });
+      if (value === 0) return { text: t('tablet.effect.off') };
+      return {
+        text: t('tablet.effect.greenhouse', {
+          comida: signed(fx.greenhouseFood * e),
+          agua: signed(-fx.greenhouseWaterCost * e),
+        }),
+      };
+    case 'shield': {
+      const base = b.difficulty[game.difficulty].doseBaseDaily;
+      return {
+        text: t('tablet.effect.shield', { valor: num(base * (1 - fx.shieldReduction * e), 2), sin: num(base, 2) }),
+      };
+    }
     case 'workshop':
       return value >= fx.workshopMinEnergy
-        ? t('tablet.effect.workshop_ready')
-        : t('tablet.effect.workshop_idle', { min: fx.workshopMinEnergy });
+        ? { text: t('tablet.effect.workshop_ready'), ready: true }
+        : { text: t('tablet.effect.workshop_idle', { min: fx.workshopMinEnergy }) };
   }
 }
 
@@ -45,11 +57,11 @@ export function EnergySlider({ id, game, onClamped }: Props) {
   const value = plan.value[id];
   const broken = game.modules[id].broken;
   const noEnergy = (budget.value?.available ?? 0) < 1;
-  const sheltered = game.shelterToday && (id === 'greenhouse' || id === 'workshop');
+  const sheltered = isSheltered(id, game);
   const repairPending = game.repairToday === id;
   const canRepair = !game.modules.workshop.broken && (budget.value?.available ?? 0) >= minWorkshop;
   const inputId = `slider-${id}`;
-  const effect = broken ? t('tablet.broken') : effectText(id, value, game, game.shelterToday);
+  const effect = effectText(id, value, game);
 
   const set = (next: number): void => {
     if (setPlanValue(id, next)) onClamped();
@@ -64,13 +76,9 @@ export function EnergySlider({ id, game, onClamped }: Props) {
   };
 
   return (
-    <div
-      class={`module${broken ? ' module--broken' : ''}${sheltered ? ' module--sheltered' : ''}${focusModule.value === id ? ' module--focus' : ''}`}
-      onPointerDown={() => (focusModule.value = id)}
-      onFocusCapture={() => (focusModule.value = id)}
-    >
+    <section class={`module${broken ? ' module--broken' : ''}${sheltered ? ' module--sheltered' : ''}`}>
       <label class="module__head" for={inputId}>
-        <Icon name={id} />
+        <Icon name={id} size={24} />
         <span class="module__name">{t(`module.${id}`)}</span>
         <span class="module__value">
           <b>{value}</b>
@@ -86,39 +94,46 @@ export function EnergySlider({ id, game, onClamped }: Props) {
         step={1}
         value={value}
         disabled={broken || noEnergy || resolving.value}
-        aria-valuetext={t('tablet.slider_valuetext', { valor: value, max, efecto: effect })}
+        aria-valuetext={t('tablet.slider_valuetext', { valor: value, max, efecto: broken ? t('tablet.broken') : effect.text })}
         onInput={(e) => set(Number(e.currentTarget.value))}
         onKeyDown={onKeyDown}
       />
-      <p class="module__effect">
-        {broken && <Icon name="alert" size={16} />}
-        <span>{effect}</span>
-      </p>
-      {broken &&
-        (repairPending ? (
-          <p class="module__repair">
-            <span>{t('tablet.repair_scheduled')}</span>
-            <button type="button" class="btn btn--small btn--ghost" onClick={() => requestRepair(null)}>
-              {t('tablet.repair_cancel')}
-            </button>
-          </p>
-        ) : (
-          <p class="module__repair">
-            <button
-              type="button"
-              class="btn btn--small"
-              disabled={!canRepair || resolving.value}
-              onClick={() => requestRepair(id)}
-            >
-              {t('tablet.repair', { min: minWorkshop })}
-            </button>
-            {!canRepair && (
-              <span class="module__reason">
-                {t(game.modules.workshop.broken ? 'event.reason.workshop_broken' : 'event.reason.workshop_energy')}
-              </span>
-            )}
-          </p>
-        ))}
-    </div>
+      <p class="module__what">{t(`module.${id}.what`)}</p>
+      {broken ? (
+        <p class="module__repair">
+          <Icon name="alert" size={16} />
+          <span>{t('tablet.broken')}</span>
+          {repairPending ? (
+            <>
+              <span class="module__reason">{t('tablet.repair_scheduled')}</span>
+              <button type="button" class="btn btn--small btn--ghost" onClick={() => requestRepair(null)}>
+                {t('tablet.repair_cancel')}
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                type="button"
+                class="btn btn--small"
+                disabled={!canRepair || resolving.value}
+                onClick={() => requestRepair(id)}
+              >
+                {t('tablet.repair', { min: minWorkshop })}
+              </button>
+              {!canRepair && (
+                <span class="module__reason">
+                  {t(game.modules.workshop.broken ? 'event.reason.workshop_broken' : 'event.reason.workshop_energy')}
+                </span>
+              )}
+            </>
+          )}
+        </p>
+      ) : (
+        <p class={`module__effect${effect.ready ? ' module__effect--ready' : ''}`}>
+          {effect.ready && <Icon name="check" size={16} />}
+          <span>{effect.text}</span>
+        </p>
+      )}
+    </section>
   );
 }

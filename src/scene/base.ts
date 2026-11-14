@@ -9,6 +9,8 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 import type { ModuleId } from '../sim/types';
 import { optionalAssets } from './assets';
+import { buildModuleShape, createModuleLabel, MODULE_TOP } from './modules';
+import type { ModuleLabel } from './modules';
 
 export const MODEL_URLS = { lander: '/models/lander.glb', rover: '/models/rover.glb' } as const;
 export type ModelId = keyof typeof MODEL_URLS;
@@ -20,10 +22,10 @@ export interface BasePosition {
 }
 
 export const MODULES: BasePosition[] = [
-  { id: 'recycler', x: -9, z: -8 },
-  { id: 'greenhouse', x: 9, z: -8 },
-  { id: 'shield', x: -9, z: 8 },
-  { id: 'workshop', x: 9, z: 8 },
+  { id: 'recycler', x: -11, z: -10 },
+  { id: 'greenhouse', x: 11, z: -10 },
+  { id: 'shield', x: -11, z: 10 },
+  { id: 'workshop', x: 11, z: 10 },
 ];
 
 // Paleta de docs/ARTE.md §3.
@@ -35,8 +37,8 @@ const REGOLITH_DARK = 0x3b3a38;
 
 /** Posición y tamaño objetivo (metros de alto aprox.) de cada modelo opcional. */
 const MODEL_SLOTS: Record<ModelId, { x: number; z: number; height: number; rotY: number }> = {
-  lander: { x: -19, z: 17, height: 6, rotY: 0.6 },
-  rover: { x: 15, z: 19, height: 2.2, rotY: -0.4 },
+  lander: { x: -26, z: 22, height: 6, rotY: 0.6 },
+  rover: { x: 22, z: 22, height: 2.2, rotY: -0.4 },
 };
 
 export interface ModuleVisualState {
@@ -50,6 +52,8 @@ export interface Base {
   /** Objetos que responden al clic; cada uno lleva `userData.moduleId`. */
   pickables: THREE.Object3D[];
   setModule(id: ModuleId, state: ModuleVisualState): void;
+  /** Nombres traducidos para los rótulos de los módulos. */
+  setLabels(names: Record<ModuleId, string>): void;
   /** Resalta el módulo bajo el cursor (o ninguno). */
   setHover(id: ModuleId | null): void;
   /** Refugio activo: brilla en ámbar. */
@@ -147,32 +151,36 @@ export function createBase(heightAt: (x: number, z: number) => number = () => 0)
   const pickables: THREE.Object3D[] = [];
   const parts = new Map<ModuleId, ModuleParts>();
 
-  const bodyGeo = new THREE.CylinderGeometry(3, 3, 3.2, 32);
-  const domeGeo = new THREE.SphereGeometry(3, 32, 12, 0, Math.PI * 2, 0, Math.PI / 2);
-  const bandGeo = new THREE.CylinderGeometry(3.05, 3.05, 0.35, 32, 1, true);
   const tubeGeo = new THREE.CylinderGeometry(0.9, 0.9, 1, 12);
   const tubeMat = new THREE.MeshStandardMaterial({ color: HULL, roughness: 0.85 });
+  const labels = new Map<ModuleId, ModuleLabel>();
 
   for (const m of MODULES) {
     const y = heightAt(m.x, m.z);
-    // El casco es blanco hueso; la energía se ve en la franja y en la luz, siempre ámbar.
+    // El casco es blanco hueso; la energía se ve en las piezas que brillan y en la luz, siempre ámbar.
     const material = new THREE.MeshStandardMaterial({ color: HULL, roughness: 0.75, emissive: AMBER, emissiveIntensity: 0 });
     const band = new THREE.MeshStandardMaterial({ color: 0x111111, emissive: AMBER, emissiveIntensity: 0, side: THREE.DoubleSide });
-    const body = new THREE.Mesh(bodyGeo, material);
-    body.position.set(m.x, y + 1.6, m.z);
-    const dome = new THREE.Mesh(domeGeo, material);
-    dome.position.set(m.x, y + 3.2, m.z);
-    const ring = new THREE.Mesh(bandGeo, band);
-    ring.position.set(m.x, y + 2.6, m.z);
-    const lamp = new THREE.PointLight(AMBER, 0, 22, 1.6);
+    // Cada módulo tiene su silueta (modules.ts) y mira hacia fuera de la base.
+    const shape = buildModuleShape(m.id, material, band);
+    shape.position.set(m.x, y, m.z);
+    shape.rotation.y = Math.atan2(m.x, m.z);
+    shape.traverse((o) => {
+      if (o instanceof THREE.Mesh) {
+        o.userData.moduleId = m.id;
+        pickables.push(o);
+      }
+    });
+    const lamp = new THREE.PointLight(AMBER, 0, 24, 1.6);
     lamp.position.set(m.x, y + 5.2, m.z);
-    for (const mesh of [body, dome, ring]) {
-      mesh.castShadow = true;
-      mesh.receiveShadow = true;
-      mesh.userData.moduleId = m.id;
-      pickables.push(mesh);
+    group.add(shape, lamp);
+
+    // Rótulo con ícono y nombre: dice qué es cada módulo sin tener que adivinar.
+    if (typeof document !== 'undefined') {
+      const label = createModuleLabel(m.id, m.id);
+      label.sprite.position.set(m.x, y + MODULE_TOP[m.id] + 2.2, m.z);
+      group.add(label.sprite);
+      labels.set(m.id, label);
     }
-    group.add(body, dome, ring, lamp);
 
     // Pasillo hacia el refugio central.
     const length = Math.hypot(m.x, m.z) - 5.5;
@@ -260,6 +268,9 @@ export function createBase(heightAt: (x: number, z: number) => number = () => 0)
       const p = parts.get(id);
       if (p) p.target = { efficiency: THREE.MathUtils.clamp(state.efficiency, 0, 1), broken: state.broken };
     },
+    setLabels(names) {
+      for (const [id, label] of labels) label.setText(names[id]);
+    },
     setHover(id) {
       hovered = id;
     },
@@ -302,6 +313,7 @@ export function createBase(heightAt: (x: number, z: number) => number = () => 0)
     ready: loadModels(),
     dispose() {
       disposed = true;
+      for (const label of labels.values()) label.dispose();
       disposeObject(group);
     },
   };

@@ -7,6 +7,7 @@ import { defaultConfig } from '../sim/config';
 import { getLight } from '../sim/engine';
 import { MODULE_IDS } from '../sim/types';
 import { game, interact, nearTarget, plan, realAssets, tabletOpen, toggleTablet } from '../state/store';
+import { tutorialStep } from '../state/tutorial';
 import type { World } from './world';
 
 /** Radianes que avanza el Sol por el horizonte cada día (12°). */
@@ -60,6 +61,17 @@ export function Scene() {
           }
         }),
       );
+      // Rótulos de los módulos en el idioma actual (t() lee el idioma, así que se actualizan solos).
+      stops.push(
+        effect(() =>
+          w.setLabels({
+            recycler: t('module.recycler'),
+            greenhouse: t('module.greenhouse'),
+            shield: t('module.shield'),
+            workshop: t('module.workshop'),
+          }),
+        ),
+      );
       // Con el panel abierto, la base se sube para que no quede tapada.
       stops.push(effect(() => w.setViewShift(tabletOpen.value ? (narrow.matches ? 0.27 : 0.2) : 0)));
     });
@@ -100,7 +112,7 @@ export function Scene() {
           </span>
         </p>
       ) : (
-        !tabletOpen.value && <p class="scene__hint">{t('scene.hint')}</p>
+        !tabletOpen.value && !tutorialStep.value && <p class="scene__hint">{t('scene.hint')}</p>
       )}
     </div>
   );

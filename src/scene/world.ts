@@ -6,6 +6,7 @@
 import * as THREE from 'three';
 import type { ModuleId } from '../sim/types';
 import { createBase } from './base';
+import { createSky } from './sky';
 import type { ModelId, ModuleVisualState } from './base';
 import { createTerrain, TEXTURE_URLS } from './terrain';
 
@@ -24,6 +25,8 @@ export interface World {
   /** Posición del Sol en el horizonte (radianes); avanza con los días. */
   setSunAzimuth(azimuth: number): void;
   setModule(id: ModuleId, state: ModuleVisualState): void;
+  /** Nombres traducidos de los módulos, para sus rótulos. */
+  setLabels(names: Record<ModuleId, string>): void;
   setShelter(active: boolean): void;
   setRoverAway(away: boolean): void;
   /** Tormenta solar en curso: tinte en el horizonte. */
@@ -34,7 +37,7 @@ export interface World {
   dispose(): void;
 }
 
-const ORBIT = { radius: 54, minRadius: 30, maxRadius: 80, elevation: 0.42, minElevation: 0.16, maxElevation: 1.1 };
+const ORBIT = { radius: 62, minRadius: 34, maxRadius: 90, elevation: 0.42, minElevation: 0.16, maxElevation: 1.1 };
 const AUTO_SPEED = 0.045; // rad/s
 const RESUME_AFTER_MS = 5000;
 const CLICK_SLOP_PX = 6;
@@ -55,11 +58,11 @@ export function createWorld(container: HTMLElement, cb: WorldCallbacks): World {
 
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(0x000000);
-  const camera = new THREE.PerspectiveCamera(46, 1, 0.5, 600);
+  const camera = new THREE.PerspectiveCamera(46, 1, 0.5, 1400);
   const lookAt = new THREE.Vector3(0, 2, 0);
 
   // Sol rasante del polo sur: sombras largas y duras. Sin niebla: en la Luna no hay aire.
-  const sun = new THREE.DirectionalLight(0xfff4e0, 0);
+  const sun = new THREE.DirectionalLight(0xfffaf2, 0);
   sun.castShadow = true;
   sun.shadow.mapSize.set(2048, 2048);
   Object.assign(sun.shadow.camera, { left: -45, right: 45, top: 45, bottom: -45, near: 1, far: 260 });
@@ -70,6 +73,8 @@ export function createWorld(container: HTMLElement, cb: WorldCallbacks): World {
   // Brillo del horizonte durante una tormenta solar.
   const stormGlow = new THREE.HemisphereLight(STORM_TINT, 0x000000, 0);
   scene.add(stormGlow);
+
+  const sky = createSky(scene);
 
   const terrain = createTerrain({
     heightmapUrl: TEXTURE_URLS.height,
@@ -219,9 +224,11 @@ export function createWorld(container: HTMLElement, cb: WorldCallbacks): World {
     stormShown = damp(stormShown, stormTarget, 2.5, dt);
     const sunElevation = 0.05 + sunShown * 0.11; // 3°–9° sobre el horizonte
     sun.position.set(Math.sin(azimuthShown) * 120, Math.sin(sunElevation) * 120, Math.cos(azimuthShown) * 120);
-    sun.intensity = sunShown * 3.2;
-    fill.intensity = 0.25 + sunShown * 0.35;
-    stormGlow.intensity = stormShown * (reducedMotion ? 0.5 : 0.4 + 0.15 * Math.sin(time * 2.2));
+    sun.intensity = sunShown * 4.4;
+    fill.intensity = 0.35 + sunShown * 0.55;
+    // Tormenta: un resplandor violeta suave desde arriba y el cielo deja de ser negro puro.
+    stormGlow.intensity = stormShown * (reducedMotion ? 0.14 : 0.12 + 0.05 * Math.sin(time * 2.2));
+    sky.update(sunShown, stormShown);
     // De noche se sube la exposición para que la base ilumine su entorno.
     renderer.toneMappingExposure = 1.55 - sunShown * 0.5;
 
@@ -245,6 +252,7 @@ export function createWorld(container: HTMLElement, cb: WorldCallbacks): World {
     setSunlight: (light) => void (sunTarget = THREE.MathUtils.clamp(light, 0, 1)),
     setSunAzimuth: (azimuth) => void (azimuthTarget = azimuth),
     setModule: (id, state) => base.setModule(id, state),
+    setLabels: (names) => base.setLabels(names),
     setShelter: (active) => base.setShelter(active),
     setRoverAway: (away) => base.setRoverAway(away),
     setStorm: (active) => void (stormTarget = active ? 1 : 0),
@@ -260,6 +268,7 @@ export function createWorld(container: HTMLElement, cb: WorldCallbacks): World {
       dom.removeEventListener('pointercancel', onPointerUp);
       dom.removeEventListener('pointerleave', onPointerLeave);
       dom.removeEventListener('wheel', onWheel);
+      sky.dispose();
       terrain.dispose();
       base.dispose();
       renderer.dispose();

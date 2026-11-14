@@ -10,6 +10,7 @@ import { defaultConfig } from '../sim/config';
 import { getLight } from '../sim/engine';
 import type { GameState, LogEntry } from '../sim/types';
 import { budget, exitToMenu, game, tabletOpen, toggleTablet } from '../state/store';
+import { helpOpen } from '../state/tutorial';
 import { num, signed } from './format';
 import { Icon } from './icons';
 
@@ -246,6 +247,9 @@ export function Hud() {
             {t('hud.open_tablet')}
           </button>
         )}
+        <button type="button" class="btn btn--small" onClick={() => (helpOpen.value = true)}>
+          {t('help.button')}
+        </button>
         <button type="button" class="btn btn--ghost btn--small" onClick={exitToMenu}>
           {t('menu.back')}
         </button>

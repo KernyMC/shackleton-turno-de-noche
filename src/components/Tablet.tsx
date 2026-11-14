@@ -1,10 +1,15 @@
-// Tablet de muñeca: el planificador de energía, la interacción central del juego (tarea C-03).
-// Con un evento pendiente muestra el panel del evento en lugar del planificador.
+// Panel de planificación: la interacción central del juego. Cinco bloques, de arriba abajo:
+//   1. encabezado · 2. chips de módulo · 3. módulo activo (un solo slider)
+//   4. veredicto + presupuesto · 5. acciones
+// No repite lo que ya muestra el HUD (batería, día, dosis): lo único nuevo es cómo amanece mañana.
+// Con un evento pendiente muestra el panel del evento. Diseño: docs/DIVERSION.md (experto UX).
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { t } from '../i18n';
 import { defaultConfig } from '../sim/config';
 import { MODULE_IDS } from '../sim/types';
-import type { GameState } from '../sim/types';
+import type { GameState, ModuleId } from '../sim/types';
+import { planVerdict } from '../sim/verdict';
+import type { Verdict, VerdictReason } from '../sim/verdict';
 import {
   applyPreset,
   budget,
@@ -17,45 +22,86 @@ import {
   tabletOpen,
   toggleTablet,
 } from '../state/store';
-import type { Preset } from '../state/store';
-import { EnergySlider } from './EnergySlider';
+import { helpOpen, tutorialStep } from '../state/tutorial';
+import { EnergySlider, isSheltered } from './EnergySlider';
 import { EventPanel } from './EventPanel';
 import { num, signed } from './format';
 import { Icon } from './icons';
+import type { IconName } from './icons';
 
 const NOTICE_MS = 2000;
 
-/** Barra de presupuesto: energía asignada, a la batería y desperdiciada. */
-function BudgetBar({ game: g }: { game: GameState }) {
-  const available = budget.value?.available ?? 0;
-  const p = preview.value;
-  const assigned = MODULE_IDS.reduce((sum, id) => sum + plan.value[id], 0);
-  const wasted = p?.wasted ?? 0;
-  const toBattery = Math.max(0, available - assigned - wasted);
-  const pct = (v: number): string => `${available > 0 ? (v / available) * 100 : 0}%`;
-  const capacity = defaultConfig.balance.difficulty[g.difficulty].batteryCapacity;
+/** Fila de 4 chips: elegir qué módulo se ajusta. Tocar un módulo en la maqueta hace lo mismo. */
+function Chips({ game: g, active }: { game: GameState; active: ModuleId }) {
+  return (
+    <div class="chips" role="group" aria-label={t('tablet.chips')}>
+      {MODULE_IDS.map((id) => {
+        const broken = g.modules[id].broken;
+        const sheltered = isSheltered(id, g);
+        const value = plan.value[id];
+        const cls = [
+          'chip',
+          id === active ? 'chip--active' : '',
+          broken ? 'chip--broken' : '',
+          !broken && !sheltered && value === 0 ? 'chip--off' : '',
+        ].join(' ');
+        return (
+          <button key={id} type="button" class={cls} data-module={id} aria-pressed={id === active} onClick={() => (focusModule.value = id)}>
+            <Icon name={broken ? 'alert' : sheltered ? 'shield' : id} size={18} />
+            <span class="chip__name">{t(`module.${id}`)}</span>
+            <span class="chip__value">{broken ? t('tablet.chip.broken') : sheltered ? t('tablet.chip.shelter') : value}</span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
 
+const VERDICT_ICON: Record<Verdict['level'], IconName> = { safe: 'check', tight: 'alert', critical: 'alert' };
+
+/** Veredicto del plan: ícono + palabra, y cómo amanece mañana (3 números). */
+function VerdictLine({ verdict }: { verdict: Verdict }) {
+  const word = verdict.reason === 'blackout' ? 'tablet.verdict.blackout' : `tablet.verdict.${verdict.level}`;
+  const item = (reason: VerdictReason | 'battery', icon: IconName, label: string, value: number) => (
+    <span class={`verdict__item${verdict.reason === reason || (reason === 'battery' && verdict.reason === 'blackout') ? ' verdict__item--flag' : ''}`}>
+      <Icon name={icon} size={16} />
+      <span class="verdict__name">{t(label)}</span> <b>{Math.round(value)}</b>
+    </span>
+  );
+  return (
+    <div class={`verdict verdict--${verdict.level}`} role="status" aria-live="polite">
+      <p class="verdict__word">
+        <Icon name={VERDICT_ICON[verdict.level]} size={22} />
+        {t(word)}
+        {verdict.reason === 'dose' && <span class="verdict__why">{t('tablet.verdict.dose')}</span>}
+      </p>
+      <p class="verdict__tomorrow">
+        <span class="verdict__label">{t('tablet.verdict.tomorrow')}</span>
+        {item('life_support', 'life_support', 'hud.life_support', verdict.lifeSupport)}
+        {item('food', 'food', 'hud.food', verdict.food)}
+        {item('battery', 'battery', 'hud.battery', verdict.battery)}
+      </p>
+    </div>
+  );
+}
+
+/** Presupuesto en una frase y una barra fina de una sola pieza. */
+function BudgetLine({ wasted }: { wasted: number }) {
+  const total = Math.floor((budget.value?.available ?? 0) + 1e-9);
+  const used = MODULE_IDS.reduce((sum, id) => sum + plan.value[id], 0);
+  const left = Math.max(0, total - used);
   return (
     <div class="budget">
       <div class="budget__bar" aria-hidden="true">
-        <span class="budget__seg budget__seg--assigned" style={{ width: pct(assigned) }} />
-        <span class="budget__seg budget__seg--battery" style={{ width: pct(toBattery) }} />
-        <span class="budget__seg budget__seg--wasted" style={{ width: pct(wasted) }} />
+        <span style={{ width: `${total > 0 ? (used / total) * 100 : 0}%` }} />
       </div>
-      <p class="budget__legend">
-        <span>
-          <i class="budget__key budget__key--assigned" />
-          {t('tablet.budget.assigned', { valor: num(assigned) })}
-        </span>
-        <span>
-          <i class="budget__key budget__key--battery" />
-          {t('tablet.budget.battery', { valor: num(toBattery), capacidad: capacity })}
-        </span>
+      <p class="budget__text">
+        {left > 0 ? t('tablet.budget.left', { quedan: left, total }) : t('tablet.budget.none')}
       </p>
       {wasted > 0 && (
         <p class="tablet__notice tablet__notice--warn">
           <Icon name="alert" size={16} />
-          {t('tablet.budget.wasted', { valor: num(wasted) })}
+          {t('tablet.budget.wasted', { valor: num(wasted, 0) })}
         </p>
       )}
     </div>
@@ -67,9 +113,12 @@ function Planner({ game: g }: { game: GameState }) {
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const b = budget.value;
   const p = preview.value;
+  const active: ModuleId = focusModule.value ?? 'recycler';
+  const verdict = planVerdict(g, plan.value);
   const minWorkshop = defaultConfig.balance.effects.workshopMinEnergy;
   const needsWorkshop = (g.repairToday !== null || g.roverSendToday) && plan.value.workshop < minWorkshop;
   const noEnergy = (b?.available ?? 0) < 1;
+  const capacity = defaultConfig.balance.difficulty[g.difficulty].batteryCapacity;
 
   useEffect(() => () => void (timer.current && clearTimeout(timer.current)), []);
 
@@ -78,20 +127,10 @@ function Planner({ game: g }: { game: GameState }) {
     if (timer.current) clearTimeout(timer.current);
     timer.current = setTimeout(() => setNotice(null), NOTICE_MS);
   };
-  const preset = (which: Preset): void => {
-    if (applyPreset(which)) flash('tablet.preset_adjusted');
-  };
 
   return (
     <>
-      <header class="tablet__budget-head">
-        <p class="tablet__available">
-          {t('tablet.available')} <b>{num(b?.available ?? 0)}</b>
-        </p>
-        <p class="tablet__breakdown">
-          {t('hud.breakdown', { bateria: num(g.battery), sol: num(b?.solar ?? 0), base: b?.base ?? 0 })}
-        </p>
-      </header>
+      <Chips game={g} active={active} />
 
       {noEnergy && (
         <p class="tablet__notice tablet__notice--danger">
@@ -100,13 +139,7 @@ function Planner({ game: g }: { game: GameState }) {
         </p>
       )}
 
-      <div class="tablet__modules">
-        {MODULE_IDS.map((id) => (
-          <EnergySlider key={id} id={id} game={g} onClamped={() => flash('plan.error.over_budget')} />
-        ))}
-      </div>
-
-      <BudgetBar game={g} />
+      <EnergySlider key={active} id={active} game={g} onClamped={() => flash('plan.error.over_budget')} />
 
       {needsWorkshop && (
         <p class="tablet__notice tablet__notice--warn">
@@ -114,37 +147,42 @@ function Planner({ game: g }: { game: GameState }) {
           {t(g.roverSendToday ? 'tablet.needs_workshop.rover' : 'tablet.needs_workshop.repair', { min: minWorkshop })}
         </p>
       )}
-      <p class="tablet__notice" role="status" aria-live="polite">
+      <p class="tablet__notice tablet__notice--flash" role="status" aria-live="polite">
         {notice ? t(notice) : ''}
       </p>
 
-      {p && (
-        <p class="tablet__preview">
-          <span>{t('tablet.preview.life_support', { valor: signed(p.lifeSupport) })}</span>
-          <span>{t('tablet.preview.food', { valor: signed(p.food) })}</span>
-          <span>{t('tablet.preview.dose', { valor: signed(p.dose, 2) })}</span>
-          <span>{t('tablet.preview.battery', { valor: num(p.battery) })}</span>
-        </p>
-      )}
+      <VerdictLine verdict={verdict} />
+      <BudgetLine wasted={verdict.wasted} />
 
       <div class="tablet__actions">
-        <div class="tablet__presets">
-          {g.lastPlan && (
-            <button type="button" class="btn btn--small" disabled={resolving.value} onClick={() => preset('repeat')}>
-              {t('tablet.preset.repeat')}
-            </button>
-          )}
-          <button type="button" class="btn btn--small" disabled={resolving.value} onClick={() => preset('saving')}>
-            {t('tablet.preset.saving')}
-          </button>
-          <button type="button" class="btn btn--small" disabled={resolving.value} onClick={() => preset('zero')}>
-            {t('tablet.preset.zero')}
-          </button>
-        </div>
         <button type="button" class="btn btn--primary btn--execute" disabled={resolving.value} onClick={executeDay}>
           {resolving.value ? t('tablet.resolving') : t('tablet.execute')}
         </button>
+        {g.lastPlan && (
+          <button
+            type="button"
+            class="btn btn--ghost btn--small"
+            disabled={resolving.value}
+            onClick={() => applyPreset('repeat') && flash('tablet.preset_adjusted')}
+          >
+            {t('tablet.preset.repeat')}
+          </button>
+        )}
       </div>
+
+      <details class="tablet__details">
+        <summary>{t('tablet.details')}</summary>
+        <p>{t('tablet.details.energy', { total: num(b?.available ?? 0), bateria: num(g.battery), sol: num(b?.solar ?? 0), base: b?.base ?? 0 })}</p>
+        {p && (
+          <p>
+            {t('tablet.preview.life_support', { valor: signed(p.lifeSupport) })} ·{' '}
+            {t('tablet.preview.food', { valor: signed(p.food) })} ·{' '}
+            {t('tablet.preview.dose', { valor: signed(p.dose, 2) })} ·{' '}
+            {t('tablet.preview.battery', { valor: num(p.battery) })}
+          </p>
+        )}
+        <p>{t('tablet.details.capacity', { capacidad: capacity })}</p>
+      </details>
     </>
   );
 }
@@ -156,15 +194,13 @@ export function Tablet() {
   const title = useRef<HTMLHeadingElement>(null);
   const inEvent = g?.phase === 'event';
 
-  // Al abrir, el foco va al slider del módulo tocado en la maqueta; si no hay, al título.
+  // Al abrir o cambiar de módulo, el foco va a su slider; si no se puede, al título.
   const focused = focusModule.value;
   useEffect(() => {
     if (!open) return;
     const slider = focused && !inEvent ? document.getElementById(`slider-${focused}`) : null;
-    if (slider instanceof HTMLInputElement && !slider.disabled) {
-      slider.focus({ preventScroll: true });
-      slider.scrollIntoView({ block: 'nearest' });
-    } else title.current?.focus();
+    if (slider instanceof HTMLInputElement && !slider.disabled) slider.focus({ preventScroll: true });
+    else if (!dialog.current?.contains(document.activeElement)) title.current?.focus();
   }, [open, focused, inEvent]);
 
   if (!open || !g) return null;
@@ -177,8 +213,8 @@ export function Tablet() {
     }
     if (e.key === 'Enter' && !inEvent) {
       const target = e.target as HTMLElement;
-      // Enter ejecuta el día salvo que el foco esté en un control que ya usa Enter.
-      if (target.tagName !== 'BUTTON' && target.tagName !== 'INPUT') {
+      // Enter ejecuta el día salvo que el foco esté en un botón o desplegable, que ya usan Enter.
+      if (target.tagName !== 'BUTTON' && target.tagName !== 'SUMMARY') {
         e.preventDefault();
         executeDay();
       }
@@ -192,6 +228,7 @@ export function Tablet() {
     <div
       ref={dialog}
       class="tablet"
+      data-coach={tutorialStep.value ?? undefined}
       role="dialog"
       aria-modal={inEvent ? 'true' : 'false'}
       aria-labelledby="tablet-title"
@@ -199,13 +236,18 @@ export function Tablet() {
     >
       <header class="tablet__head">
         <h2 id="tablet-title" ref={title} tabIndex={-1}>
-          {t('tablet.title')} · {t('hud.day', { dia: g.day, total: defaultConfig.balance.days })}
+          {t('tablet.title', { dia: g.day })}
         </h2>
-        {!inEvent && (
-          <button type="button" class="btn btn--icon btn--ghost" aria-label={t('tablet.close')} onClick={toggleTablet}>
-            <Icon name="close" />
+        <div class="tablet__head-actions">
+          <button type="button" class="btn btn--ghost btn--small" onClick={() => (helpOpen.value = true)}>
+            {t('help.button')}
           </button>
-        )}
+          {!inEvent && (
+            <button type="button" class="btn btn--icon btn--ghost" aria-label={t('tablet.close')} onClick={toggleTablet}>
+              <Icon name="close" />
+            </button>
+          )}
+        </div>
       </header>
       {inEvent ? <EventPanel game={g} /> : <Planner game={g} />}
     </div>

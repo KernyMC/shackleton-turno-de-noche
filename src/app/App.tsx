@@ -2,10 +2,12 @@
 import { lang, t } from '../i18n';
 import { Scene } from '../scene/Scene';
 import { useEffect } from 'preact/hooks';
+import { Coach } from '../components/Coach';
 import { Hud } from '../components/Hud';
 import { SunStatus } from '../components/SunStatus';
 import { Tablet } from '../components/Tablet';
 import { loadSpaceWeather } from '../state/spaceWeather';
+import { startTutorialWatcher } from '../state/tutorial';
 import { exitToMenu, game, restart, screen, startGame } from '../state/store';
 
 function Menu() {
@@ -49,6 +51,8 @@ function Debrief() {
 }
 
 export default function App() {
+  // La guía de la primera partida observa el juego desde que arranca la app.
+  useEffect(() => startTutorialWatcher(), []);
   if (screen.value === 'menu') return <Menu />;
   if (screen.value === 'debrief') return <Debrief />;
   return (
@@ -56,6 +60,7 @@ export default function App() {
       <Scene />
       <Hud />
       <Tablet />
+      <Coach />
     </div>
   );
 }
