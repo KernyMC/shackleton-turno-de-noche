@@ -20,5 +20,9 @@ import '../styles/global.css';
 	</head>
 	<body>
 		<App client:only="preact" />
+		<script>
+			// Solo en desarrollo: revisión automática del HUD (__hudCheck() en la consola).
+			if (import.meta.env.DEV) void import('../dev/hudCheck');
+		</script>
 	</body>
 </html>

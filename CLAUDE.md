@@ -36,13 +36,14 @@ npm run check:nasa  # prueba el proxy /api/spaceweather: API ok, caída y sin in
 7. **Nada de logos de NASA. Nada de muerte:** la derrota es "misión abortada".
 8. **Commits y PRs sin autoría de IA.** No añadir `Co-Authored-By: Claude…`, "Generated with Claude Code" ni ninguna firma de un modelo en mensajes de commit, descripciones de PR, ni como autor o committer de git. El uso de IA se declara solo en `AI_USAGE.md` (lo exige el reto).
 9. **Arte:** paleta, luz y lista anti-slop de `docs/ARTE.md`. Movimiento con matemáticas (amortiguación, senos), no saltos de valor.
+10. **El agente `hud` revisa SIEMPRE la interfaz antes del commit.** Todo cambio en `src/components`, `src/styles` o en textos de `src/i18n` pasa por el subagente `hud` (`.claude/agents/hud.md`): abre el juego en el navegador en 1600×900, 1280×720, 1024×700 y 375×812, ejecuta `__hudCheck()` (`src/dev/hudCheck.ts`) en cada estado del juego y pulsa los botones. No se hace commit si hay elementos superpuestos, botones tapados o que no responden, texto cortado o sin traducir, o scroll horizontal. Si añades un bloque nuevo de interfaz, añade su selector a `BLOCKS` en `src/dev/hudCheck.ts`.
 
 ## Cómo trabajar una tarea
 
 1. `git pull`. Elige una tarea `libre` en `docs/tasks/TABLERO.md` cuyas dependencias estén `hecha`.
 2. Pon tu nombre y `en curso` en el tablero; haz commit y push **solo de ese cambio** antes de empezar (evita que dos personas tomen la misma).
 3. Trabaja solo en las carpetas de tu área (tabla del tablero). Si necesitas cambiar un contrato compartido (`src/sim/types.ts`, `src/state/store.ts`), avisa al equipo.
-4. Antes de cada commit: `npm test && npm run check && npm run build`.
+4. Antes de cada commit: `npm test && npm run check && npm run build`. Si tocaste la interfaz, además la revisión del agente `hud` (regla 10).
 5. Commits pequeños, mensaje en español: `A-01: runDay con producción y consumo`.
 6. Marca `hecha` en el tablero. Decisiones no previstas → una línea en `DECISIONES.md`. Uso de IA → una línea en `AI_USAGE.md`.
 
@@ -56,7 +57,7 @@ revisa sin tocar código). El modelo principal es el director:
 1. Elige la tarea en `docs/tasks/TABLERO.md` y la marca `en curso`.
 2. Si es grande, la parte en trozos independientes con archivos distintos.
 3. Delega cada trozo al `builder` con un encargo autocontenido: ID de tarea, archivos, criterio de "hecho" y lo que no debe tocar.
-4. Pasa el resultado al `verificador`; corrige con el `builder` lo que salga.
+4. Pasa el resultado al `verificador`; corrige con el `builder` lo que salga. **Si el trozo tocó la interfaz, pásalo también al `hud` (regla 10): es obligatorio, no opcional.**
    Para dudas de diseño hay tres expertos que solo opinan: `gamificacion`, `ux` y `neuropsicologia` (su último debate está en `docs/DIVERSION.md`).
 5. El director revisa el diff, mira el resultado en el navegador si es visual, marca la tarea `hecha`, hace commit y push.
 
