@@ -1,6 +1,7 @@
 // Raíz de la app: máquina de estados de pantallas (menú, juego y debrief).
 import { Scene } from '../scene/Scene';
 import { useEffect } from 'preact/hooks';
+import { Alerts } from '../components/Alerts';
 import { Coach } from '../components/Coach';
 import { Debrief } from '../components/Debrief';
 import { Hud } from '../components/Hud';
@@ -39,6 +40,7 @@ function CurrentScreen() {
       <Hud />
       <Rewards />
       <StormWarning />
+      <Alerts />
       <Tablet />
       <Coach />
       <SourcesPanel />

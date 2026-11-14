@@ -130,8 +130,11 @@ export function playSample(id: string, fallback: () => void, volume = 0.6): void
 }
 
 function synthBreakdown(): void {
-  tone(330, 0, 0.18, 0.06, 'sawtooth', 220);
-  tone(300, 0.22, 0.26, 0.06, 'sawtooth', 180);
+  // Dos tonos (agudo y grave), tres repeticiones. Suave: es para niños.
+  for (let i = 0; i < 3; i++) {
+    tone(740, i * 0.5, 0.2, 0.05, 'square');
+    tone(554, i * 0.5 + 0.22, 0.22, 0.05, 'square');
+  }
 }
 function synthStorm(): void {
   [0, 0.28, 0.56].forEach((s) => tone(520, s, 0.2, 0.05, 'square', 880));

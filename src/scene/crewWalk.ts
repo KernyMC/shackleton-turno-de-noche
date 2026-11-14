@@ -11,6 +11,7 @@ import * as THREE from 'three';
 import type { CrewId, CrewMember } from '../data/crew';
 import type { ModuleId } from '../sim/types';
 import { createAstronaut } from './astronaut';
+import { MODULES } from './base';
 import type { Astronaut } from './astronaut';
 
 export type Mood = 'happy' | 'neutral' | 'worried';
@@ -29,12 +30,22 @@ export interface CrewWalk {
   setNight(night: boolean): void;
   /** Destello del Sol en los visores, de 0 a 1. */
   setGlint(amount: number): void;
+  /** Los astronautas cercanos miran hacia un módulo ~3 s (giro amortiguado); null cancela. */
+  lookAt(id: ModuleId | null): void;
+  /** Cuántos astronautas hay y dónde está la cabeza de cada uno (false si no se ve). Sin asignar memoria. */
+  count: number;
+  anchor(index: number, out: THREE.Vector3): boolean;
   update(dt: number, time: number, reducedMotion: boolean): void;
   dispose(): void;
 }
 
 const SCALE = 0.62;
 const WALK_SPEED = 1.1; // m/s
+/** Mirar un aviso: duración, alcance (m) y rapidez del giro. */
+const LOOK_SECONDS = 3;
+const LOOK_RANGE = 18;
+const LOOK_DAMP = 5;
+const wrapAngle = (a: number): number => Math.atan2(Math.sin(a), Math.cos(a));
 const MOOD_COLOR: Record<Mood, string> = { happy: '#7ccf8a', neutral: '#f2d15c', worried: '#ff6b5e' };
 
 /** Carita dibujada en un lienzo (sin emojis, para respetar la dirección de arte). */
@@ -185,8 +196,23 @@ export function createCrewWalk(routes: Record<ModuleId, THREE.Vector3[]>, member
 
   const pos = new THREE.Vector3();
   const tangent = new THREE.Vector3();
+  let lookTarget: { x: number; z: number } | null = null;
+  let lookLeft = 0;
   return {
     group,
+    count: walkers.length,
+    lookAt(id) {
+      const m = id ? MODULES.find((mod) => mod.id === id) : null;
+      lookTarget = m ? { x: m.x, z: m.z } : null;
+      lookLeft = m ? LOOK_SECONDS : 0;
+    },
+    anchor(index, out) {
+      const w = walkers[index];
+      if (!w || !w.astro.group.visible) return false;
+      out.copy(w.astro.group.position);
+      out.y += 1.75;
+      return true;
+    },
     setState(next) {
       state = next;
       for (const w of walkers) {
@@ -205,6 +231,8 @@ export function createCrewWalk(routes: Record<ModuleId, THREE.Vector3[]>, member
     },
     update(dt, time, reducedMotion) {
       let wrenchOn = false;
+      if (lookLeft > 0) lookLeft -= dt;
+      const looking = lookLeft > 0 ? lookTarget : null;
       for (const w of walkers) {
         const forced = desiredGoal(w);
         if (forced) {
@@ -212,6 +240,10 @@ export function createCrewWalk(routes: Record<ModuleId, THREE.Vector3[]>, member
           w.pause = 0;
         } else if (w.pause > 0) {
           w.pause -= dt;
+        }
+        // Un aviso cerca: se detienen a mirar (el tiempo que dure la mirada).
+        if (looking && !forced && Math.hypot(looking.x - w.astro.group.position.x, looking.z - w.astro.group.position.z) < LOOK_RANGE) {
+          w.pause = Math.max(w.pause, lookLeft);
         }
 
         // Para cambiar de pasillo hay que pasar por el centro (t = 0).
@@ -235,6 +267,12 @@ export function createCrewWalk(routes: Record<ModuleId, THREE.Vector3[]>, member
         if (moving && Math.sign(targetT - w.t) < 0) tangent.negate();
         w.astro.group.position.copy(pos);
         if (moving) w.astro.group.rotation.y = Math.atan2(tangent.x, tangent.z);
+        else if (looking && Math.hypot(looking.x - pos.x, looking.z - pos.z) < LOOK_RANGE) {
+          // Parado y cerca de la avería: gira el cuerpo hacia el módulo, amortiguado.
+          const want = Math.atan2(looking.x - pos.x, looking.z - pos.z);
+          const delta = wrapAngle(want - w.astro.group.rotation.y);
+          w.astro.group.rotation.y += reducedMotion ? delta : delta * (1 - Math.exp(-LOOK_DAMP * dt));
+        }
         w.astro.setWalking(moving ? (state.shelter ? 2 : 1) : 0);
         // Fuera de la base con el rover: no se ve.
         const outside = w.member.id === 'lucia' && state.roverAway && w.t > 0.98;

@@ -4,7 +4,9 @@
 // Spec: docs/specs/02-primera-persona.md (sección "Maqueta"). Arte: docs/ARTE.md.
 
 import * as THREE from 'three';
-import type { ModuleId } from '../sim/types';
+import type { ModuleId, StormLevel } from '../sim/types';
+import { createAlarmFx } from './alarmFx';
+import { createStormFx } from './stormFx';
 import { createAstronaut } from './astronaut';
 import type { Astronaut } from './astronaut';
 import { createBase, LANDER_SPOT, MODULES } from './base';
@@ -81,6 +83,15 @@ export interface World {
   playEnergy(plan: Record<ModuleId, number>, night: boolean): void;
   /** Carga de la batería (0..1) en su indicador de celdas. */
   setBattery(fraction: number): void;
+  /**
+   * Tormenta solar de hoy (null: ninguna): brillo violeta, lluvia suave en el aviso y domo si hay refugio.
+   * `pending`: el aviso aún no se ha decidido.
+   */
+  setStormFx(level: StormLevel | null, options?: { sheltered?: boolean; pending?: boolean }): void;
+  /** La tormenta a pleno ~2,5 s (al resolver el día de la tormenta). */
+  burstStorm(): void;
+  /** "+X mSv" sobre cada astronauta visible (texto ya formateado). */
+  showDose(text: string): void;
   /** Secuencia de reparación estilo cómic sobre un módulo. */
   playRepair(id: ModuleId): void;
   /** Textos de las onomatopeyas de la reparación (por idioma). */
@@ -256,7 +267,13 @@ export function createWorld(container: HTMLElement, cb: WorldCallbacks): World {
   scene.add(energy.group);
   const repairFx = createRepairFx(terrain.heightAt);
   scene.add(repairFx.group);
-  if (import.meta.env.DEV) Object.assign(window, { __energy: energy, __repairFx: repairFx });
+  // Avería (baliza y humo; los astronautas cercanos miran) y tormenta solar (cielo, lluvia, domo, dosis).
+  const alarmFx = createAlarmFx(terrain.heightAt, (id) => walkers.lookAt(id));
+  scene.add(alarmFx.group);
+  const stormFx = createStormFx(terrain.heightAt);
+  stormFx.setCrewSource((i, out) => walkers.anchor(i, out), walkers.count);
+  scene.add(stormFx.group);
+  if (import.meta.env.DEV) Object.assign(window, { __energy: energy, __repairFx: repairFx, __alarm: alarmFx, __storm: stormFx });
   const dust = createDust(terrain.heightAt);
   scene.add(dust.points);
   void base.ready.then((models) => cb.onAssets?.({ models }));
@@ -650,6 +667,8 @@ export function createWorld(container: HTMLElement, cb: WorldCallbacks): World {
     renderer.transmissionResolutionScale = tier === 'high' ? 1 : 0.5;
     base.setLowQuality(tier === 'low');
     energy.setTier(tier);
+    alarmFx.setTier(tier);
+    stormFx.setTier(tier);
     dust.setDensity(DENSITY[tier].dust);
     sky.setDetail(DENSITY[tier].stars);
     shadowDirty = true;
@@ -855,13 +874,16 @@ export function createWorld(container: HTMLElement, cb: WorldCallbacks): World {
     base.update(dt, time, reducedMotion);
     // De noche: pasillos al 30 % y linternas de los cascos encendidas.
     const night = sunShown < 0.15;
-    base.setCorridorLight(night ? 0.3 : 1);
+    base.setCorridorLight((night ? 0.3 : 1) * (1 - 0.5 * stormFx.dim));
     walkers.setNight(night);
     walkers.group.visible = !introMode && !fly;
     if (walkers.group.visible) walkers.update(dt, time, reducedMotion);
     energy.setSun(sunShown, azimuthShown);
     energy.update(dt, time, reducedMotion);
     repairFx.update(dt, time, reducedMotion);
+    alarmFx.update(dt, time, reducedMotion);
+    stormFx.setSun(azimuthShown, sunElevation);
+    stormFx.update(dt, time, reducedMotion);
     measureQuality(rawDt, now, saver);
     if (renderer.shadowMap.enabled) {
       // Sombras: se redibujan si el Sol se movió, tras cambios de calidad o de tamaño, y a baja cadencia
@@ -884,7 +906,10 @@ export function createWorld(container: HTMLElement, cb: WorldCallbacks): World {
   return {
     setSunlight: (light) => void (sunTarget = THREE.MathUtils.clamp(light, 0, 1)),
     setSunAzimuth: (azimuth) => void (azimuthTarget = azimuth),
-    setModule: (id, state) => base.setModule(id, state),
+    setModule: (id, state) => {
+      base.setModule(id, state);
+      alarmFx.setBroken(id, state.broken);
+    },
     setSelected: (id) => base.setSelected(id),
     setLabels: (names) => base.setLabels(names),
     setShelter: (active) => base.setShelter(active),
@@ -968,6 +993,9 @@ export function createWorld(container: HTMLElement, cb: WorldCallbacks): World {
     setBattery: (fraction) => energy.setBattery(fraction),
     playRepair: (id) => repairFx.play(id, reducedMotion),
     setFxLabels: (labels) => repairFx.setLabels(labels),
+    setStormFx: (level, options) => stormFx.setStorm(level, options),
+    burstStorm: () => stormFx.burst(),
+    showDose: (text) => stormFx.showDose(text),
     ready,
     flyIn(durationMs) {
       if (!introMode) return Promise.resolve();
@@ -1009,6 +1037,8 @@ export function createWorld(container: HTMLElement, cb: WorldCallbacks): World {
       walkers.dispose();
       energy.dispose();
       repairFx.dispose();
+      alarmFx.dispose();
+      stormFx.dispose();
       sky.dispose();
       terrain.dispose();
       base.dispose();

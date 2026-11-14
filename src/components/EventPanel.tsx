@@ -5,7 +5,9 @@ import { lang, t } from '../i18n';
 import { defaultConfig } from '../sim/config';
 import { getStormDose } from '../sim/engine';
 import type { EventOption, GameState, ModuleId, PendingEvent, StormLevel } from '../sim/types';
+import { sourcesOpen } from '../state/sources';
 import { chooseEventOption } from '../state/store';
+import { EventInfographic, hasInfographic } from './EventInfographic';
 import { num } from './format';
 import { Icon } from './icons';
 import type { IconName } from './icons';
@@ -113,6 +115,14 @@ export function EventPanel({ game }: { game: GameState }) {
           ))}
           <span>{t('event.storm.level', vars)}</span>
         </p>
+      )}
+      {hasInfographic(event.kind) && (
+        <>
+          <EventInfographic event={event} />
+          <button type="button" class="linkbtn info__more" onClick={() => { sourcesOpen.value = true; }}>
+            {t('info.more')}
+          </button>
+        </>
       )}
       <p class="event__text">{t(`event.${event.kind}.text`, vars)}</p>
       {event.kind === 'storm' && (

@@ -1,0 +1,83 @@
+/* Infografías de eventos: SVG dibujado en código, animado con transform/opacity. Prefijo info-. */
+.info { margin: 0.4rem 0 0.6rem; }
+.info__svg { display: block; width: 100%; height: auto; max-height: 150px; border-radius: 10px; background: #0c111d; }
+.info__lines { list-style: none; margin: 0.45rem 0 0; padding: 0; display: grid; gap: 0.2rem; font-size: 0.92rem; line-height: 1.3; color: var(--text, #e8e6e1); }
+.info__lines li { padding-left: 0.9rem; position: relative; }
+.info__lines li::before { content: ''; position: absolute; left: 0; top: 0.55em; width: 0.4rem; height: 0.4rem; border-radius: 50%; background: #ffb347; }
+.info__more { margin-top: 0.15rem; }
+
+/* Colores del dibujo */
+.info-sun { fill: #ffb347; }
+.info-sunglow { fill: #ffb347; opacity: 0.22; }
+.info-reg { fill: #8c8a85; }
+.info-reg-dark { fill: #5f5d59; }
+.info-reg-deep { fill: #1b1d24; }
+.info-base { fill: #d9d6cf; }
+.info-base-dark { fill: #a9a69f; }
+.info-line { fill: none; stroke: #d9d6cf; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.info-p { stroke: #b48cff; stroke-width: 2.4; stroke-linecap: round; }
+.info-shield { fill: none; stroke: #7fd4ff; stroke-width: 2.4; stroke-linecap: round; }
+.info-earth { fill: #3d7fd6; }
+.info-land { fill: #4f9a62; }
+.info-ice { fill: #bfe6ff; }
+.info-red { fill: #ff5a4d; }
+.info-red-line { fill: none; stroke: #ff5a4d; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+.info-spark { stroke: #ffd36b; stroke-width: 2; stroke-linecap: round; }
+.info-dust { fill: #b8b2a4; }
+.info-panel { fill: #2a3a6b; stroke: #d9d6cf; stroke-width: 1.5; }
+.info-ray { stroke: #ffb347; stroke-width: 2; stroke-linecap: round; }
+.info-plant { fill: #4f9a62; }
+.info-night { fill: #05070d; }
+.info-bolt { fill: #ffb347; }
+
+/* Animación (todo con transform/opacity) */
+.info-p { animation: info-fly 3.2s linear infinite; }
+@keyframes info-fly {
+  0% { transform: translateX(0); opacity: 0; }
+  12% { opacity: 1; }
+  85% { opacity: 1; }
+  100% { transform: translateX(215px); opacity: 0; }
+}
+.info-p--earth { animation-name: info-fly-short; }
+@keyframes info-fly-short {
+  0% { transform: translateX(0); opacity: 0; }
+  12% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateX(212px); opacity: 0; }
+}
+.info-bounce { transform-box: fill-box; transform-origin: center; animation: info-bounce 3.2s ease-out infinite; }
+@keyframes info-bounce {
+  0%, 60% { transform: translate(0, 0); opacity: 0; }
+  68% { opacity: 1; }
+  100% { transform: translate(-8px, -16px); opacity: 0; }
+}
+.info-pulse { transform-box: fill-box; transform-origin: center; animation: info-pulse 3.6s ease-in-out infinite; }
+@keyframes info-pulse { 0%, 100% { opacity: 0.35; transform: scale(1); } 50% { opacity: 0.8; transform: scale(1.06); } }
+.info-sunset { animation: info-sunset 5s ease-in-out infinite alternate; }
+@keyframes info-sunset { from { transform: translateY(-4px); } to { transform: translateY(50px); } }
+.info-dim { animation: info-dim 5s ease-in-out infinite alternate; }
+@keyframes info-dim { from { opacity: 0; } to { opacity: 0.6; } }
+.info-flick { animation: info-flick 1.1s steps(2, end) infinite; }
+@keyframes info-flick { 0%, 100% { opacity: 0.2; } 50% { opacity: 1; } }
+.info-sway { animation: info-sway 4s ease-in-out infinite alternate; }
+@keyframes info-sway { from { transform: translateX(-6px); } to { transform: translateX(6px); } }
+.info-twinkle { animation: info-twinkle 3s ease-in-out infinite; }
+@keyframes info-twinkle { 0%, 100% { opacity: 0.25; } 50% { opacity: 1; } }
+.info-brush { transform-box: fill-box; transform-origin: 0 100%; animation: info-brush 2.4s ease-in-out infinite alternate; }
+@keyframes info-brush { from { transform: rotate(-18deg); } to { transform: rotate(14deg); } }
+
+@media (max-width: 600px) {
+  .info__svg { max-height: 120px; }
+  .info__lines { font-size: 0.85rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .info-p, .info-bounce, .info-pulse, .info-sunset, .info-dim, .info-flick, .info-sway, .info-twinkle, .info-brush {
+    animation: none;
+  }
+  .info-p { opacity: 0.9; }
+  .info-sunset { transform: translateY(30px); }
+  .info-dim { opacity: 0.4; }
+  .info-flick, .info-twinkle, .info-pulse { opacity: 0.8; }
+  .info-bounce { opacity: 0; }
+}

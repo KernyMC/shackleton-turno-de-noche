@@ -4,9 +4,10 @@ import { effect, signal } from '@preact/signals';
 import { useEffect, useRef } from 'preact/hooks';
 import { t } from '../i18n';
 import { defaultConfig } from '../sim/config';
-import { getLight } from '../sim/engine';
+import { getLight, getStormDose } from '../sim/engine';
 import { MODULE_IDS } from '../sim/types';
 import type { ModuleId } from '../sim/types';
+import { num } from '../components/format';
 import { focusModule, game, interact, nearTarget, plan, realAssets, resolving, skyView, tabletOpen, toggleTablet } from '../state/store';
 import { tutorialStep } from '../state/tutorial';
 import { clearReady, markReady } from '../state/loading';
@@ -43,6 +44,7 @@ export function Scene() {
         if (!disposed) stops.push(markReady('game'));
       });
       sceneBridge.project = (id) => w.projectModule(id);
+      sceneBridge.centerOn = (id) => w.centerOn(id);
       w.setReducedMotion(motion.matches);
 
       // Sol, tormenta, refugio y rover siguen al estado del juego.
@@ -54,6 +56,10 @@ export function Scene() {
           w.setSunAzimuth((g.day - 1) * SUN_STEP);
           w.setStorm(g.pendingEvent?.kind === 'storm' || g.stormToday !== null);
           w.setShelter(g.shelterToday);
+          const pendingStorm = g.pendingEvent?.kind === 'storm';
+          const raw = pendingStorm ? g.pendingEvent?.payload?.level : g.stormToday;
+          const level = (['S1', 'S2', 'S3', 'S4'] as const).find((l) => l === raw) ?? null;
+          w.setStormFx(level, { sheltered: g.shelterToday, pending: pendingStorm });
           w.setRoverAway(g.pendingEffects.some((e) => e.kind === 'rover_water'));
         }),
       );
@@ -109,6 +115,11 @@ export function Scene() {
             for (const id of MODULE_IDS) shared[id] = g.shelterToday && (id === 'greenhouse' || id === 'workshop') ? 0 : p[id];
             w.playEnergy(shared, getLight(g.day, g.difficulty) < 0.1);
             if (g.repairToday) w.playRepair(g.repairToday);
+            if (g.stormToday) {
+              // La tormenta se reproduce a pleno; si siguieron trabajando, se ve la dosis sobre cada astronauta.
+              w.burstStorm();
+              if (!g.shelterToday) w.showDose(`+${num(getStormDose(g.stormToday, false))} mSv`);
+            }
           }
           wasResolving = now;
         }),
@@ -184,6 +195,7 @@ export function Scene() {
       window.removeEventListener('keydown', onKey);
       world?.dispose();
       sceneBridge.project = null;
+      sceneBridge.centerOn = null;
       nearTarget.value = null;
       clearReady('game');
     };

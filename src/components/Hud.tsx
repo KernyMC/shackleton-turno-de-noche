@@ -5,6 +5,7 @@
 //                      de quien lo cuida (su gesto cambia cuando el recurso baja)
 //   abajo al centro  → un solo botón: "Planificar el día"
 // Solo lee el store. El estado nunca se comunica solo con color: siempre ícono + palabra.
+import { useEffect, useRef, useState } from 'preact/hooks';
 import { crewById } from '../data/crew';
 import type { CrewId } from '../data/crew';
 import { t } from '../i18n';
@@ -60,6 +61,35 @@ function Bar({ value, max, level, label }: { value: number; max: number; level: 
       <span style={{ width: `${pct}%` }} />
     </div>
   );
+}
+
+/**
+ * Número que cuenta hacia su valor nuevo (0,9 s, con freno al final) en vez de saltar.
+ * Con movimiento reducido cambia de golpe. `onRise` avisa cuando el valor sube.
+ */
+function CountUp({ value }: { value: number }) {
+  const [shown, setShown] = useState(value);
+  const from = useRef(value);
+  useEffect(() => {
+    const start = from.current;
+    from.current = value;
+    const reduced = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduced || Math.abs(value - start) < 0.05) {
+      setShown(value);
+      return;
+    }
+    let frame = 0;
+    const t0 = performance.now();
+    const tick = (now: number): void => {
+      const k = Math.min(1, (now - t0) / 900);
+      const eased = 1 - (1 - k) ** 3;
+      setShown(start + (value - start) * eased);
+      if (k < 1) frame = requestAnimationFrame(tick);
+    };
+    frame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frame);
+  }, [value]);
+  return <b>{num(shown)}</b>;
 }
 
 /** Cambio desde ayer. `goodUp` = subir es bueno (falso para la radiación). */
@@ -149,6 +179,7 @@ function Dose({ g, mood }: { g: GameState; mood: number }) {
   const c = 2 * Math.PI * r;
   return (
     <div class="topbar__dose">
+      {(lastDelta(g, 'dose') ?? 0) > 0.05 && <span class="dose-pulse" key={Math.round(g.dose * 10)} aria-hidden="true" />}
       <div
         class={`hud__dial hud__dial--${level}`}
         role="progressbar"
@@ -169,7 +200,7 @@ function Dose({ g, mood }: { g: GameState; mood: number }) {
           <Status level={level} low="hud.status.caution" critical="hud.status.danger" />
         </span>
         <span class="hud__value">
-          <b>{num(g.dose)}</b>
+          <CountUp value={g.dose} />
           <span class="hud__dim">/ {limit} mSv</span>
           <Trend delta={lastDelta(g, 'dose')} goodUp={false} />
         </span>
