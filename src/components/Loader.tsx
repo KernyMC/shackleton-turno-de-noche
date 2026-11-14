@@ -10,8 +10,11 @@ import '../styles/loader.css';
 
 /** Tiempo mínimo a la vista: evita un parpadeo si la escena carga al instante. */
 const MIN_MS = 900;
-/** Tope: si la escena nunca avisa (pestaña oculta, error), el juego sigue igual. */
-const MAX_MS = 8000;
+/**
+ * Tope: si la escena nunca avisa (pestaña oculta, error, red muy lenta), el juego sigue igual.
+ * La escena avisa tras descargar los modelos (~7 MB) y compilar sus shaders.
+ */
+const MAX_MS = 20000;
 const FADE_MS = 350;
 const TIP_MS = 4200;
 const TIPS = 6;

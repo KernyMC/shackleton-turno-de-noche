@@ -38,7 +38,10 @@ export function Scene() {
         onAssets: (assets) => (realAssets.value = { ...realAssets.value, ...assets }),
       });
       world = w;
-      stops.push(markReady('game'));
+      // La pantalla de carga sigue hasta que la base está completa (modelos y shaders listos).
+      void w.ready.then(() => {
+        if (!disposed) stops.push(markReady('game'));
+      });
       sceneBridge.project = (id) => w.projectModule(id);
       w.setReducedMotion(motion.matches);
 

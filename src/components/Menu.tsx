@@ -79,7 +79,10 @@ export function Menu() {
         place();
         wide.addEventListener('change', place);
         removePlace = () => wide.removeEventListener('change', place);
-        stopReady = markReady('menu');
+        // La pantalla de carga sigue hasta que la base está completa (modelos y shaders listos).
+        void w.ready.then(() => {
+          if (!disposed) stopReady = markReady('menu');
+        });
       })
       .catch(() => {
         if (disposed) return;

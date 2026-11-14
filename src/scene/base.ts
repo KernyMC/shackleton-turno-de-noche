@@ -6,6 +6,7 @@
 
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import type { GLTF } from 'three/addons/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 import { CREW } from '../data/crew';
 import type { ModuleId } from '../sim/types';
@@ -349,11 +350,26 @@ export function createBase(heightAt: (x: number, z: number) => number = () => 0)
     const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
     const loaded: string[] = [];
     const declared = (await optionalAssets()).models;
+    // Todas las descargas arrancan a la vez; luego se colocan en orden (antes iban de una en una).
+    const fetches = new Map<string, Promise<GLTF | null>>();
+    const fetchModel = (id: string, url: string): Promise<GLTF | null> => {
+      if (!declared.includes(id)) return Promise.resolve(null);
+      let p = fetches.get(url);
+      if (!p) {
+        p = exists(url).then((ok) => (ok ? loader.loadAsync(url) : null));
+        p.catch(() => {}); // el error se trata al colocarlo
+        fetches.set(url, p);
+      }
+      return p;
+    };
+    for (const id of Object.keys(MODEL_URLS) as ModelId[]) void fetchModel(id, MODEL_URLS[id]);
+    for (const id of Object.keys(MODULE_MODEL_URLS) as ModuleId[]) void fetchModel(id, MODULE_MODEL_URLS[id]);
+    void fetchModel('shelter', SHELTER_MODEL_URL);
     for (const id of Object.keys(MODEL_URLS) as ModelId[]) {
       const url = MODEL_URLS[id];
-      if (!declared.includes(id) || !(await exists(url))) continue;
       try {
-        const gltf = await loader.loadAsync(url);
+        const gltf = await fetchModel(id, url);
+        if (!gltf) continue;
         if (disposed) {
           disposeObject(gltf.scene);
           break;
@@ -377,9 +393,9 @@ export function createBase(heightAt: (x: number, z: number) => number = () => 0)
     // Módulos: el modelo sustituye la silueta procedural; la luz, el aro y el rótulo se quedan.
     for (const id of Object.keys(MODULE_MODEL_URLS) as ModuleId[]) {
       const url = MODULE_MODEL_URLS[id];
-      if (!declared.includes(id) || !(await exists(url))) continue;
       try {
-        const gltf = await loader.loadAsync(url);
+        const gltf = await fetchModel(id, url);
+        if (!gltf) continue;
         if (disposed) {
           disposeObject(gltf.scene);
           break;
@@ -420,9 +436,10 @@ export function createBase(heightAt: (x: number, z: number) => number = () => 0)
       }
     }
     // Refugio.
-    if (declared.includes('shelter') && (await exists(SHELTER_MODEL_URL))) {
+    {
       try {
-        const gltf = await loader.loadAsync(SHELTER_MODEL_URL);
+        const gltf = await fetchModel('shelter', SHELTER_MODEL_URL);
+        if (!gltf) return loaded;
         if (!disposed) {
           fitModel(gltf.scene, 4.1);
           gltf.scene.traverse((o) => {

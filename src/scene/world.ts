@@ -83,6 +83,11 @@ export interface World {
    * Instantánea con movimiento reducido o con la pestaña oculta.
    */
   flyIn(durationMs: number): Promise<void>;
+  /**
+   * Se resuelve cuando el terreno y los modelos están colocados y sus shaders compilados: a partir de
+   * ahí la maqueta se ve completa y sin tirones. Nunca falla (si algo no carga queda la forma simple).
+   */
+  ready: Promise<void>;
   dispose(): void;
 }
 
@@ -235,6 +240,17 @@ export function createWorld(container: HTMLElement, cb: WorldCallbacks): World {
   const dust = createDust(terrain.heightAt);
   scene.add(dust.points);
   void base.ready.then((models) => cb.onAssets?.({ models }));
+  // Lista: todo colocado y los shaders compilados antes de quitar la pantalla de carga (si no,
+  // cada modelo que aparece compila sus materiales en pleno juego y da tirones).
+  // Mientras carga no se mide la calidad: los tirones de la carga la bajarían sin motivo.
+  let loading = true;
+  const ready: Promise<void> = Promise.all([terrain.ready.catch(() => null), base.ready.catch(() => [])])
+    .then(() => renderer.compileAsync(scene, camera).catch(() => undefined))
+    .then(() => {
+      loading = false;
+      shadowDirty = true;
+      qualityWarmup = QUALITY.warmupSec;
+    });
 
   // --- Estado que persigue a su objetivo (nada salta) ---
   let sunTarget = 1;
@@ -598,7 +614,7 @@ export function createWorld(container: HTMLElement, cb: WorldCallbacks): World {
   let raiseAfter = QUALITY.raiseAfterSec;
   let lastRaiseAt = -Infinity;
   const measureQuality = (rawDt: number, now: number, saver: boolean): void => {
-    if (!running || saver) return;
+    if (!running || saver || loading) return;
     if (rawDt > QUALITY.stallSec) {
       qualityTime = qualityFrames = 0;
       return;
@@ -878,6 +894,7 @@ export function createWorld(container: HTMLElement, cb: WorldCallbacks): World {
       if (reducedMotion) introView = introViewTarget;
     },
     setCrewFocus: (id) => void (crewFocused = id),
+    ready,
     flyIn(durationMs) {
       if (!introMode) return Promise.resolve();
       if (reducedMotion || durationMs <= 0 || !running) {
