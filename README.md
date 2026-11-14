@@ -34,6 +34,8 @@ embebidas el navegador no deja capturar el mouse). Clic para entrar, `WASD` para
 
 ## Si llegas nuevo al equipo
 
+> **Asistentes de IA (Claude Code, Codex, Cursor…):** lee primero [docs/COLABORAR-IA.md](docs/COLABORAR-IA.md). Explica cómo clonar, configurar `.env` (parte de `.env.example`), hacer commit y **push** sin romper nada.
+
 1. Lee [docs/GDD.md](docs/GDD.md) (5 min): qué juego es y qué entra.
 2. Lee [docs/ARTE.md](docs/ARTE.md) si vas a tocar algo visual o de sonido.
 3. Abre [docs/tasks/TABLERO.md](docs/tasks/TABLERO.md), elige una tarea libre y pon tu nombre.
@@ -54,6 +56,8 @@ solo y le da las reglas, la dirección de arte y el flujo de trabajo.
 | `npm run simulate` | Juega 1000 partidas automáticas y muestra el balance |
 | `npm run data:donki` | Descarga tormentas reales de un año (NASA DONKI) a `public/data/storms_real.json` |
 | `npm run check:nasa` | Prueba el proxy de clima espacial: API ok, caída y sin internet |
+| `npm run models:build` / `models:preview` | Modelos 3D por script con Blender (necesita `BLENDER` en `.env`) |
+| `npm run models:ai3d` / `models:reduce` | Experimental: malla 3D con IA local (ComfyUI + Hunyuan3D) y reducción en Blender. Ver [scripts/README-ia3d.md](scripts/README-ia3d.md) |
 
 ## Estado actual
 
@@ -88,6 +92,10 @@ número indica si es **verificado**, **simulado** o **decisión de diseño**. De
 
 En local, `npm run dev` sirve la misma ruta leyendo la clave de `.env` (copia `.env.example`).
 
+## Variables de entorno
+
+Copia `.env.example` a `.env` (no se sube a git). `NASA_API_KEY` es opcional; `BLENDER` y `COMFYUI_URL` solo para modelos 3D.
+
 ## Más
 
-[DECISIONES.md](DECISIONES.md) · [AI_USAGE.md](AI_USAGE.md) · [CREDITS.md](CREDITS.md)
+[Guía para asistentes de IA y push](docs/COLABORAR-IA.md) · [DECISIONES.md](DECISIONES.md) · [AI_USAGE.md](AI_USAGE.md) · [CREDITS.md](CREDITS.md)

@@ -17,7 +17,9 @@
     "data:donki": "node scripts/fetch-donki.mjs",
     "check:nasa": "tsx scripts/check-spaceweather.ts",
     "models:build": "node scripts/blender/run.mjs build",
-    "models:preview": "node scripts/blender/run.mjs preview"
+    "models:preview": "node scripts/blender/run.mjs preview",
+    "models:ai3d": "node scripts/ai3d/image_to_3d.mjs",
+    "models:reduce": "node scripts/blender/run.mjs reduce"
   },
   "dependencies": {
     "@astrojs/preact": "^6.1.6",

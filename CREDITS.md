@@ -25,6 +25,7 @@ Tipografías: Space Grotesk e IBM Plex Mono (SIL Open Font License), servidas po
 
 ## Assets externos
 - Modelos 3D (`public/models/*.glb`: reciclador, invernadero, blindaje, taller, refugio, rover y módulo de aterrizaje): modelados con Blender mediante script (`scripts/blender/build_models.py`), con texturas generadas por código (`scripts/blender/textures.py`). Se tomaron como referencia visual imágenes conceptuales generadas con IA por el equipo (Gemini y otro generador de imágenes); las imágenes no se incluyen en el juego.
+- `public/models/experiments/habitat-ia.glb`: prueba generada con Z-Image Turbo (Alibaba Tongyi-MAI) y Hunyuan3D 2.1 (Tencent) en ComfyUI local, reducida en Blender. No se usa en el juego. Licencias por revisar antes de usarla en la entrega.
 
 Otros: Todo modelo o audio añadido se registra aquí con origen y licencia.
 

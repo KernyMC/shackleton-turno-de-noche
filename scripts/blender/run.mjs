@@ -5,7 +5,8 @@
 // Blender se busca en la variable BLENDER (ruta a blender.exe) o en el PATH.
 
 import { spawnSync } from 'node:child_process';
-import { resolve } from 'node:path';
+import { mkdirSync } from 'node:fs';
+import { dirname, resolve } from 'node:path';
 
 try {
   process.loadEnvFile('.env');
@@ -24,5 +25,10 @@ const run = (script, args) => {
 
 if (mode === 'build') run('scripts/blender/build_models.py', ['public/models', ...names]);
 else if (mode === 'preview') {
-  for (const name of names) run('scripts/blender/preview.py', [`public/models/${name}.glb`, resolve(`docs/previews/${name}.png`)]);
-} else console.error('Uso: run.mjs build [modelo…] | preview <modelo…>');
+  for (const name of names) {
+    const png = resolve(`docs/previews/${name}.png`);
+    mkdirSync(dirname(png), { recursive: true });
+    run('scripts/blender/preview.py', [`public/models/${name}.glb`, png]);
+  }
+} else if (mode === 'reduce') run('scripts/ai3d/reduce.py', [resolve(names[0]), resolve(names[1]), ...names.slice(2)]);
+else console.error('Uso: run.mjs build [modelo…] | preview <modelo…> | reduce entrada.glb salida.glb [triángulos]');
