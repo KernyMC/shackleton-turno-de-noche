@@ -433,6 +433,19 @@ b { font-family: var(--font-mono); }
 @media (max-width: 899px) { .daydone { white-space: normal; text-align: center; width: calc(100% - 1.5rem); justify-content: center; top: 9.6rem; border-radius: 14px; } }
 @media (prefers-reduced-motion: reduce) { .daydone, .repair--on .repair__icon { animation: none; } .eflow__tip { transition: none; } }
 
+/* Anchos medios (900–1279 px): la barra superior reparte el espacio sin montarse y el botón
+   principal se va a la derecha para no pisar las tarjetas de recursos. */
+@media (min-width: 900px) and (max-width: 1279px) {
+  .topbar { grid-template-columns: auto minmax(0, 1fr) auto; gap: 0.5rem; }
+  .topbar__day { padding: 0.1rem 0.3rem; min-width: 0; }
+  .topbar__day .hud__days { gap: 1px; }
+  .topbar__day .hud__dot { width: 6px; }
+  .topbar__dose .hud__face { display: none; }
+  .topbar__tools { gap: 0.15rem; }
+  .topbar__tools .iconbtn { width: 34px; height: 34px; }
+  .hud__plan { left: auto; right: var(--gutter); transform: none; }
+}
+
 /* ---------- Debrief ---------- */
 .debrief { min-height: 100%; max-width: 46rem; margin: 0 auto; padding: 2rem 1.25rem 3rem; display: grid; gap: 1.5rem; align-content: start; }
 .debrief h1 { margin: 0; font-size: clamp(2rem, 6vw, 3.2rem); line-height: 1.05; }
