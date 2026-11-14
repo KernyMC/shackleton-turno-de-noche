@@ -331,5 +331,15 @@
   "science.iss_hint": "The gray is the unit that measures the radiation a body absorbs.",
   "coach.guide_says": "{nombre} welcomes you",
   "coach.welcome.goal": "Last {dias} days and we all go home.",
-  "coach.greenhouse": "Now the Greenhouse: give it {invernadero}. It is our food!"
+  "coach.greenhouse": "Now the Greenhouse: give it {invernadero}. It is our food!",
+  "loading.kicker": "Shackleton link",
+  "loading.to_game": "Heading down to the base…",
+  "loading.to_menu": "Gathering the crew…",
+  "loading.tip_label": "Mission Control tip",
+  "loading.tip.1": "Save battery before the lunar night arrives.",
+  "loading.tip.2": "If a solar storm is coming, send the crew to the shelter.",
+  "loading.tip.3": "Tap a module of the base to give it energy.",
+  "loading.tip.4": "Energy you don’t hand out is stored in the battery.",
+  "loading.tip.5": "The Recycler makes air and water. The Greenhouse makes food.",
+  "loading.tip.6": "If something goes wrong, the report lets you go back to an earlier day."
 }

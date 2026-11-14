@@ -331,5 +331,15 @@
   "science.iss_hint": "El gray es la unidad que mide la radiación que absorbe un cuerpo.",
   "coach.guide_says": "{nombre} te da la bienvenida",
   "coach.welcome.goal": "Aguanta {dias} días y volvemos a casa.",
-  "coach.greenhouse": "Ahora el Invernadero: dale {invernadero}. ¡Es la comida!"
+  "coach.greenhouse": "Ahora el Invernadero: dale {invernadero}. ¡Es la comida!",
+  "loading.kicker": "Enlace con Shackleton",
+  "loading.to_game": "Bajando a la base…",
+  "loading.to_menu": "Reuniendo a la tripulación…",
+  "loading.tip_label": "Consejo de Control de Misión",
+  "loading.tip.1": "Guarda batería antes de que llegue la noche lunar.",
+  "loading.tip.2": "Si viene una tormenta solar, lleva a la tripulación al refugio.",
+  "loading.tip.3": "Toca un módulo de la base para darle energía.",
+  "loading.tip.4": "La energía que no repartes se guarda en la batería.",
+  "loading.tip.5": "El Reciclador da aire y agua. El Invernadero, comida.",
+  "loading.tip.6": "Si algo sale mal, en el informe puedes volver a un día anterior."
 }

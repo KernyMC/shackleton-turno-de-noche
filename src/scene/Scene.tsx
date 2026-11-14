@@ -9,6 +9,7 @@ import { MODULE_IDS } from '../sim/types';
 import type { ModuleId } from '../sim/types';
 import { focusModule, game, interact, nearTarget, plan, realAssets, skyView, tabletOpen, toggleTablet } from '../state/store';
 import { tutorialStep } from '../state/tutorial';
+import { clearReady, markReady } from '../state/loading';
 import { sceneBridge } from './bridge';
 import type { Mood } from './crewWalk';
 import type { World } from './world';
@@ -37,6 +38,7 @@ export function Scene() {
         onAssets: (assets) => (realAssets.value = { ...realAssets.value, ...assets }),
       });
       world = w;
+      stops.push(markReady('game'));
       sceneBridge.project = (id) => w.projectModule(id);
       w.setReducedMotion(motion.matches);
 
@@ -127,6 +129,9 @@ export function Scene() {
           w.centerOn(target);
         }),
       );
+    }).catch(() => {
+      // Sin WebGL la base no se dibuja, pero la tablet funciona: no hay nada que esperar.
+      if (!disposed) stops.push(markReady('game'));
     });
 
     const onMotion = (): void => world?.setReducedMotion(motion.matches);
@@ -148,6 +153,7 @@ export function Scene() {
       world?.dispose();
       sceneBridge.project = null;
       nearTarget.value = null;
+      clearReady('game');
     };
   }, []);
 

@@ -10,6 +10,7 @@ import type { CrewId } from '../data/crew';
 import { lang, t } from '../i18n';
 import type { World } from '../scene/world';
 import type { Difficulty } from '../sim/types';
+import { clearReady, markReady } from '../state/loading';
 import { loadSpaceWeather } from '../state/spaceWeather';
 import { commanderName, setCommanderName, startGame } from '../state/store';
 import { sourcesOpen } from '../state/sources';
@@ -54,6 +55,7 @@ export function Menu() {
   useEffect(() => {
     let disposed = false;
     let removePlace: (() => void) | undefined;
+    let stopReady: (() => void) | undefined;
     const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
     void import('../scene/world')
       .then(({ createWorld }) => {
@@ -77,11 +79,18 @@ export function Menu() {
         place();
         wide.addEventListener('change', place);
         removePlace = () => wide.removeEventListener('change', place);
+        stopReady = markReady('menu');
       })
-      .catch(() => setHas3d(false)); // sin WebGL: la tripulación se ve en los retratos SVG
+      .catch(() => {
+        if (disposed) return;
+        setHas3d(false); // sin WebGL: la tripulación se ve en los retratos SVG
+        stopReady = markReady('menu');
+      });
     return () => {
       disposed = true;
       removePlace?.();
+      stopReady?.();
+      clearReady('menu');
       world.current?.dispose();
       world.current = null;
     };

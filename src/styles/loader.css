@@ -1,0 +1,113 @@
+/* Pantalla de carga: el vacío lunar, un filo de horizonte con sol rasante y la luz ámbar de la base.
+   Paleta de docs/ARTE.md §3. Movimiento solo con transform/opacity y curvas suaves. */
+.loader {
+  --void: #000;
+  --regolith: #8c8a85;
+  --regolith-dark: #3b3a38;
+  --hull: #d9d4c7;
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  padding: 1.5rem 1rem;
+  background: var(--void);
+  color: var(--hull);
+  opacity: 1;
+  transition: opacity 350ms cubic-bezier(0.4, 0, 1, 1);
+}
+.loader--leaving { opacity: 0; pointer-events: none; }
+
+.loader__body {
+  display: grid;
+  justify-items: center;
+  gap: 0.6rem;
+  width: min(30rem, 100%);
+  text-align: center;
+}
+
+.loader__moon { width: min(14rem, 62vw); height: auto; overflow: visible; margin-bottom: 0.2rem; }
+
+/* La luz de la base "respira" despacio (0,4 Hz), como una baliza en espera.
+   La carrera del astronauta va con animateTransform dentro del SVG (Loader.tsx). */
+.loader__glow { transform-box: fill-box; transform-origin: center; animation: loader-breathe 2.5s ease-in-out infinite; }
+.loader__beacon { animation: loader-beacon 2.5s ease-in-out infinite; }
+@keyframes loader-breathe {
+  0%, 100% { opacity: 0.55; transform: scale(0.85); }
+  50% { opacity: 1; transform: scale(1.1); }
+}
+@keyframes loader-beacon {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+.loader__kicker {
+  margin: 0;
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+.loader__title {
+  margin: 0;
+  font-family: var(--font-title);
+  font-size: clamp(1.35rem, 4.5vw, 1.9rem);
+  font-weight: 700;
+  color: #fffaf0;
+}
+
+/* Enlace de radio: una línea de 1 px que la señal recorre de lado a lado. */
+.loader__link {
+  position: relative;
+  width: min(14rem, 70vw);
+  height: 1px;
+  margin: 0.5rem 0 1.4rem;
+  background: var(--regolith-dark);
+  overflow: hidden;
+}
+.loader__signal {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 28%;
+  background: var(--accent);
+  box-shadow: 0 0 8px var(--accent);
+  animation: loader-scan 1.8s cubic-bezier(0.45, 0, 0.55, 1) infinite alternate;
+}
+@keyframes loader-scan {
+  from { transform: translateX(0); }
+  to { transform: translateX(257%); }
+}
+
+.loader__tip {
+  display: grid;
+  gap: 0.3rem;
+  max-width: 24rem;
+  min-height: 4.5rem; /* reserva el hueco: cambiar de consejo no mueve nada */
+  margin: 0;
+  padding-top: 0.9rem;
+  border-top: 1px solid var(--regolith-dark);
+}
+.loader__tiplabel {
+  color: var(--regolith);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.loader__tiptext {
+  color: var(--text);
+  font-size: 1rem;
+  line-height: 1.5;
+  animation: loader-tip 300ms ease-out;
+}
+@keyframes loader-tip {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loader { transition: none; }
+  .loader__glow, .loader__beacon, .loader__tiptext { animation: none; }
+  .loader__signal { animation: none; left: 36%; }
+}

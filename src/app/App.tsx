@@ -4,6 +4,7 @@ import { useEffect } from 'preact/hooks';
 import { Coach } from '../components/Coach';
 import { Debrief } from '../components/Debrief';
 import { Hud } from '../components/Hud';
+import { Loader } from '../components/Loader';
 import { SourcesPanel } from '../components/SourcesPanel';
 import { Rewards } from '../components/Rewards';
 import { StormWarning } from '../components/StormWarning';
@@ -14,11 +15,7 @@ import { Tablet } from '../components/Tablet';
 import { startTutorialWatcher } from '../state/tutorial';
 import { screen } from '../state/store';
 
-export default function App() {
-  // La guía de la primera partida observa el juego desde que arranca la app.
-  useEffect(() => startTutorialWatcher(), []);
-  useEffect(() => startRewardsWatcher(), []);
-  useEffect(() => startSoundWatcher(), []);
+function CurrentScreen() {
   if (screen.value === 'menu') {
     return (
       <>
@@ -46,5 +43,19 @@ export default function App() {
       <Coach />
       <SourcesPanel />
     </div>
+  );
+}
+
+export default function App() {
+  // La guía de la primera partida observa el juego desde que arranca la app.
+  useEffect(() => startTutorialWatcher(), []);
+  useEffect(() => startRewardsWatcher(), []);
+  useEffect(() => startSoundWatcher(), []);
+  // El Loader vive fuera de las pantallas para no desmontarse al cambiar de una a otra.
+  return (
+    <>
+      <CurrentScreen />
+      <Loader />
+    </>
   );
 }
