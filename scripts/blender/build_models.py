@@ -21,6 +21,9 @@ import bmesh
 import bpy
 from mathutils import Vector
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import textures as texgen  # noqa: E402  (scripts/blender/textures.py)
+
 HULL = (0.82, 0.80, 0.74, 1.0)      # blanco hueso
 PANEL = (0.62, 0.61, 0.57, 1.0)     # paneles algo más oscuros
 DARK = (0.045, 0.045, 0.043, 1.0)   # gris oscuro mecánico
@@ -44,17 +47,38 @@ def reset_scene():
             block.remove(item)
 
 
-def material(name, color, roughness=0.75, metallic=0.0, emission=0.0):
+TEXTURES = {}
+
+
+def material(name, color, roughness=0.75, metallic=0.0, emission=0.0, texture=None, tiling=1.0):
+    """Material PBR. Con `texture`, el color y el relieve salen de las imágenes generadas."""
     mat = bpy.data.materials.get(name)
     if mat:
         return mat
     mat = bpy.data.materials.new(name)
     mat.use_nodes = True
-    bsdf = mat.node_tree.nodes.get("Principled BSDF")
+    nodes, links = mat.node_tree.nodes, mat.node_tree.links
+    bsdf = nodes.get("Principled BSDF")
     if bsdf:
         bsdf.inputs["Base Color"].default_value = color
         bsdf.inputs["Roughness"].default_value = roughness
         bsdf.inputs["Metallic"].default_value = metallic
+        if texture and texture in TEXTURES:
+            color_image, normal_image = TEXTURES[texture]
+            coords = nodes.new("ShaderNodeTexCoord")
+            mapping = nodes.new("ShaderNodeMapping")
+            mapping.inputs["Scale"].default_value = (tiling, tiling, 1.0)
+            links.new(coords.outputs["UV"], mapping.inputs["Vector"])
+            tex = nodes.new("ShaderNodeTexImage")
+            tex.image = color_image
+            links.new(mapping.outputs["Vector"], tex.inputs["Vector"])
+            links.new(tex.outputs["Color"], bsdf.inputs["Base Color"])
+            bump = nodes.new("ShaderNodeTexImage")
+            bump.image = normal_image
+            links.new(mapping.outputs["Vector"], bump.inputs["Vector"])
+            normal = nodes.new("ShaderNodeNormalMap")
+            links.new(bump.outputs["Color"], normal.inputs["Color"])
+            links.new(normal.outputs["Normal"], bsdf.inputs["Normal"])
         if emission > 0:
             try:
                 bsdf.inputs["Emission Color"].default_value = color
@@ -68,17 +92,25 @@ class Mats:
     """Materiales compartidos por todos los modelos."""
 
     def __init__(self):
-        self.hull = material("hull", HULL)
-        self.panel = material("panel", PANEL, roughness=0.8)
-        self.dark = material("dark", DARK, roughness=0.65, metallic=0.15)
-        self.metal = material("metal", METAL, roughness=0.5, metallic=0.35)
+        # "hull" es para cajas y aros; "hull_dusty" (con polvo abajo) lo usan cilindros y esferas,
+        # cuya textura va de la base a la cima del objeto.
+        self.hull = material("hull", HULL, texture="hull", tiling=2.0)
+        self.hull_dusty = material("hull_dusty", HULL, texture="hull_dusty")
+        self.panel = material("panel", PANEL, roughness=0.8, texture="panel", tiling=2.0)
+        self.dark = material("dark", DARK, roughness=0.65, metallic=0.15, texture="dark")
+        self.metal = material("metal", METAL, roughness=0.5, metallic=0.35, texture="metal")
         self.glow = material("glow", GLOW, roughness=0.5)
         self.glass = material("glass", GLASS, roughness=0.08)
-        self.gold = material("gold", GOLD, roughness=0.45, metallic=0.35)
-        self.leaf = material("leaf", LEAF, roughness=0.9)
-        self.regolith = material("regolith", REGOLITH, roughness=1.0)
-        self.sandbag = material("sandbag", SANDBAG, roughness=1.0)
+        self.gold = material("gold", GOLD, roughness=0.45, metallic=0.35, texture="gold", tiling=2.0)
+        self.leaf = material("leaf", LEAF, roughness=0.9, texture="leaf")
+        self.regolith = material("regolith", REGOLITH, roughness=1.0, texture="regolith", tiling=3.0)
+        self.sandbag = material("sandbag", SANDBAG, roughness=1.0, texture="sandbag")
         self.lamp = material("lamp", (1.0, 0.92, 0.75, 1.0), emission=3.0)
+
+
+def dusty(mat):
+    """Versión con polvo en la base, para piezas cuya textura va de abajo arriba."""
+    return bpy.data.materials.get("hull_dusty") if mat.name == "hull" else mat
 
 
 def finish(obj, mat, smooth=True, bevel=0.0):
@@ -106,7 +138,9 @@ def cylinder(radius, depth, loc, mat, verts=40, rot=(0, 0, 0), radius_top=None, 
         bpy.ops.mesh.primitive_cylinder_add(vertices=verts, radius=radius, depth=depth, location=loc, rotation=rot)
     else:
         bpy.ops.mesh.primitive_cone_add(vertices=verts, radius1=radius, radius2=radius_top, depth=depth, location=loc, rotation=rot)
-    return finish(bpy.context.active_object, mat, smooth=smooth, bevel=bevel)
+    # Solo los cilindros verticales grandes acumulan polvo en la base.
+    upright = abs(rot[0]) < 0.01 and abs(rot[1]) < 0.01 and depth > 1.0
+    return finish(bpy.context.active_object, dusty(mat) if upright else mat, smooth=smooth, bevel=bevel)
 
 
 def sphere(radius, loc, mat, scale=(1, 1, 1), segments=32, rings=16, rot=(0, 0, 0)):
@@ -170,10 +204,28 @@ def feet(count, radius, mats, z=0.18):
     ring_of(count, radius, lambda x, y, a: box((0.7, 0.45, 0.36), (x, y, z), mats.metal, rot=(0, 0, a), bevel=0.06))
 
 
+def merge_all():
+    """Une todas las piezas en una malla (una sub-malla por material): muchas menos órdenes de dibujo."""
+    meshes = [o for o in bpy.context.scene.objects if o.type == "MESH"]
+    if len(meshes) < 2:
+        return
+    bpy.ops.object.select_all(action="DESELECT")
+    for obj in meshes:
+        obj.select_set(True)
+    bpy.context.view_layer.objects.active = meshes[0]
+    bpy.ops.object.convert(target="MESH")  # aplica biseles, alambres y suavizado
+    bpy.ops.object.join()
+
+
 def export(path):
+    merge_all()
     bpy.ops.object.select_all(action="SELECT")
     os.makedirs(os.path.dirname(path), exist_ok=True)
-    bpy.ops.export_scene.gltf(filepath=path, export_format="GLB", export_apply=True, export_yup=True)
+    options = dict(filepath=path, export_format="GLB", export_apply=True, export_yup=True)
+    try:
+        bpy.ops.export_scene.gltf(**options, export_image_format="WEBP", export_image_quality=82)
+    except TypeError:
+        bpy.ops.export_scene.gltf(**options, export_image_format="JPEG")
     print(f"EXPORTADO {path} ({os.path.getsize(path) / 1024:.0f} KB)")
 
 
@@ -568,6 +620,7 @@ def main():
     args = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
     out_dir = os.path.abspath(args[0]) if args else os.path.abspath("public/models")
     names = args[1:] or list(MODELS)
+    TEXTURES.update(texgen.build_textures())
     for name in names:
         if name not in MODELS:
             print(f"Modelo desconocido: {name}. Disponibles: {', '.join(MODELS)}")

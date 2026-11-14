@@ -24,7 +24,7 @@
 Tipografías: Space Grotesk e IBM Plex Mono (SIL Open Font License), servidas por Google Fonts.
 
 ## Assets externos
-- Modelos 3D (`public/models/*.glb`: reciclador, invernadero, blindaje, taller, refugio, rover y módulo de aterrizaje): modelados con Blender mediante script (`scripts/blender/build_models.py`). Se tomaron como referencia visual imágenes conceptuales generadas con IA por el equipo (Gemini y otro generador de imágenes); las imágenes no se incluyen en el juego.
+- Modelos 3D (`public/models/*.glb`: reciclador, invernadero, blindaje, taller, refugio, rover y módulo de aterrizaje): modelados con Blender mediante script (`scripts/blender/build_models.py`), con texturas generadas por código (`scripts/blender/textures.py`). Se tomaron como referencia visual imágenes conceptuales generadas con IA por el equipo (Gemini y otro generador de imágenes); las imágenes no se incluyen en el juego.
 
 Otros: Todo modelo o audio añadido se registra aquí con origen y licencia.
 
