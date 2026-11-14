@@ -8,6 +8,8 @@ import { getLight } from '../sim/engine';
 import { MODULE_IDS } from '../sim/types';
 import { focusModule, game, interact, nearTarget, plan, realAssets, skyView, tabletOpen, toggleTablet } from '../state/store';
 import { tutorialStep } from '../state/tutorial';
+import { sceneBridge } from './bridge';
+import type { Mood } from './crewWalk';
 import type { World } from './world';
 
 /** Radianes que avanza el Sol por el horizonte cada día (12°). */
@@ -32,6 +34,7 @@ export function Scene() {
         onAssets: (assets) => (realAssets.value = { ...realAssets.value, ...assets }),
       });
       world = w;
+      sceneBridge.project = (id) => w.projectModule(id);
       w.setReducedMotion(motion.matches);
 
       // Sol, tormenta, refugio y rover siguen al estado del juego.
@@ -73,6 +76,29 @@ export function Scene() {
         ),
       );
       stops.push(effect(() => w.setSkyLook(skyView.value)));
+      // La tripulación reacciona al estado: ánimo según el recurso de su módulo.
+      stops.push(
+        effect(() => {
+          const g = game.value;
+          if (!g) return;
+          const d = defaultConfig.balance.difficulty[g.difficulty];
+          const byLevel = (value: number, low: number, mid: number): Mood => (value <= low ? 'worried' : value <= mid ? 'neutral' : 'happy');
+          const doseLeft = 100 - (g.dose / d.doseLimit) * 100;
+          const broken = MODULE_IDS.find((id) => g.modules[id].broken) ?? null;
+          w.setCrewState({
+            moods: {
+              valeria: byLevel(g.lifeSupport, 25, 50),
+              mateo: byLevel(g.food, 25, 50),
+              amaru: byLevel(doseLeft, 25, 50),
+              lucia: broken ? 'worried' : byLevel((g.battery / d.batteryCapacity) * 100, 15, 35),
+            },
+            shelter: g.shelterToday,
+            broken,
+            repairing: g.repairToday !== null,
+            roverAway: g.pendingEffects.some((e) => e.kind === 'rover_water'),
+          });
+        }),
+      );
       // El módulo elegido (en la base o en el panel) se marca con un anillo de su color.
       stops.push(effect(() => w.setSelected(tabletOpen.value ? focusModule.value : null)));
       // Con el panel abierto, la base se sube para que no quede tapada.
@@ -95,6 +121,7 @@ export function Scene() {
       motion.removeEventListener('change', onMotion);
       window.removeEventListener('keydown', onKey);
       world?.dispose();
+      sceneBridge.project = null;
       nearTarget.value = null;
     };
   }, []);

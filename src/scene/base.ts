@@ -66,6 +66,12 @@ export interface Base {
   setLabelsVisible(visible: boolean): void;
   /** Resalta el módulo bajo el cursor (o ninguno). */
   setHover(id: ModuleId | null): void;
+  /** Rutas por el suelo de cada pasillo, del centro de la base al módulo (para la tripulación). */
+  routes: Record<ModuleId, THREE.Vector3[]>;
+  /** Luz de los pasillos (1 de día, 0.3 de noche). */
+  setCorridorLight(level: number): void;
+  /** Calidad baja: vidrio sin transmisión (más rápido). */
+  setLowQuality(low: boolean): void;
   /** Marca el módulo elegido con un anillo de su color que late (o ninguno). */
   setSelected(id: ModuleId | null): void;
   /** Refugio activo: brilla en ámbar. */
@@ -171,7 +177,19 @@ export function createBase(heightAt: (x: number, z: number) => number = () => 0)
   const collarGeo = new THREE.CylinderGeometry(1.15, 1.15, 1, 20);
   const ringGeo = new THREE.TorusGeometry(0.9, 0.08, 6, 20);
   const legGeo = new THREE.BoxGeometry(0.22, 1, 0.5);
-  const tubeMat = new THREE.MeshStandardMaterial({ color: HULL, roughness: 0.85 });
+  // Vidrio: con transmisión en calidad alta; en baja, transparente simple (mucho más barato).
+  const glassHigh = new THREE.MeshPhysicalMaterial({
+    color: 0xe4eef4, roughness: 0.06, metalness: 0, transmission: 0.92, thickness: 0.25, ior: 1.3,
+    transparent: true, side: THREE.DoubleSide, depthWrite: false,
+  });
+  const glassLow = new THREE.MeshStandardMaterial({ color: 0xcfe2ee, roughness: 0.1, transparent: true, opacity: 0.22, side: THREE.DoubleSide, depthWrite: false });
+  const tubes: THREE.Mesh[] = [];
+  const floorMat = new THREE.MeshStandardMaterial({ color: 0x5b5d62, roughness: 0.8 });
+  const stripMat = new THREE.MeshStandardMaterial({ color: 0x222222, emissive: AMBER, emissiveIntensity: 1.6 });
+  const floorGeo = new THREE.BoxGeometry(1.15, 0.08, 1);
+  const stripGeo = new THREE.BoxGeometry(0.12, 0.03, 1);
+  const routes = {} as Record<ModuleId, THREE.Vector3[]>;
+  const coarse = typeof window !== 'undefined' && window.matchMedia?.('(pointer: coarse)').matches;
   const frameMat = new THREE.MeshStandardMaterial({ color: 0x6a6b6e, roughness: 0.55, metalness: 0.35 });
   const UP = new THREE.Vector3(0, 1, 0);
   const AXIS_Z = new THREE.Vector3(0, 0, 1);
@@ -180,7 +198,7 @@ export function createBase(heightAt: (x: number, z: number) => number = () => 0)
   /** Distancia desde el centro de cada módulo a la que el pasillo se acopla. */
   const MODULE_RADIUS = 3.7;
   const TUBE_Y = 1.0;
-  const corridor = (mx: number, mz: number): void => {
+  const corridor = (id: ModuleId, mx: number, mz: number): void => {
     const dist = Math.hypot(mx, mz);
     const dir = new THREE.Vector3(mx / dist, 0, mz / dist);
     const at = (r: number, lift = TUBE_Y): THREE.Vector3 => {
@@ -201,7 +219,24 @@ export function createBase(heightAt: (x: number, z: number) => number = () => 0)
       group.add(mesh);
       return mesh;
     };
-    piece(tubeGeo, tubeMat, at((r0 + r1) / 2), along, r1 - r0);
+    const tube = piece(tubeGeo, coarse ? glassLow : glassHigh, at((r0 + r1) / 2), along, r1 - r0);
+    tube.castShadow = false;
+    tube.renderOrder = 3;
+    tubes.push(tube);
+    // Suelo interior y tira de luz cálida a lo largo del pasillo.
+    const floorY = TUBE_Y - 0.66;
+    const floor = piece(floorGeo, floorMat, at((r0 + r1) / 2, floorY), new THREE.Quaternion().setFromUnitVectors(AXIS_Z, dir));
+    floor.scale.z = r1 - r0 + 0.6;
+    floor.castShadow = false;
+    for (const side of [-1, 1]) {
+      const strip = piece(stripGeo, stripMat, at((r0 + r1) / 2, floorY + 0.05), new THREE.Quaternion().setFromUnitVectors(AXIS_Z, dir));
+      strip.position.add(new THREE.Vector3(-dir.z, 0, dir.x).multiplyScalar(side * 0.48));
+      strip.scale.z = r1 - r0;
+      strip.castShadow = false;
+    }
+    // Ruta para la tripulación: desde dentro del refugio hasta dentro del módulo.
+    const feet = TUBE_Y - 0.62;
+    routes[id] = [2.6, r0 + 0.4, (r0 + r1) / 2, r1 - 0.4, r1 + 0.6].map((r) => at(r, feet));
     // Esclusas: el tubo entra en un collarín más ancho en cada extremo.
     piece(collarGeo, frameMat, at(r0 + 0.3), along, 0.9);
     piece(collarGeo, frameMat, at(r1 - 0.3), along, 0.9);
@@ -265,7 +300,7 @@ export function createBase(heightAt: (x: number, z: number) => number = () => 0)
     }
 
     // Pasillo hacia el refugio central.
-    corridor(m.x, m.z);
+    corridor(m.id, m.x, m.z);
 
     parts.set(m.id, { material, band, lamp, target: { efficiency: 0, broken: false }, shown: 0, hover: 0, select, selected: 0 });
   }
@@ -426,6 +461,13 @@ export function createBase(heightAt: (x: number, z: number) => number = () => 0)
     },
     setSelected(id) {
       selectedId = id;
+    },
+    routes,
+    setCorridorLight(level) {
+      stripMat.emissiveIntensity = 1.6 * level;
+    },
+    setLowQuality(low) {
+      for (const tube of tubes) tube.material = low || coarse ? glassLow : glassHigh;
     },
     setShelter(active) {
       shelterTarget = active ? 1 : 0;

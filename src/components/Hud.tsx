@@ -11,6 +11,7 @@ import { getLight } from '../sim/engine';
 import type { GameState, LogEntry } from '../sim/types';
 import { budget, exitToMenu, game, skyView, tabletOpen, toggleTablet } from '../state/store';
 import { helpOpen } from '../state/tutorial';
+import { xp } from '../state/rewards';
 import { num, signed } from './format';
 import { Icon } from './icons';
 
@@ -86,7 +87,15 @@ function Scoreboard({ g }: { g: GameState }) {
       <p class="hud__day">
         {t('hud.day_label')} <b>{String(g.day).padStart(2, '0')}</b>
         <span class="hud__dim">/ {total}</span>
+        <span class="hud__xp">{xp.value} XP</span>
       </p>
+      <div class="hud__progress">
+        <span class="hud__rocket" style={{ left: `${((g.day - 1) / (total - 1)) * 100}%` }} aria-hidden="true">
+          <svg viewBox="0 0 20 20" width="16" height="16"><path d="M10 2c2.5 2 3.6 5 3.6 8.4l1.9 2.4-2.6.6-.9 2.6h-4l-.9-2.6-2.6-.6 1.9-2.4C6.4 7 7.5 4 10 2Z" fill="currentColor" /></svg>
+        </span>
+        <span class="hud__ship" aria-hidden="true" title={t('hud.relief_ship')}>
+          <svg viewBox="0 0 20 20" width="14" height="14"><circle cx="10" cy="10" r="4" fill="none" stroke="currentColor" stroke-width="1.6" /><path d="M2 10h4M14 10h4" stroke="currentColor" stroke-width="1.6" /></svg>
+        </span>
       <ol class="hud__days" aria-label={t('hud.days_strip')}>
         {Array.from({ length: total }, (_, i) => {
           const day = i + 1;
@@ -99,6 +108,7 @@ function Scoreboard({ g }: { g: GameState }) {
           return <li key={day} class={cls} />;
         })}
       </ol>
+      </div>
       {nightText && (
         <p class={`hud__night${g.day >= firstNight ? ' hud__night--now' : ''}`}>
           <Icon name="moon" size={14} />

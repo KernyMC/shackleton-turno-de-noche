@@ -79,3 +79,4 @@ Cuando haya valores, la idea es: tamaño del "100 %" del tanque = N días de con
 - 2026-11-14 · El módulo elegido se marca con un anillo de su color en la base y su columna se resalta en el panel. · No se sabía qué estaba seleccionado.
 - 2026-11-14 · Borde del cráter más bajo, estrellas de colores con banda de Vía Láctea (tenues de día, plenas de noche) y botón "Mirar el cielo"; arrastrar hacia abajo también levanta la mirada. · Más cielo e inmersión; las estrellas de día son una licencia artística.
 - 2026-11-14 · Barra de desplazamiento propia (fina, oscura, ámbar al pasar). · Pedido del equipo.
+- 2026-11-14 · G-P2: el mini-panel flotante junto al módulo se sustituye por el anillo 3D más la columna resaltada del panel de energía (versión simple). XP solo visual, sin monedas ni temporizadores; la cosecha se recoge sola a los 3 s. · Regla de los 30 min y no bloquear el avance.

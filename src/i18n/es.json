@@ -272,5 +272,20 @@
   "board.broken": "Averiado",
   "board.shelter": "En refugio",
   "hud.sky": "Mirar el cielo",
-  "hud.sky_back": "Volver a la base"
+  "hud.sky_back": "Volver a la base",
+  "rewards.day_done": "Día {dia} completado",
+  "rewards.harvest": "Recoger la cosecha",
+  "rewards.milestone": "¡Hito de la misión!",
+  "rewards.first_harvest": "Primera cosecha",
+  "rewards.first_night": "¡Sobreviviste la noche lunar!",
+  "rewards.storm_safe": "Tormenta superada sin daño",
+  "hud.relief_ship": "Nave de relevo",
+  "crew.valeria.good": "El aire está limpio y el agua corre. Buen trabajo, comandante.",
+  "crew.valeria.worried": "El soporte vital está bajando. El Reciclador necesita más energía.",
+  "crew.mateo.good": "Las lechugas crecen felices. ¡Ensalada para todos!",
+  "crew.mateo.worried": "La despensa se vacía. El Invernadero necesita luz.",
+  "crew.amaru.good": "La radiación está bajo control. Seguimos atentos al Sol.",
+  "crew.amaru.worried": "Hemos recibido mucha radiación. Más Blindaje, por favor.",
+  "crew.lucia.good": "Todo funciona. Mis herramientas pueden descansar.",
+  "crew.lucia.worried": "Algo está fallando o la batería está muy baja. Estoy en ello."
 }

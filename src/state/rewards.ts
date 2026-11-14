@@ -1,0 +1,129 @@
+// Recompensas visibles, sin trampas de tiempo ni monedas: cada día completado da una frase de la
+// tripulación, la cosecha se puede recoger (o se recoge sola), y los hitos se celebran.
+// Solo observa el store; no cambia reglas del juego.
+
+import { effect, signal } from '@preact/signals';
+import { CREW } from '../data/crew';
+import type { CrewId } from '../data/crew';
+import { defaultConfig } from '../sim/config';
+import type { DaySnapshot, GameState, ModuleId } from '../sim/types';
+import { game, gameId, screen } from './store';
+
+export type MilestoneId = 'first_harvest' | 'first_night' | 'storm_safe';
+
+export interface FloatItem {
+  key: number;
+  module: ModuleId;
+  /** Ícono del recurso y número a mostrar. */
+  icon: 'life_support' | 'food' | 'dose' | 'check';
+  text: string;
+  /** Zona del HUD hacia la que viaja. */
+  target: 'vitals' | 'dose' | 'none';
+}
+
+export interface DayNote {
+  key: number;
+  day: number;
+  crew: CrewId;
+  phrase: string; // clave i18n
+}
+
+/** Puntos de experiencia: solo un número visual. */
+export const xp = signal(0);
+export const floats = signal<FloatItem[]>([]);
+export const harvest = signal<{ key: number; amount: number } | null>(null);
+export const dayNote = signal<DayNote | null>(null);
+export const milestone = signal<MilestoneId | null>(null);
+export const earned = signal<MilestoneId[]>([]);
+
+let counter = 0;
+
+/** Lo que aportó cada módulo en un día (solo para mostrar; el motor ya lo aplicó). */
+export function dayYields(snap: DaySnapshot, broken: Record<ModuleId, boolean>, difficulty: GameState['difficulty']): FloatItem[] {
+  const b = defaultConfig.balance;
+  const fx = b.effects;
+  const e = (id: ModuleId): number => (broken[id] ? 0 : snap.plan[id] / b.modules[id].maxEnergy);
+  const items: FloatItem[] = [];
+  const r1 = (n: number): string => (Math.round(n * 10) / 10).toString();
+  if (e('recycler') > 0) items.push({ key: ++counter, module: 'recycler', icon: 'life_support', text: `+${r1(fx.recyclerLifeSupport * e('recycler'))}`, target: 'vitals' });
+  if (e('greenhouse') > 0 && !snap.sheltered) items.push({ key: ++counter, module: 'greenhouse', icon: 'food', text: `+${r1(fx.greenhouseFood * e('greenhouse'))}`, target: 'vitals' });
+  if (e('shield') > 0) {
+    const saved = b.difficulty[difficulty].doseBaseDaily * fx.shieldReduction * e('shield');
+    items.push({ key: ++counter, module: 'shield', icon: 'dose', text: `−${r1(saved)}`, target: 'dose' });
+  }
+  return items;
+}
+
+function moodOf(g: GameState): Record<CrewId, number> {
+  const d = defaultConfig.balance.difficulty[g.difficulty];
+  return {
+    valeria: g.lifeSupport,
+    mateo: g.food,
+    amaru: 100 - (g.dose / d.doseLimit) * 100,
+    lucia: Object.values(g.modules).some((m) => m.broken) ? 0 : (g.battery / d.batteryCapacity) * 100,
+  };
+}
+
+function celebrate(id: MilestoneId): void {
+  if (earned.value.includes(id)) return;
+  earned.value = [...earned.value, id];
+  milestone.value = id;
+}
+
+/** El jugador toca la burbuja de cosecha (o se recoge sola). */
+export function collectHarvest(byPlayer: boolean): void {
+  const h = harvest.value;
+  if (!h) return;
+  harvest.value = null;
+  xp.value += byPlayer ? 15 : 5;
+  celebrate('first_harvest');
+}
+
+export function dismissMilestone(): void {
+  milestone.value = null;
+}
+
+let lastGame = -1;
+let lastDays = 0;
+
+/** Observa las partidas. Se llama una vez al montar la app; devuelve cómo detenerlo. */
+export function startRewardsWatcher(): () => void {
+  return effect(() => {
+    const g = game.value;
+    if (!g || screen.value === 'menu') return;
+    if (gameId.value !== lastGame) {
+      lastGame = gameId.value;
+      lastDays = g.history.length;
+      xp.value = 0;
+      earned.value = [];
+      floats.value = [];
+      harvest.value = null;
+      return;
+    }
+    const days = g.history.length;
+    if (days <= lastDays) {
+      lastDays = days; // volvió atrás (reintento): no se repiten recompensas
+      return;
+    }
+    lastDays = days;
+    const snap = g.history[days - 1]!;
+    const broken = Object.fromEntries(Object.entries(g.modules).map(([id, m]) => [id, m.broken])) as Record<ModuleId, boolean>;
+
+    floats.value = dayYields(snap, broken, g.difficulty);
+    xp.value += 10;
+
+    const greenhouseWorked = snap.plan.greenhouse > 0 && !snap.sheltered && !broken.greenhouse;
+    if (greenhouseWorked) harvest.value = { key: ++counter, amount: snap.plan.greenhouse };
+
+    // Frase del día: habla quien está más preocupado; si todos están bien, se turnan.
+    const moods = moodOf(g);
+    const worst = (Object.entries(moods) as [CrewId, number][]).sort((a, b) => a[1] - b[1])[0]!;
+    const speaker = worst[1] <= 25 ? worst[0] : CREW[snap.day % CREW.length]!.id;
+    dayNote.value = { key: ++counter, day: snap.day, crew: speaker, phrase: `crew.${speaker}.${worst[1] <= 25 && speaker === worst[0] ? 'worried' : 'good'}` };
+
+    // Hitos.
+    const lastNight = Math.max(...defaultConfig.light.nightDays);
+    if (snap.day === lastNight && g.phase !== 'ended') celebrate('first_night');
+    if (snap.sheltered && g.result?.outcome !== 'loss') celebrate('storm_safe');
+  });
+}

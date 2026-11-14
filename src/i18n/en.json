@@ -272,5 +272,20 @@
   "board.broken": "Broken",
   "board.shelter": "Sheltered",
   "hud.sky": "Look at the sky",
-  "hud.sky_back": "Back to the base"
+  "hud.sky_back": "Back to the base",
+  "rewards.day_done": "Day {dia} complete",
+  "rewards.harvest": "Collect the harvest",
+  "rewards.milestone": "Mission milestone!",
+  "rewards.first_harvest": "First harvest",
+  "rewards.first_night": "You survived the lunar night!",
+  "rewards.storm_safe": "Storm passed with no harm",
+  "hud.relief_ship": "Relief ship",
+  "crew.valeria.good": "The air is clean and the water flows. Good job, commander.",
+  "crew.valeria.worried": "Life support is dropping. The Recycler needs more energy.",
+  "crew.mateo.good": "The lettuce is growing happily. Salad for everyone!",
+  "crew.mateo.worried": "The pantry is emptying. The Greenhouse needs light.",
+  "crew.amaru.good": "Radiation is under control. We keep watching the Sun.",
+  "crew.amaru.worried": "We have taken a lot of radiation. More Shielding, please.",
+  "crew.lucia.good": "Everything works. My tools can rest.",
+  "crew.lucia.worried": "Something is failing or the battery is very low. I am on it."
 }

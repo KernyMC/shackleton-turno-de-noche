@@ -47,6 +47,8 @@ export function setCommanderName(value: string): void {
 }
 
 export const screen = signal<Screen>('menu');
+/** Cambia con cada partida nueva (no con volver a un día). */
+export const gameId = signal(0);
 export const game = signal<GameState | null>(null);
 /** Plan en edición del día actual. Siempre es válido para `game`. */
 export const plan = signal<Plan>(EMPTY_PLAN);
@@ -126,6 +128,7 @@ export function startGame(difficulty: Difficulty, seed?: number): void {
   const firstStorm = liveStorm();
   game.value = createGame(seed ?? seedFromUrl() ?? Date.now() >>> 0, difficulty, undefined, firstStorm ? { firstStorm } : {});
   dayStates.value = [game.value];
+  gameId.value++;
   plan.value = EMPTY_PLAN;
   lastOutcome.value = null;
   tabletOpen.value = false;

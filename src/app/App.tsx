@@ -4,6 +4,8 @@ import { useEffect } from 'preact/hooks';
 import { Coach } from '../components/Coach';
 import { Debrief } from '../components/Debrief';
 import { Hud } from '../components/Hud';
+import { Rewards } from '../components/Rewards';
+import { startRewardsWatcher } from '../state/rewards';
 import { Menu } from '../components/Menu';
 import { Tablet } from '../components/Tablet';
 import { startTutorialWatcher } from '../state/tutorial';
@@ -12,6 +14,7 @@ import { screen } from '../state/store';
 export default function App() {
   // La guía de la primera partida observa el juego desde que arranca la app.
   useEffect(() => startTutorialWatcher(), []);
+  useEffect(() => startRewardsWatcher(), []);
   if (screen.value === 'menu') {
     return (
       <>
@@ -25,6 +28,7 @@ export default function App() {
     <div class="game">
       <Scene />
       <Hud />
+      <Rewards />
       <Tablet />
       <Coach />
     </div>

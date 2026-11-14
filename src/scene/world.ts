@@ -7,7 +7,10 @@ import * as THREE from 'three';
 import type { ModuleId } from '../sim/types';
 import { createAstronaut } from './astronaut';
 import type { Astronaut } from './astronaut';
-import { createBase } from './base';
+import { createBase, MODULES } from './base';
+import { CREW } from '../data/crew';
+import { createCrewWalk } from './crewWalk';
+import type { CrewWalkState } from './crewWalk';
 import { createRocket } from './rocket';
 import { createSky } from './sky';
 import type { ModuleVisualState } from './base';
@@ -50,6 +53,10 @@ export interface World {
    * altura) y `right` hacia la derecha (0..0.5 del ancho).
    */
   setViewShift(up: number, right?: number): void;
+  /** Posición en pantalla (px, relativa a la ventana) de lo alto de un módulo. */
+  projectModule(id: ModuleId): { x: number; y: number } | null;
+  /** La tripulación dentro de la base: ánimo, refugio, avería, rover. */
+  setCrewState(state: CrewWalkState): void;
   /** Mirar al cielo (estrellas, Vía Láctea y la Tierra) o volver a la vista de la base. */
   setSkyLook(on: boolean): void;
   /** Muestra u oculta los rótulos de los módulos. */
@@ -146,6 +153,9 @@ export function createWorld(container: HTMLElement, cb: WorldCallbacks): World {
 
   const base = createBase(terrain.heightAt);
   scene.add(base.group);
+  // La tripulación camina por los pasillos de vidrio.
+  const walkers = createCrewWalk(base.routes, CREW);
+  scene.add(walkers.group);
   void base.ready.then((models) => cb.onAssets?.({ models }));
 
   // --- Estado que persigue a su objetivo (nada salta) ---
@@ -372,6 +382,24 @@ export function createWorld(container: HTMLElement, cb: WorldCallbacks): World {
   };
   document.addEventListener('visibilitychange', onVisibility);
 
+  // Calidad automática: si en los primeros segundos de juego va por debajo de 40 FPS,
+  // se quitan las sombras y la transmisión del vidrio.
+  let qualityTime = 0;
+  let qualityFrames = 0;
+  let qualityDone = false;
+  const measureQuality = (dt: number): void => {
+    if (qualityDone || introMode || !running) return;
+    qualityTime += dt;
+    qualityFrames++;
+    if (qualityTime < 3) return;
+    qualityDone = true;
+    if (qualityFrames / qualityTime < 40) {
+      renderer.shadowMap.enabled = false;
+      sun.castShadow = false;
+      base.setLowQuality(true);
+    }
+  };
+
   const timer = new THREE.Timer();
   renderer.setAnimationLoop(() => {
     if (!running) return;
@@ -472,6 +500,13 @@ export function createWorld(container: HTMLElement, cb: WorldCallbacks): World {
     }
 
     base.update(dt, time, reducedMotion);
+    // De noche: pasillos al 30 % y linternas de los cascos encendidas.
+    const night = sunShown < 0.15;
+    base.setCorridorLight(night ? 0.3 : 1);
+    walkers.setNight(night);
+    walkers.group.visible = !introMode && !fly;
+    if (walkers.group.visible) walkers.update(dt, time, reducedMotion);
+    measureQuality(dt);
     renderer.render(scene, camera);
   });
 
@@ -489,6 +524,15 @@ export function createWorld(container: HTMLElement, cb: WorldCallbacks): World {
       shiftXTarget = THREE.MathUtils.clamp(right, 0, 0.5);
     },
     setLabelsVisible: (visible) => base.setLabelsVisible(visible),
+    setCrewState: (state) => walkers.setState(state),
+    projectModule(id) {
+      const m = MODULES.find((mod) => mod.id === id);
+      if (!m) return null;
+      const v = new THREE.Vector3(m.x, terrain.heightAt(m.x, m.z) + 5, m.z).project(camera);
+      if (v.z > 1) return null;
+      const rect = dom.getBoundingClientRect();
+      return { x: rect.left + ((v.x + 1) / 2) * rect.width, y: rect.top + ((1 - v.y) / 2) * rect.height };
+    },
     setSkyLook(on) {
       if (on) {
         elevationBeforeSky = Math.max(elevation, SKY_LOOK_START);
@@ -562,6 +606,7 @@ export function createWorld(container: HTMLElement, cb: WorldCallbacks): World {
       dom.removeEventListener('pointercancel', onPointerUp);
       dom.removeEventListener('pointerleave', onPointerLeave);
       dom.removeEventListener('wheel', onWheel);
+      walkers.dispose();
       sky.dispose();
       terrain.dispose();
       base.dispose();

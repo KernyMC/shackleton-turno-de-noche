@@ -310,6 +310,57 @@ b { font-family: var(--font-mono); }
 .debrief__decisions li { padding: 0.35rem 0.6rem; border-left: 2px solid var(--accent); background: var(--panel); font-size: 0.95rem; }
 .debrief__share { display: flex; align-items: center; gap: 0.75rem; margin: 0; color: var(--text-dim); font-size: 0.9rem; }
 
+/* ---------- Recompensas ---------- */
+.rewards { position: absolute; inset: 0; pointer-events: none; z-index: 6; }
+.float {
+  position: fixed; display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.2rem 0.55rem;
+  border-radius: 999px; background: rgb(11 12 14 / 0.85); font-family: var(--font-mono); font-weight: 700; font-size: 1.05rem;
+  transform: translate(-50%, -50%); white-space: nowrap; box-shadow: 0 0 0 1px currentColor;
+}
+.float--life_support { color: #4fd1e0; }
+.float--food { color: #7ccf6a; }
+.float--dose { color: #ffb347; }
+.harvest {
+  position: fixed; transform: translate(-50%, -50%); pointer-events: auto;
+  display: grid; justify-items: center; gap: 0; width: 58px; height: 58px; padding: 0;
+  border-radius: 50%; border: 2px solid #7ccf6a; background: rgb(11 12 14 / 0.88); color: #7ccf6a; cursor: pointer;
+  font: inherit; font-size: 0.7rem; font-weight: 700; align-content: center;
+  box-shadow: 0 0 18px -2px #7ccf6a; animation: harvest-bob 1.2s ease-in-out infinite;
+}
+@keyframes harvest-bob { 0%, 100% { margin-top: 0; } 50% { margin-top: -6px; } }
+.daynote {
+  position: absolute; left: 50%; top: 6.4rem; transform: translateX(-50%);
+  display: grid; grid-template-columns: auto 1fr; gap: 0.6rem; align-items: center;
+  width: min(26rem, calc(100% - 2rem)); padding: 0.6rem 0.8rem;
+  background: rgb(22 24 28 / 0.95); border: 1px solid var(--panel-border); border-left: 4px solid var(--crew); border-radius: 12px;
+  animation: daynote-in 300ms ease-out;
+}
+@keyframes daynote-in { from { opacity: 0; transform: translate(-50%, -8px); } to { opacity: 1; transform: translate(-50%, 0); } }
+.daynote__check { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; background: color-mix(in srgb, var(--ok) 20%, transparent); color: var(--ok); }
+.daynote p { margin: 0; }
+.daynote__title { font-weight: 700; }
+.daynote__line { display: flex; gap: 0.4rem; align-items: center; font-size: 0.88rem; color: var(--text-dim); margin-top: 0.15rem !important; }
+.daynote__line strong { color: var(--crew); }
+.celebrate { position: absolute; inset: 0; display: grid; place-items: center; pointer-events: auto; background: rgb(0 0 0 / 0.35); }
+.celebrate__card { display: grid; justify-items: center; gap: 0.3rem; padding: 1.2rem 2rem 1.3rem; background: rgb(22 24 28 / 0.96); border: 2px solid var(--accent); border-radius: 18px; animation: pop 380ms cubic-bezier(.2,1.4,.4,1); }
+@keyframes pop { from { transform: scale(0.6); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.celebrate__badge { display: grid; place-items: center; width: 72px; height: 72px; border-radius: 50%; background: radial-gradient(circle, rgb(255 179 71 / 0.35), rgb(255 179 71 / 0.05)); color: var(--accent); box-shadow: 0 0 0 3px var(--accent); }
+.celebrate__card p { margin: 0; }
+.celebrate__kicker { color: var(--accent); font-family: var(--font-mono); font-size: 0.75rem; letter-spacing: 0.12em; text-transform: uppercase; }
+.celebrate__title { font-size: 1.5rem; font-weight: 700; text-align: center; }
+.celebrate__confetti { position: absolute; inset: 0; overflow: hidden; }
+.celebrate__confetti span {
+  position: absolute; top: -12px; left: var(--x); width: 8px; height: 12px; border-radius: 2px;
+  background: hsl(calc(var(--i) * 47), 85%, 62%); animation: confetti 2.4s var(--d) ease-in forwards;
+}
+@keyframes confetti { to { transform: translate(calc((var(--i) - 12) * 6px), 105vh) rotate(calc(var(--i) * 70deg)); opacity: 0.2; } }
+/* Cohete de progreso en el marcador */
+.hud__progress { position: relative; padding-right: 18px; }
+.hud__rocket { position: absolute; top: -15px; transform: translateX(-50%) rotate(90deg); color: var(--accent); transition: left 600ms ease-out; }
+.hud__ship { position: absolute; right: 0; top: -2px; color: var(--text); }
+.hud__xp { margin-left: 0.6rem; padding: 0.05rem 0.4rem; border-radius: 999px; background: rgb(255 179 71 / 0.15); color: var(--accent); font-size: 0.72rem; letter-spacing: 0; }
+@media (prefers-reduced-motion: reduce) { .harvest { animation: none; } }
+
 /* ---------- Guía de la primera partida y ayuda ---------- */
 .overlay {
   position: absolute; inset: 0; z-index: 20;
