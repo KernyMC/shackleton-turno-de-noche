@@ -220,6 +220,8 @@ export function createBase(heightAt: (x: number, z: number) => number = () => 0)
   const shelterLamp = new THREE.PointLight(AMBER_DEEP, 0, 26, 1.6);
   shelterLamp.position.set(0, heightAt(0, 0) + 4, 0);
   group.add(shelter, shelterLamp);
+  /** Piezas luminosas del modelo GLB del refugio (aro de la escotilla). */
+  const shelterGlow = new THREE.MeshStandardMaterial({ color: 0x111111, emissive: AMBER, emissiveIntensity: 0 });
   let shelterTarget = 0;
   let shelterShown = 0;
 
@@ -298,6 +300,13 @@ export function createBase(heightAt: (x: number, z: number) => number = () => 0)
             if (mats.some((mat) => mat.name === 'glow')) {
               mats.forEach((mat) => mat.dispose());
               o.material = parts.get(id)!.band;
+            } else if (mats.some((mat) => mat.name === 'glass')) {
+              for (const mat of mats) {
+                mat.transparent = true;
+                mat.opacity = 0.26;
+                mat.depthWrite = false;
+              }
+              o.castShadow = false;
             }
             o.userData.moduleId = id;
             pickables.push(o);
@@ -314,11 +323,17 @@ export function createBase(heightAt: (x: number, z: number) => number = () => 0)
       try {
         const gltf = await loader.loadAsync(SHELTER_MODEL_URL);
         if (!disposed) {
-          fitModel(gltf.scene, 3);
+          fitModel(gltf.scene, 3.4);
           gltf.scene.traverse((o) => {
             o.castShadow = true;
             o.receiveShadow = true;
+            if (o instanceof THREE.Mesh && !Array.isArray(o.material) && o.material.name === 'glow') {
+              o.material.dispose();
+              o.material = shelterGlow;
+            }
           });
+          // La entrada del refugio mira al sur, entre el taller y el blindaje.
+          gltf.scene.rotation.y = Math.PI;
           gltf.scene.position.y += heightAt(0, 0);
           shelter.visible = false;
           group.add(gltf.scene);
@@ -378,6 +393,7 @@ export function createBase(heightAt: (x: number, z: number) => number = () => 0)
       }
       shelterShown = damp(shelterShown, shelterTarget, 4, dt);
       shelterMat.emissiveIntensity = shelterShown * 0.9;
+      shelterGlow.emissiveIntensity = 0.15 + shelterShown * 3;
       shelterLamp.intensity = shelterShown * 60;
 
       // El rover sale hacia el sur y vuelve, sin teletransportes.

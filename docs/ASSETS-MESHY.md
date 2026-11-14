@@ -1,5 +1,9 @@
 # Modelos 3D con Meshy (u otro generador)
 
+> **Estado:** los 7 modelos ya existen, hechos en Blender por script (`npm run models:build`, ver
+> `scripts/blender/build_models.py` y las vistas previas en `docs/previews/`). Este documento queda
+> como alternativa si se quiere sustituir alguno por un modelo generado.
+
 El juego funciona sin estos archivos: cada módulo tiene una forma hecha por código. Si generas
 modelos y los pones en `public/models/`, el juego los usa en su lugar. La luz ámbar, el aro de
 energía en el suelo y el rótulo con ícono **se mantienen**, así que la energía se sigue viendo.

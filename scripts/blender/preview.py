@@ -14,6 +14,24 @@ bpy.ops.object.select_all(action="SELECT")
 bpy.ops.object.delete()
 bpy.ops.import_scene.gltf(filepath=source)
 
+# Como en el juego: el cristal es transparente y las piezas "glow" brillan en ámbar.
+for mat in bpy.data.materials:
+    bsdf = mat.node_tree.nodes.get("Principled BSDF") if mat.use_nodes else None
+    if not bsdf:
+        continue
+    if mat.name.startswith("glass"):
+        bsdf.inputs["Alpha"].default_value = 0.22
+        try:
+            mat.surface_render_method = "BLENDED"
+        except Exception:
+            mat.blend_method = "BLEND"
+    if mat.name.startswith("glow"):
+        try:
+            bsdf.inputs["Emission Color"].default_value = (1.0, 0.45, 0.08, 1.0)
+            bsdf.inputs["Emission Strength"].default_value = 6.0
+        except KeyError:
+            pass
+
 # Caja que contiene el modelo, para encuadrar.
 points = [obj.matrix_world @ Vector(corner) for obj in bpy.context.scene.objects if obj.type == "MESH" for corner in obj.bound_box]
 low = Vector((min(p.x for p in points), min(p.y for p in points), min(p.z for p in points)))
@@ -46,8 +64,8 @@ for engine in ("BLENDER_EEVEE_NEXT", "BLENDER_EEVEE", "BLENDER_WORKBENCH"):
         break
     except TypeError:
         continue
-scene.render.resolution_x = 900
-scene.render.resolution_y = 700
+scene.render.resolution_x = 760
+scene.render.resolution_y = 560
 scene.render.filepath = target
 bpy.ops.render.render(write_still=True)
 print("PREVIEW", target, scene.render.engine)
