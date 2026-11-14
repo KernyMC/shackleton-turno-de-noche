@@ -11,15 +11,16 @@ import { num } from './format';
 import { Icon } from './icons';
 import type { IconName } from './icons';
 
-function Step({ icon, label, value, tip, cls }: { icon: IconName; label: string; value: string; tip: string; cls: string }) {
+function Step({ icon, label, value, tip, cls, mark }: { icon: IconName; label: string; value: string; tip: string; cls: string; mark?: string }) {
   return (
-    <span class={`eflow__step eflow__step--${cls}`} tabIndex={0} aria-label={`${label}: ${value}. ${tip}`}>
+    <span class={`eflow__step eflow__step--${cls}`} tabIndex={0} aria-label={`${label}: ${value}${mark ? ` (${mark})` : ''}. ${tip}`}>
       <span class="eflow__icon" aria-hidden="true">
         <Icon name={icon} size={18} />
       </span>
       <span class="eflow__text" aria-hidden="true">
         <span class="eflow__label">{label}</span>
         <b class="eflow__value">{value}</b>
+        {mark && <span class="eflow__mark">{mark}</span>}
       </span>
       <span class="eflow__tip" role="tooltip">
         {tip}
@@ -34,6 +35,9 @@ export function EnergyFlow({ compact = false }: { compact?: boolean }) {
   if (!g || !b) return null;
   const capacity = defaultConfig.balance.difficulty[g.difficulty].batteryCapacity;
   const noSun = b.solar < 0.5;
+  // Polvo en los paneles: el porcentaje sale del balance, no está escrito a mano.
+  const dustPct = Math.round((1 - defaultConfig.balance.effects.dustSolarFactor) * 100);
+  const dusty = g.dust && !noSun;
   return (
     <div class={`eflow${compact ? ' eflow--compact' : ''}${noSun ? ' eflow--night' : ''}`} role="group" aria-label={t('eflow.aria')}>
       <div class="eflow__row">
@@ -42,7 +46,8 @@ export function EnergyFlow({ compact = false }: { compact?: boolean }) {
           icon={noSun ? 'moon' : 'sun'}
           label={t(noSun ? 'eflow.no_sun' : 'eflow.sun')}
           value={noSun ? '0' : `+${num(b.solar, 0)}`}
-          tip={t(noSun ? 'eflow.tip.no_sun' : 'eflow.tip.sun')}
+          tip={dusty ? `${t('eflow.tip.sun')} ${t('eflow.tip.dust', { pct: dustPct })}` : t(noSun ? 'eflow.tip.no_sun' : 'eflow.tip.sun')}
+          mark={dusty ? t('eflow.dust', { pct: dustPct }) : undefined}
         />
         <span class="eflow__arrow" aria-hidden="true">
           <Icon name="arrow" size={16} />

@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { collectHarvest, dayNote, earned, floats, harvest, milestone, startRewardsWatcher, xp } from './rewards';
+import type { LogEntry } from '../sim/types';
+import { collectHarvest, dayNote, earned, floats, freshEntries, harvest, milestone, startRewardsWatcher, xp } from './rewards';
 import { executeDay, game, RESOLVE_MS, rewindTo, setPlanValue, startGame } from './store';
 
 let stop: () => void;
@@ -56,5 +57,17 @@ describe('recompensas', () => {
     rewindTo(1);
     expect(game.value!.day).toBe(1);
     expect(xp.value).toBe(before);
+  });
+
+  it('freshEntries devuelve cada entrada una sola vez, aunque se vuelva atrás', () => {
+    const met: LogEntry = { day: 5, type: 'achievement', key: 'log.act.met', vars: { act: 1, name: 'llegada' } };
+    const unlock: LogEntry = { day: 4, type: 'achievement', key: 'log.unlock', vars: { module: 'workshop' } };
+    const other: LogEntry = { day: 4, type: 'info', key: 'log.something' };
+    const seen = new Set<string>();
+    expect(freshEntries([unlock, other, met], seen, ['log.act.met', 'log.unlock'])).toEqual([unlock, met]);
+    expect(freshEntries([unlock, other, met], seen, ['log.act.met', 'log.unlock'])).toEqual([]);
+    // Un acto distinto sí es nuevo.
+    const met2: LogEntry = { ...met, day: 10, vars: { act: 2, name: 'sol_despierta' } };
+    expect(freshEntries([unlock, met, met2], seen, ['log.act.met', 'log.unlock'])).toEqual([met2]);
   });
 });

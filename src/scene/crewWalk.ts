@@ -45,6 +45,8 @@ export interface CrewWalk {
    * y hace un gesto breve. Como mucho una reacción cada 1,5 s por tripulante; nada con reduced motion.
    */
   react(id: ModuleId, delta: number, newValue: number): void;
+  /** Se desbloqueó un módulo: los cuatro aplauden (pose de alegría y un saltito) una vez. Nada con reduced motion ni en refugio. */
+  celebrate(): void;
   /** Se pasó el día con una reparación en marcha: la barra se llena y salta una ráfaga de chispas. */
   repairBeat(): void;
   /** Cuántos astronautas hay y dónde está la cabeza de cada uno (false si no se ve). Sin asignar memoria. */
@@ -327,6 +329,17 @@ export function createCrewWalk(routes: Record<ModuleId, THREE.Vector3[]>, member
     },
     repairBeat() {
       beatLeft = BEAT_SECONDS;
+    },
+    celebrate() {
+      if (state.shelter) return;
+      for (const w of walkers) {
+        if (w.forced || !w.astro.group.visible) continue;
+        w.react.pending = false;
+        w.gesture.left = GESTURE_SECONDS + 0.4;
+        w.gesture.up = true;
+        w.gesture.amount = 1;
+        w.astro.hop();
+      }
     },
     anchor(index, out) {
       const w = walkers[index];

@@ -28,5 +28,9 @@ Registro honesto de qué se hizo con ayuda de IA. Añade una línea por sesión 
 | 2026-11-14 | Claude Code (Anthropic) | Mejoras v2, bloque A (claridad): flujo de energía en el HUD, plan de HOY, reparar rediseñado, onboarding de 6 tarjetas, energía visible en 3D y onomatopeyas de reparación | Pendiente de revisión del equipo |
 | 2026-11-14 | Claude Code (Anthropic) | Mejoras v2, bloque D1–D3: alarma y aviso de avería, baliza y humo en 3D, tormenta solar con lluvia de partículas, domo y dosis flotante, infografías de eventos | Pendiente de revisión del equipo |
 | 2026-11-14 | Claude Code (Anthropic) | Mejoras v2, bloque C: crew.json con roles, panel de tripulación con ánimo y actividad, soporte de fotos del equipo, animaciones por rol, reacciones al plan y reparación animada | Pendiente de revisión del equipo |
+| 2026-11-14 | Claude Code (Anthropic) | Mejoras v4, paso 1 (interfaz y escena): tarjeta de acto, meta del acto, candados, avance rápido, evento de polvo, módulos en obras y globos de la tripulación | Pendiente de revisión del equipo |
+| 2026-11-14 | Claude Code (Anthropic) | Modo Tutorial (partida guiada con semilla fija), arreglo de la guía y menú con tres modos: Tutorial, Cadete y Comandante | Pendiente de revisión del equipo |
+| 2026-11-14 | Claude Code (Anthropic) | Piel de juego «Consola de misión Apolo» (skin.css, fuentes B612 y Barlow Condensed auto-alojadas) y arreglos de solapes del HUD en escritorio y móvil | Pendiente de revisión del equipo |
+| 2026-11-14 | Claude Code (Anthropic) | Documentación y proceso: README en español e inglés, CREDITS, LICENSE, corrección de estados en sources.json, rúbrica, memoria del proyecto (STATUS, dominios, reglas, skills) y test guardián de textos | Pendiente de revisión del equipo |
 
 Si se usan modelos 3D o audio generados (por ejemplo Tripo o Suno), anotarlos aquí y en `CREDITS.md`.

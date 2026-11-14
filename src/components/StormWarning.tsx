@@ -4,6 +4,7 @@ import './../styles/warning.css';
 import { t } from '../i18n';
 import { stormWarning } from '../sim/comms';
 import { game } from '../state/store';
+import { gameMode } from '../state/mode';
 
 function Antenna() {
   return (
@@ -19,6 +20,8 @@ function Antenna() {
 
 export function StormWarning() {
   const g = game.value;
+  // El tutorial termina el día 5: no anuncia tormentas de más adelante.
+  if (gameMode.value === 'tutorial') return null;
   const warning = g ? stormWarning(g) : null;
   if (!warning) return null;
   const vars = { dias: warning.inDays, nivel: warning.level ? Number(warning.level.slice(1)) : '?' };

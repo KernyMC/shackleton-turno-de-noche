@@ -1,20 +1,25 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { executeDay, exitToMenu, interact, RESOLVE_MS, setPlanValue, startGame, tabletOpen } from './store';
+import { resourceLevels } from '../sim/thresholds';
+import { defaultConfig } from '../sim/config';
+import { chooseEventOption, executeDay, exitToMenu, game, interact, RESOLVE_MS, setPlanValue, startGame, tabletOpen } from './store';
+import { gameMode, startNormal, startTutorial, TUTORIAL_DAYS, TUTORIAL_SEED, tutorialDone } from './mode';
 import {
   ackTutorial,
-  contextHint,
-  dismissHint,
+  firstRun,
   onboardingOpen,
   resetTutorial,
   skipTutorial,
   startTutorialWatcher,
   TUTORIAL_MIN,
+  tutorialEnd,
   tutorialStep,
+  tutorialWarn,
 } from './tutorial';
 
 let stop: () => void;
 beforeEach(() => {
   vi.useFakeTimers();
+  gameMode.value = 'normal';
   resetTutorial();
   onboardingOpen.value = false;
   exitToMenu();
@@ -25,21 +30,23 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
-/** Sigue la guía del día 1 y pasa al día 2: queda el aviso de noche. */
-function reachNight(): void {
-  ackTutorial();
-  interact('recycler');
-  setPlanValue('recycler', TUTORIAL_MIN.recycler);
-  setPlanValue('greenhouse', TUTORIAL_MIN.greenhouse);
+/** Ejecuta el día y deja pasar la animación. */
+const pass = (): void => {
   executeDay();
   vi.advanceTimersByTime(RESOLVE_MS);
-}
+};
 
-describe('guía de la primera partida', () => {
-  it('avanza sola con cada acción del jugador, del saludo al día 2', () => {
-    startGame('cadete', 11);
+describe('modo Tutorial', () => {
+  it('usa Cadete con la semilla fija y empieza con la presentación', () => {
+    startTutorial();
+    expect(gameMode.value).toBe('tutorial');
+    expect(game.value?.seed).toBe(TUTORIAL_SEED);
+    expect(game.value?.difficulty).toBe('cadete');
     expect(tutorialStep.value).toBe('welcome');
+  });
 
+  it('cada paso avanza con la acción del jugador, del día 1 al final del día 5', () => {
+    startTutorial();
     ackTutorial();
     expect(tutorialStep.value).toBe('pick_recycler');
     expect(tabletOpen.value).toBe(true);
@@ -50,95 +57,151 @@ describe('guía de la primera partida', () => {
     expect(tutorialStep.value).toBe('power_recycler');
     setPlanValue('recycler', TUTORIAL_MIN.recycler);
     expect(tutorialStep.value).toBe('greenhouse');
-
-    interact('greenhouse');
-    expect(tutorialStep.value).toBe('greenhouse');
     setPlanValue('greenhouse', TUTORIAL_MIN.greenhouse);
     expect(tutorialStep.value).toBe('execute');
-    executeDay();
-    vi.advanceTimersByTime(RESOLVE_MS);
-    expect(tutorialStep.value).toBe('night');
+    pass(); // día 2
 
+    expect(game.value?.day).toBe(2);
+    expect(tutorialStep.value).toBe('d2_flow');
     ackTutorial();
+    expect(tutorialStep.value).toBe('d2_pass');
+    pass(); // día 3: cosecha (evento)
+
+    expect(game.value?.phase).toBe('event');
+    expect(game.value?.pendingEvent?.kind).toBe('harvest');
+    expect(tutorialStep.value).toBe('d3_harvest');
+    expect(chooseEventOption('ok')).toBe(true);
+    expect(tutorialStep.value).toBe('d3_forecast');
+    ackTutorial();
+    expect(tutorialStep.value).toBe('d3_pass');
+    pass(); // día 4: polvo con dos opciones
+
+    expect(game.value?.pendingEvent?.kind).toBe('dust');
+    expect(game.value?.pendingEvent?.options.length).toBe(2);
+    expect(tutorialStep.value).toBe('d4_dust');
+    expect(chooseEventOption('tilt')).toBe(true);
+    expect(tutorialStep.value).toBe('d4_workshop');
+    ackTutorial();
+    expect(tutorialStep.value).toBe('d4_pass');
+    pass(); // día 5
+
+    expect(game.value?.day).toBe(5);
+    expect(tutorialStep.value).toBe('d5_goal');
+    ackTutorial();
+    expect(tutorialStep.value).toBe('d5_pass');
+    expect(tutorialEnd.value).toBe(false);
+    pass(); // se cierra el día 5: fin del tutorial, sin pasar al acto 2
+
     expect(tutorialStep.value).toBeNull();
+    expect(tutorialEnd.value).toBe(true);
+    expect(tutorialDone()).toBe(true);
+    expect(game.value?.day).toBe(TUTORIAL_DAYS + 1);
   });
 
-  it('se salta varios pasos si el jugador ya los hizo', () => {
-    startGame('cadete', 12);
+  it('con la semilla fija y una jugada guiada, el acto 1 se cumple y aire y comida no bajan de Bajo', () => {
+    startTutorial();
     ackTutorial();
-    interact('greenhouse'); // va directo al invernadero: el paso del reciclador sigue esperando
-    expect(tutorialStep.value).toBe('pick_recycler');
-    interact('recycler');
-    setPlanValue('recycler', 30);
-    expect(tutorialStep.value).toBe('greenhouse');
+    for (let i = 0; i < 40 && !tutorialEnd.value; i++) {
+      const g = game.value!;
+      if (g.phase === 'event') chooseEventOption(g.pendingEvent!.options.find((o) => !o.disabledReason)!.id);
+      else {
+        setPlanValue('recycler', TUTORIAL_MIN.recycler);
+        setPlanValue('greenhouse', TUTORIAL_MIN.greenhouse);
+        pass();
+      }
+      expect(tutorialWarn.value).toBeNull();
+    }
+    expect(tutorialEnd.value).toBe(true);
+    const g = game.value!;
+    const levels = resourceLevels(g, defaultConfig);
+    expect(levels.lifeSupport).toBe(0);
+    expect(levels.food).toBe(0);
+    // El objetivo del acto 1 se evaluó al cerrar el día 5.
+    expect(g.log.some((e) => e.key === 'log.act.met')).toBe(true);
   });
 
-  it('se puede saltar y nunca impide jugar', () => {
-    startGame('cadete', 13);
+  it('si el jugador se adelanta, la guía lo alcanza (no se queda en un paso viejo)', () => {
+    startTutorial();
+    ackTutorial();
+    setPlanValue('recycler', 30);
+    setPlanValue('greenhouse', 25);
+    pass();
+    expect(tutorialStep.value).toBe('d2_flow');
+    pass(); // pasa el día 2 sin pulsar «Entendido»
+    expect(tutorialStep.value).toBe('d3_harvest');
+  });
+
+  it('si aire o comida bajan, la guía avisa y señala el módulo', () => {
+    startTutorial();
+    ackTutorial();
+    const g = game.value!;
+    game.value = { ...g, lifeSupport: 20 };
+    expect(tutorialWarn.value).toBe('recycler');
+    game.value = { ...g, lifeSupport: 80, food: 20 };
+    expect(tutorialWarn.value).toBe('greenhouse');
+    game.value = { ...g, lifeSupport: 80, food: 80 };
+    expect(tutorialWarn.value).toBeNull();
+  });
+
+  it('«Saltar la guía» lleva a la tarjeta final y no se puede volver a la guía', () => {
+    startTutorial();
     skipTutorial();
     expect(tutorialStep.value).toBeNull();
-    expect(executeDay()).toBe(true);
-  });
-
-  it('ejecutar el día sin seguir la guía la retira: el aviso de noche cede en el día 3 y todo en el 4', () => {
-    startGame('cadete', 14);
-    reachNight(); // día 2
-    expect(tutorialStep.value).toBe('night');
-    executeDay();
-    vi.advanceTimersByTime(RESOLVE_MS); // día 3
+    expect(tutorialEnd.value).toBe(true);
+    pass();
     expect(tutorialStep.value).toBeNull();
   });
 
-  it('la presentación se puede reabrir en modo repaso sin tocar el tutorial', () => {
-    startGame('cadete', 15);
-    expect(onboardingOpen.value).toBe(false);
-    onboardingOpen.value = true;
+  it('al salir al menú la guía se limpia, y repetir el tutorial vuelve a empezar', () => {
+    startTutorial();
+    ackTutorial();
+    exitToMenu();
+    expect(tutorialStep.value).toBeNull();
+    startTutorial();
     expect(tutorialStep.value).toBe('welcome');
-    onboardingOpen.value = false;
+    skipTutorial();
+    startTutorial(); // misma semilla otra vez
+    expect(tutorialEnd.value).toBe(false);
     expect(tutorialStep.value).toBe('welcome');
+  });
+
+  it('una partida con otra semilla no es el tutorial', () => {
+    gameMode.value = 'tutorial';
+    startGame('cadete', 99);
+    expect(gameMode.value).toBe('normal');
   });
 });
 
-describe('pistas de los días 2 y 3', () => {
-  const pass = (): void => {
-    executeDay();
-    vi.advanceTimersByTime(RESOLVE_MS);
-  };
-
-  it('salen una sola vez cada una, tras el aviso de noche, y se cierran con un toque', () => {
-    startGame('cadete', 21);
-    reachNight(); // día 2: primero habla el aviso de noche
-    expect(tutorialStep.value).toBe('night');
-    expect(contextHint.value).toBeNull();
-    ackTutorial();
-    expect(contextHint.value).toBe('day2');
-    dismissHint();
-    expect(contextHint.value).toBeNull();
-    pass(); // día 3
-    expect(contextHint.value).toBe('day3');
-    dismissHint();
-    pass(); // día 4: nada más
-    expect(contextHint.value).toBeNull();
-  });
-
-  it('no se repiten en otra partida', () => {
-    startGame('cadete', 22);
-    reachNight();
-    ackTutorial();
-    expect(contextHint.value).toBe('day2');
-    dismissHint();
-    exitToMenu();
-    startGame('cadete', 23);
-    pass();
-    expect(contextHint.value).toBeNull();
-  });
-
-  it('si el jugador saltó la guía no aparecen', () => {
-    startGame('cadete', 24);
+describe('modo normal', () => {
+  it('sin haber hecho el tutorial, la presentación sale una vez y se puede saltar', () => {
+    startNormal('cadete');
+    expect(gameMode.value).toBe('normal');
+    expect(firstRun.value).toBe(true);
+    expect(tutorialStep.value).toBe('welcome');
     skipTutorial();
+    expect(tutorialStep.value).toBeNull();
+    expect(tutorialEnd.value).toBe(false);
+    startNormal('cadete');
+    expect(tutorialStep.value).toBeNull();
+  });
+
+  it('nunca hay burbujas paso a paso: tocar y jugar no activa ningún paso', () => {
+    startNormal('comandante');
+    ackTutorial();
+    expect(tutorialStep.value).toBeNull();
+    interact('recycler');
+    setPlanValue('recycler', 30);
+    expect(tutorialStep.value).toBeNull();
     pass();
-    expect(contextHint.value).toBeNull();
     pass();
-    expect(contextHint.value).toBeNull();
+    expect(tutorialStep.value).toBeNull();
+    expect(tutorialEnd.value).toBe(false);
+  });
+
+  it('con el tutorial completado no sale ni la presentación', () => {
+    startTutorial();
+    skipTutorial();
+    startNormal('cadete');
+    expect(tutorialStep.value).toBeNull();
   });
 });

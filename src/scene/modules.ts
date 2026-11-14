@@ -102,14 +102,19 @@ export function buildModuleShape(
   return g;
 }
 
+/** Candado (caja de 20×20) para los módulos en obras. */
+const LOCK_PATHS = ['M5 9h10v8H5Z', 'M7 9V6.5a3 3 0 0 1 6 0V9'];
+
 const LABEL_W = 512;
 const LABEL_H = 136;
 
-function drawLabel(canvas: HTMLCanvasElement, id: ModuleId, text: string): void {
+function drawLabel(canvas: HTMLCanvasElement, id: ModuleId, text: string, locked = false): void {
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
   ctx.clearRect(0, 0, LABEL_W, LABEL_H);
-  ctx.font = '700 58px "Space Grotesk", system-ui, sans-serif';
+  // En obras: el rótulo se atenúa y el ícono pasa a ser un candado.
+  ctx.globalAlpha = locked ? 0.55 : 1;
+  ctx.font = '700 58px "Barlow Condensed", system-ui, sans-serif';
   const textWidth = Math.min(ctx.measureText(text).width, LABEL_W - 150);
   const width = textWidth + 142;
   const x0 = (LABEL_W - width) / 2;
@@ -120,7 +125,7 @@ function drawLabel(canvas: HTMLCanvasElement, id: ModuleId, text: string): void 
   ctx.fillStyle = 'rgba(11, 12, 14, 0.86)';
   ctx.fill();
   ctx.lineWidth = 4;
-  ctx.strokeStyle = '#ffb347';
+  ctx.strokeStyle = locked ? '#8a8579' : '#ffb347';
   ctx.stroke();
 
   // Ícono (caja 20×20 escalada).
@@ -130,18 +135,21 @@ function drawLabel(canvas: HTMLCanvasElement, id: ModuleId, text: string): void 
   ctx.lineWidth = 1.7;
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
-  ctx.strokeStyle = '#ffb347';
-  for (const d of ICON_PATHS[id]) ctx.stroke(new Path2D(d));
+  ctx.strokeStyle = locked ? '#cfc9bb' : '#ffb347';
+  for (const d of locked ? LOCK_PATHS : ICON_PATHS[id]) ctx.stroke(new Path2D(d));
   ctx.restore();
 
   ctx.fillStyle = '#ece8df';
   ctx.textBaseline = 'middle';
   ctx.fillText(text, x0 + 116, LABEL_H / 2 + 3, LABEL_W - 150);
+  ctx.globalAlpha = 1;
 }
 
 export interface ModuleLabel {
   sprite: THREE.Sprite;
   setText(text: string): void;
+  /** Módulo en obras: candado y texto atenuado. */
+  setLocked(locked: boolean): void;
   dispose(): void;
 }
 
@@ -150,7 +158,9 @@ export function createModuleLabel(id: ModuleId, text: string): ModuleLabel {
   const canvas = document.createElement('canvas');
   canvas.width = LABEL_W;
   canvas.height = LABEL_H;
-  drawLabel(canvas, id, text);
+  let current = text;
+  let isLocked = false;
+  drawLabel(canvas, id, current, isLocked);
   const texture = new THREE.CanvasTexture(canvas);
   texture.colorSpace = THREE.SRGBColorSpace;
   const material = new THREE.SpriteMaterial({ map: texture, transparent: true, depthTest: false, toneMapped: false });
@@ -160,7 +170,14 @@ export function createModuleLabel(id: ModuleId, text: string): ModuleLabel {
   return {
     sprite,
     setText(next) {
-      drawLabel(canvas, id, next);
+      current = next;
+      drawLabel(canvas, id, current, isLocked);
+      texture.needsUpdate = true;
+    },
+    setLocked(locked) {
+      if (locked === isLocked) return;
+      isLocked = locked;
+      drawLabel(canvas, id, current, isLocked);
       texture.needsUpdate = true;
     },
     dispose() {

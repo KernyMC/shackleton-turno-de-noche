@@ -1,6 +1,14 @@
 ---
 import App from '../app/App';
+// Tipografías auto-alojadas (el juego funciona sin red): B612 para texto y números
+// y Barlow Condensed para títulos y etiquetas.
+import '@fontsource/b612/latin-400.css';
+import '@fontsource/b612/latin-700.css';
+import '@fontsource/barlow-condensed/latin-600.css';
+import '@fontsource/barlow-condensed/latin-700.css';
 import '../styles/global.css';
+// La piel de juego va la última: solo aspecto, no estructura.
+import '../styles/skin.css';
 ---
 
 <!doctype html>
@@ -9,12 +17,6 @@ import '../styles/global.css';
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="preconnect" href="https://fonts.googleapis.com" />
-		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-		<link
-			href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Space+Grotesk:wght@400;700&display=swap"
-			rel="stylesheet"
-		/>
 		<title>Shackleton: Turno de Noche</title>
 		<meta name="description" content="Dirige en primera persona la primera base humana en el polo sur de la Luna." />
 	</head>

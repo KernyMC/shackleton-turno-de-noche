@@ -21,7 +21,7 @@ export interface RepairFx {
 const AMBER = '#ffb347';
 const INK = '#0b0c0e';
 const OK = 0x7ccf8a;
-const FONT = "'Space Grotesk', system-ui, sans-serif";
+const FONT = "'Barlow Condensed', system-ui, sans-serif";
 
 /** Línea de tiempo (segundos desde play). */
 const BEAT = 0.5; // separación entre onomatopeyas

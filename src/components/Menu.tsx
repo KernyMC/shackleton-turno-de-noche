@@ -9,14 +9,16 @@ import { CREW, crewById, crewFullName, crewName } from '../data/crew';
 import type { CrewId } from '../data/crew';
 import { lang, t } from '../i18n';
 import type { World } from '../scene/world';
-import type { Difficulty } from '../sim/types';
 import { clearReady, markReady } from '../state/loading';
 import { loadSpaceWeather } from '../state/spaceWeather';
-import { commanderName, setCommanderName, startGame } from '../state/store';
+import { commanderName, setCommanderName } from '../state/store';
+import { menuMode, startNormal, startTutorial, tutorialDone } from '../state/mode';
+import type { MenuMode } from '../state/mode';
 import { sourcesOpen } from '../state/sources';
 import { helpOpen } from '../state/tutorial';
 import { CrewPortrait } from './CrewPortrait';
 import { SunStatus } from './SunStatus';
+import '../styles/tutorial.css';
 
 /** Duración de la secuencia de entrada (caminar + vuelo de cámara). */
 const ENTER_MS = 3600;
@@ -44,7 +46,9 @@ export function Menu() {
   const stepRef = useRef<Step>('title');
   const placeRef = useRef<() => void>(() => {});
   const [focused, setFocused] = useState<CrewId | null>(null);
-  const [difficulty, setDifficulty] = useState<Difficulty>('cadete');
+  // Quien nunca completó el tutorial lo ve preseleccionado; la ayuda también puede fijarlo.
+  const done = tutorialDone();
+  const mode: MenuMode = menuMode.value ?? (done ? 'cadete' : 'tutorial');
   const [launching, setLaunching] = useState(false);
   const [has3d, setHas3d] = useState(true);
 
@@ -126,7 +130,8 @@ export function Menu() {
       // Tope de tiempo: si la pestaña se oculta y la animación se pausa, la partida empieza igual.
       await Promise.race([world.current?.flyIn(ENTER_MS), new Promise((r) => setTimeout(r, ENTER_MS + 500))]);
     } finally {
-      startGame(difficulty);
+      if (mode === 'tutorial') startTutorial();
+      else startNormal(mode);
     }
   };
 
@@ -214,23 +219,24 @@ export function Menu() {
             autoComplete="off"
             onInput={(e) => setCommanderName(e.currentTarget.value)}
           />
-          <div class="segmented" role="radiogroup" aria-label={t('crew.difficulty')}>
-            {(['cadete', 'comandante'] as Difficulty[]).map((d) => (
+          <div class="segmented segmented--3" role="radiogroup" aria-label={t('crew.difficulty')}>
+            {(['tutorial', 'cadete', 'comandante'] as MenuMode[]).map((d) => (
               <button
                 key={d}
                 type="button"
                 role="radio"
-                aria-checked={difficulty === d}
-                class={`segmented__btn${difficulty === d ? ' segmented__btn--on' : ''}`}
-                onClick={() => setDifficulty(d)}
+                aria-checked={mode === d}
+                class={`segmented__btn${mode === d ? ' segmented__btn--on' : ''}`}
+                onClick={() => (menuMode.value = d)}
               >
                 <strong>{t(`menu.mission.${d}`)}</strong>
+                {d === 'tutorial' && !done && <span class="tut-badge">{t('menu.mission.start_here')}</span>}
                 <span>{t(`menu.mission.${d}.what`)}</span>
               </button>
             ))}
           </div>
           <button ref={startButton} type="button" class="btn btn--primary crewscreen__go" disabled={launching} onClick={launch}>
-            {t('crew.start')}
+            {t(mode === 'tutorial' ? 'crew.start_tutorial' : 'crew.start')}
           </button>
         </main>
       )}

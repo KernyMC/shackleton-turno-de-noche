@@ -19,6 +19,11 @@ export interface EnergyFlow {
   setBattery(fraction: number): void;
   /** Arranca el reparto de energía del día. Sin efecto con movimiento reducido. */
   play(plan: Record<ModuleId, number>, night: boolean): void;
+  /**
+   * Polvo sobre los paneles: se ven grises y mates y dan menos rayos. Con `puff` (se acaban de limpiar,
+   * polvo -> sin polvo) sale una nube que se expande y cae despacio. La nube no sale con movimiento reducido.
+   */
+  setDust(dusty: boolean, puff?: boolean): void;
   /** Calidad: en baja, la mitad de partículas y sin rayos. */
   setTier(tier: EnergyTier): void;
   update(dt: number, time: number, reduced: boolean): void;
@@ -55,6 +60,19 @@ const SUN_RAY_LENGTH = 14;
 /** Los rayos son un recurso visual: más inclinados que el Sol real (casi a ras de suelo parecerían un camino). */
 const RAY_ELEVATION = 0.55;
 const NIGHT_LIGHT = 0.1;
+/** Polvo: cuánto se opacan los paneles y cuánto bajan los rayos y las partículas del Sol. */
+const DUST_COVER = 0.72;
+const DUST_RAY_CUT = 0.65;
+const DUST_PARTICLE_CUT = 0.5;
+const DUST_COLOR = 0x938e84;
+const PANEL_BLUE = 0x1d4a8a;
+const DUST_EMISSIVE = 0x6e6a62;
+/** Nube de polvo al limpiar: partículas por calidad, duración y caída lenta (gravedad baja, no la lunar). */
+const CLOUD: Record<EnergyTier, number> = { high: 44, medium: 28, low: 14 };
+const MAX_CLOUD = CLOUD.high;
+const CLOUD_SECONDS = 2.6;
+const CLOUD_GRAVITY = 0.7;
+const CLOUD_DRAG = 1.1;
 
 const damp = (current: number, target: number, k: number, dt: number): number =>
   current + (target - current) * (1 - Math.exp(-k * dt));
@@ -98,6 +116,27 @@ function cellTexture(): THREE.CanvasTexture {
   return tex;
 }
 
+/** Manchas suaves para el velo de polvo (mapa de opacidad): el polvo no cubre parejo. */
+function dustAlphaTexture(rng: () => number): THREE.CanvasTexture {
+  const c = document.createElement('canvas');
+  c.width = c.height = 64;
+  const ctx = c.getContext('2d')!;
+  ctx.fillStyle = 'rgb(150,150,150)';
+  ctx.fillRect(0, 0, 64, 64);
+  for (let i = 0; i < 26; i++) {
+    const x = rng() * 64;
+    const y = rng() * 64;
+    const r = 6 + rng() * 14;
+    const v = rng() > 0.35 ? 255 : 90;
+    const g = ctx.createRadialGradient(x, y, 0, x, y, r);
+    g.addColorStop(0, `rgba(${v},${v},${v},0.8)`);
+    g.addColorStop(1, `rgba(${v},${v},${v},0)`);
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, 64, 64);
+  }
+  return new THREE.CanvasTexture(c);
+}
+
 function glowTexture(): THREE.CanvasTexture {
   const c = document.createElement('canvas');
   c.width = c.height = 32;
@@ -123,6 +162,13 @@ export function createEnergyFlow(heightAt: (x: number, z: number) => number = ()
     new THREE.MeshStandardMaterial({ color: 0xffffff, map: cells, roughness: 0.28, metalness: 0.55, emissive: 0x1d4a8a, emissiveIntensity: 0 }),
   );
   const panelGeo = own(new THREE.BoxGeometry(3.4, 0.1, 2.2));
+  const veilGeo = own(new THREE.PlaneGeometry(3.3, 2.1));
+  const veilMat = own(
+    new THREE.MeshStandardMaterial({
+      color: DUST_COLOR, roughness: 1, metalness: 0, transparent: true, opacity: 0, alphaMap: own(dustAlphaTexture(rng)), depthWrite: false,
+    }),
+  );
+  const veils: THREE.Mesh[] = [];
   const postGeo = own(new THREE.CylinderGeometry(0.09, 0.12, PANEL_POST, 8));
   const metalMat = own(new THREE.MeshStandardMaterial({ color: 0x6a6b6e, roughness: 0.55, metalness: 0.35 }));
   const posts = new THREE.InstancedMesh(postGeo, metalMat, PANEL_ZS.length);
@@ -142,6 +188,14 @@ export function createEnergyFlow(heightAt: (x: number, z: number) => number = ()
     panel.position.y = 0.3;
     panel.castShadow = true;
     panel.receiveShadow = true;
+    // Velo de polvo sobre la cara del panel (oculto mientras no hay polvo).
+    const veil = new THREE.Mesh(veilGeo, veilMat);
+    veil.rotation.x = -Math.PI / 2;
+    veil.position.y = 0.058;
+    veil.renderOrder = 1;
+    veil.visible = false;
+    panel.add(veil);
+    veils.push(veil);
     pivot.add(panel);
     group.add(pivot);
     pivots.push(pivot);
@@ -224,6 +278,26 @@ export function createEnergyFlow(heightAt: (x: number, z: number) => number = ()
   points.renderOrder = 5;
   group.add(points);
 
+  // --- Nube de polvo (un solo Points con color RGBA por partícula; oculta en reposo) ---
+  const cPos = new Float32Array(MAX_CLOUD * 3);
+  const cCol = new Float32Array(MAX_CLOUD * 4);
+  const cVel = new Float32Array(MAX_CLOUD * 3);
+  const cDelay = new Float32Array(MAX_CLOUD);
+  const cLife = new Float32Array(MAX_CLOUD);
+  const cGeo = own(new THREE.BufferGeometry());
+  cGeo.setAttribute('position', new THREE.BufferAttribute(cPos, 3));
+  cGeo.setAttribute('color', new THREE.BufferAttribute(cCol, 4));
+  const cMat = own(
+    new THREE.PointsMaterial({ size: 3.4, map: sprite, vertexColors: true, transparent: true, depthWrite: false, toneMapped: false }),
+  );
+  const cloud = new THREE.Points(cGeo, cMat);
+  cloud.visible = false;
+  cloud.frustumCulled = false;
+  cloud.renderOrder = 6;
+  group.add(cloud);
+  let cloudCount = 0;
+  let cloudT = -1; // < 0: sin nube
+
   // Estado por partícula: A (origen), C (control del arco), B (destino), progreso, velocidad, espera.
   const path = new Float32Array(MAX_PARTICLES * 9);
   const prog = new Float32Array(MAX_PARTICLES);
@@ -279,12 +353,73 @@ export function createEnergyFlow(heightAt: (x: number, z: number) => number = ()
   let nightPlay = false;
   let rayAmount = 0;
   let glowShown = 0;
+  let dusty = false;
+  let dustTarget = 0;
+  let dustShown = 0;
+  let dustFirst = true;
+  let puffPending = false;
   let active = 0; // partículas en uso
   let flying = 0; // partículas todavía en vuelo
   const sunDir = new THREE.Vector3(0, 1, 0);
   const UP = new THREE.Vector3(0, 1, 0);
   const alertColor = new THREE.Color(ALERT);
   const amberColor = new THREE.Color(AMBER);
+  const dustColor = new THREE.Color(DUST_EMISSIVE);
+  let dustApply = false;
+
+  /** Nube al limpiar: sale de los paneles, se expande hacia los lados y cae despacio. */
+  const startCloud = (): void => {
+    cloudCount = Math.min(MAX_CLOUD, CLOUD[tier]);
+    cloudT = 0;
+    for (let i = 0; i < cloudCount; i++) {
+      const p = panelCenters[i % panelCenters.length]!;
+      cPos[i * 3] = p.x + (rng() - 0.5) * 2.6;
+      cPos[i * 3 + 1] = p.y + 0.1;
+      cPos[i * 3 + 2] = p.z + (rng() - 0.5) * 1.8;
+      const dir = rng() * Math.PI * 2;
+      const sp = 0.7 + rng() * 1.7;
+      cVel[i * 3] = Math.cos(dir) * sp;
+      cVel[i * 3 + 1] = 0.9 + rng() * 1.5;
+      cVel[i * 3 + 2] = Math.sin(dir) * sp;
+      cDelay[i] = rng() * 0.35;
+      cLife[i] = 1.6 + rng() * 0.8;
+      cCol.set([0.6, 0.58, 0.53, 0], i * 4);
+    }
+    cGeo.setDrawRange(0, cloudCount);
+    cloud.visible = true;
+  };
+  const updateCloud = (dt: number): void => {
+    cloudT += dt;
+    const drag = Math.exp(-CLOUD_DRAG * dt);
+    for (let i = 0; i < cloudCount; i++) {
+      const t = cloudT - cDelay[i]!;
+      if (t < 0) {
+        cCol[i * 4 + 3] = 0;
+        continue;
+      }
+      const o = i * 3;
+      cVel[o] = cVel[o]! * drag;
+      cVel[o + 2] = cVel[o + 2]! * drag;
+      cVel[o + 1] = cVel[o + 1]! * drag - CLOUD_GRAVITY * dt;
+      cPos[o] = cPos[o]! + cVel[o]! * dt;
+      cPos[o + 1] = cPos[o + 1]! + cVel[o + 1]! * dt;
+      cPos[o + 2] = cPos[o + 2]! + cVel[o + 2]! * dt;
+      // Se posa sobre los paneles: nunca baja de su altura.
+      const floor = panelCenters[i % panelCenters.length]!.y - 0.3;
+      if (cPos[o + 1]! < floor) {
+        cPos[o + 1] = floor;
+        cVel[o + 1] = 0;
+      }
+      const k = Math.min(1, t / cLife[i]!);
+      cCol[i * 4 + 3] = Math.min(1, t / 0.15) * (1 - k) * (1 - k) * 0.55;
+    }
+    cGeo.attributes.position!.needsUpdate = true;
+    cGeo.attributes.color!.needsUpdate = true;
+    if (cloudT > CLOUD_SECONDS) {
+      cloudT = -1;
+      cloud.visible = false;
+    }
+  };
 
   const placeSun = (): void => {
     // Misma fórmula que el Sol de world.ts: elevación 0,09 + luz * 0,14.
@@ -338,6 +473,16 @@ export function createEnergyFlow(heightAt: (x: number, z: number) => number = ()
       tier = next;
       if (playing) stopAll();
     },
+    setDust(next, puff) {
+      if (dustFirst) {
+        // El primer estado se aplica de golpe (cargar la partida no levanta ninguna nube).
+        dustFirst = false;
+        dustShown = next ? 1 : 0;
+        dustApply = true;
+      } else if (puff && dusty && !next) puffPending = true;
+      dusty = next;
+      dustTarget = next ? 1 : 0;
+    },
     play(plan, night) {
       stopAll();
       playing = true;
@@ -351,8 +496,10 @@ export function createEnergyFlow(heightAt: (x: number, z: number) => number = ()
         weights[i] = w;
         sum += w;
       }
-      const panelCount = night ? 0 : sum > 0 ? Math.round(total * PANEL_SHARE) : total;
-      const moduleCount = sum > 0 ? total - panelCount : 0;
+      // Con polvo salen menos partículas del Sol; las que van a los módulos no cambian.
+      const fullPanel = night ? 0 : sum > 0 ? Math.round(total * PANEL_SHARE) : total;
+      const panelCount = night || sum <= 0 ? fullPanel : Math.round(fullPanel * (dusty ? 1 - DUST_PARTICLE_CUT : 1));
+      const moduleCount = sum > 0 ? total - fullPanel : 0;
       active = panelCount + moduleCount;
       let n = 0;
       for (let i = 0; i < panelCount; i++, n++) {
@@ -384,7 +531,25 @@ export function createEnergyFlow(heightAt: (x: number, z: number) => number = ()
       const day = light >= NIGHT_LIGHT;
       // Paneles: brillan con el Sol y se apagan de noche.
       glowShown = damp(glowShown, playing && day && !reduced ? 1 : 0, 5, dt);
-      panelMat.emissiveIntensity = (day ? 0.04 + light * 0.14 : 0) + glowShown * 0.5 * (reduced ? 0 : 0.8 + 0.2 * Math.sin(time * 3));
+      // Polvo: velo gris, mate y sin brillo; con la limpieza los paneles vuelven a brillar.
+      if (dustShown !== dustTarget || dustApply) {
+        dustApply = false;
+        dustShown = reduced ? dustTarget : damp(dustShown, dustTarget, 2.2, dt);
+        if (Math.abs(dustShown - dustTarget) < 0.003) dustShown = dustTarget;
+        veilMat.opacity = DUST_COVER * dustShown;
+        const showVeil = dustShown > 0.005;
+        for (const v of veils) v.visible = showVeil;
+        panelMat.roughness = 0.28 + 0.5 * dustShown;
+        panelMat.metalness = 0.55 - 0.35 * dustShown;
+        panelMat.emissive.setHex(PANEL_BLUE).lerp(dustColor, dustShown);
+      }
+      const shine = 1 - 0.8 * dustShown;
+      panelMat.emissiveIntensity = ((day ? 0.04 + light * 0.14 : 0) + glowShown * 0.5 * (reduced ? 0 : 0.8 + 0.2 * Math.sin(time * 3))) * shine;
+      if (puffPending) {
+        puffPending = false;
+        if (!reduced) startCloud();
+      }
+      if (cloudT >= 0) updateCloud(dt);
       // Batería: el indicador persigue a su objetivo.
       if (Math.abs(batteryShown - batteryTarget) > 0.0005) {
         batteryShown = reduced ? batteryTarget : damp(batteryShown, batteryTarget, 4, dt);
@@ -395,7 +560,7 @@ export function createEnergyFlow(heightAt: (x: number, z: number) => number = ()
       const wantRays = playing && day && !nightPlay && tier !== 'low' && !reduced;
       rayAmount = damp(rayAmount, wantRays ? 1 : 0, 4, dt);
       const raysOn = rayAmount > 0.01;
-      rayMat.opacity = 0.07 * rayAmount * light;
+      rayMat.opacity = 0.07 * rayAmount * light * (1 - DUST_RAY_CUT * dustShown);
       for (const ray of rays) ray.visible = raysOn;
 
       if (!playing && flying === 0) return;

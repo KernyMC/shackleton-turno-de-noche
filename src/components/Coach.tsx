@@ -1,17 +1,21 @@
-// Guía para quien juega por primera vez (7–12 años): presentación de 6 tarjetas (Onboarding) y un
-// tripulante con cara que acompaña el día 1 paso a paso, más pistas breves los días 2 y 3. Y la leyenda "¿Cómo se juega?", disponible siempre.
+// Guía del juego (7–12 años): presentación (Onboarding), burbujas de un tripulante con cara en el modo
+// Tutorial, tarjeta final del tutorial y la leyenda "¿Cómo se juega?", disponible siempre.
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { t } from '../i18n';
 import { defaultConfig } from '../sim/config';
-import { game } from '../state/store';
-import { ackTutorial, contextHint, dismissHint, helpOpen, onboardingOpen, skipTutorial, TUTORIAL_MIN, tutorialStep } from '../state/tutorial';
-import type { HintId, TutorialStep } from '../state/tutorial';
+import { exitToMenu, game, resolving, screen, tabletOpen } from '../state/store';
+import { actCard, toast } from '../state/acts';
+import { dayDone, milestone, reacting } from '../state/rewards';
+import { ackTutorial, helpOpen, onboardingOpen, skipTutorial, TUTORIAL_MIN, tutorialEnd, tutorialStep, tutorialWarn } from '../state/tutorial';
+import { gameMode, menuMode, TUTORIAL_DAYS } from '../state/mode';
+import type { TutorialStep } from '../state/tutorial';
 import { crewById, crewName } from '../data/crew';
 import type { CrewId } from '../data/crew';
 import { CrewPortrait } from './CrewPortrait';
 import { Icon } from './icons';
 import type { IconName } from './icons';
 import { Onboarding } from './Onboarding';
+import { TutorialDone } from './TutorialDone';
 
 /** Datos del juego que aparecen en los textos: salen de la configuración, no se escriben a mano. */
 function facts() {
@@ -32,11 +36,10 @@ function facts() {
     invernadero: TUTORIAL_MIN.greenhouse,
     taller: cfg.balance.effects.workshopMinEnergy,
     aviso: cfg.balance.events.warningDays,
+    meta: cfg.balance.acts.list[0]?.goal.target ?? 0,
   };
 }
 
-/** Los pasos de acción, en orden, para los puntos de progreso. */
-const STEPS: TutorialStep[] = ['pick_recycler', 'power_recycler', 'greenhouse', 'execute', 'night'];
 /** Quién habla en cada paso: el tripulante que cuida lo que se enseña. */
 const SPEAKER: Record<TutorialStep, CrewId> = {
   welcome: 'valeria',
@@ -44,14 +47,43 @@ const SPEAKER: Record<TutorialStep, CrewId> = {
   power_recycler: 'valeria',
   greenhouse: 'mateo',
   execute: 'lucia',
-  night: 'lucia',
+  d2_flow: 'lucia',
+  d2_pass: 'valeria',
+  d3_harvest: 'mateo',
+  d3_forecast: 'lucia',
+  d3_pass: 'lucia',
+  d4_dust: 'amaru',
+  d4_workshop: 'lucia',
+  d4_pass: 'lucia',
+  d5_goal: 'amaru',
+  d5_pass: 'lucia',
 };
+/** Lo que señala el aro de cada paso (si existe en pantalla; si no, no se dibuja). */
+const TARGET: Partial<Record<TutorialStep, string>> = {
+  d2_flow: '.eflow',
+  d3_forecast: '.forecast',
+  d4_workshop: '.meter[data-module="workshop"]',
+  d5_goal: '.act-pill',
+};
+const WARN_TARGET: Record<string, string> = {
+  recycler: '.meter[data-module="recycler"]',
+  greenhouse: '.meter[data-module="greenhouse"]',
+};
+/** Pasos que esperan el botón «¡Entendido!». */
+const MANUAL_STEPS: ReadonlySet<TutorialStep> = new Set(['d2_flow', 'd3_forecast', 'd4_workshop', 'd5_goal']);
+
+/** Día del tutorial al que pertenece cada paso (para la etiqueta «Día N de 5»). */
+function dayOf(step: TutorialStep): number {
+  const m = /^d(\d)_/.exec(step);
+  return m ? Number(m[1]) : 1;
+}
 
 /** Burbuja del tripulante que guía el paso actual. Esc salta la guía. */
 function Bubble({ step }: { step: TutorialStep }) {
-  const manual = step === 'night';
-  const index = STEPS.indexOf(step);
+  const manual = MANUAL_STEPS.has(step);
   const speaker = crewById(SPEAKER[step]);
+  const warn = tutorialWarn.value;
+  const target = warn ? WARN_TARGET[warn] : TARGET[step];
   useEffect(() => {
     const onKey = (e: KeyboardEvent): void => {
       if (e.key === 'Escape' && !helpOpen.value) skipTutorial();
@@ -60,35 +92,40 @@ function Bubble({ step }: { step: TutorialStep }) {
     return () => window.removeEventListener('keydown', onKey);
   }, []);
   return (
-    <div class="coach" role="status" aria-live="polite" style={{ '--crew': speaker.css }} key={step}>
-      <span class="coach__portrait" aria-hidden="true">
-        <CrewPortrait crew={speaker.id} color={speaker.css} size={48} mood="happy" />
-      </span>
-      <div class="coach__body">
-        <p class="coach__voice">
-          <strong>{crewName(speaker.id)}</strong>
-          {index >= 0 && (
-            <span class="coach__dots" role="img" aria-label={t('coach.step', { n: index + 1, total: STEPS.length })}>
-              {STEPS.map((s, i) => (
-                <span key={s} class={`coach__dot${i < index ? ' coach__dot--done' : i === index ? ' coach__dot--now' : ''}`} />
-              ))}
-            </span>
-          )}
-        </p>
-        <p class="coach__text">{t(`coach.${step}`, facts())}</p>
-        <div class="coach__actions">
-          {manual && (
-            <button type="button" class="btn btn--small btn--primary" onClick={ackTutorial}>
-              {t('coach.ok')}
+    <>
+      {target && tabletOpen.value && <Spot selector={target} />}
+      <div class="coach" role="status" aria-live="polite" style={{ '--crew': speaker.css }} key={step}>
+        <span class="coach__portrait" aria-hidden="true">
+          <CrewPortrait crew={speaker.id} color={speaker.css} size={48} mood="happy" />
+        </span>
+        <div class="coach__body">
+          <p class="coach__voice">
+            <strong>{crewName(speaker.id)}</strong>
+            <span class="tut-day">{t('coach.day', { n: dayOf(step), total: TUTORIAL_DAYS })}</span>
+          </p>
+          <p class="coach__text">{t(`coach.${step}`, facts())}</p>
+          {warn && <p class="coach__text tut-warn">{t(warn === 'recycler' ? 'coach.low_air' : 'coach.low_food')}</p>}
+          <div class="coach__actions">
+            {manual && (
+              <button type="button" class="btn btn--small btn--primary" onClick={ackTutorial}>
+                {t('coach.ok')}
+              </button>
+            )}
+            <button type="button" class="linkbtn" onClick={skipTutorial}>
+              {t('coach.skip')}
             </button>
-          )}
-          <button type="button" class="linkbtn" onClick={skipTutorial}>
-            {t('coach.skip')}
-          </button>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
+}
+
+/** «Jugar el tutorial» desde la ayuda: deja el tutorial elegido en el menú (si hay una partida, vuelve al menú). */
+function playTutorialFromHelp(): void {
+  helpOpen.value = false;
+  menuMode.value = 'tutorial';
+  if (screen.value === 'game') exitToMenu();
 }
 
 /** Leyenda de la pantalla: qué es cada cosa, en una línea. */
@@ -166,17 +203,13 @@ function Help() {
         >
           {t('help.replay')}
         </button>
+        <button type="button" class="btn btn--primary tut-help-play" onClick={playTutorialFromHelp}>
+          {t('help.play_tutorial')}
+        </button>
       </section>
     </div>
   );
 }
-
-/** Quién habla y qué señala cada pista de los días 2 y 3. */
-const HINTS: Record<HintId, { speaker: CrewId; target: string }> = {
-  day2: { speaker: 'valeria', target: '.eflow' },
-  day3: { speaker: 'lucia', target: '.forecast' },
-};
-const HINT_MS = 14000;
 
 /** Aro que rodea lo que señala la pista; si no existe en pantalla, no se dibuja nada. */
 function Spot({ selector }: { selector: string }) {
@@ -199,44 +232,14 @@ function Spot({ selector }: { selector: string }) {
   return <div class="onb-spot" aria-hidden="true" style={{ left: `${box.x - 4}px`, top: `${box.y - 4}px`, width: `${box.w + 8}px`, height: `${box.h + 8}px` }} />;
 }
 
-/** Pista breve y sin bloqueo: se cierra sola o con un toque. */
-function Hint({ id }: { id: HintId }) {
-  const { speaker: who, target } = HINTS[id];
-  const speaker = crewById(who);
-  useEffect(() => {
-    const timer = window.setTimeout(dismissHint, HINT_MS);
-    return () => window.clearTimeout(timer);
-  }, [id]);
-  return (
-    <>
-      <Spot selector={target} />
-      <div class="coach onb-hint" role="status" aria-live="polite" style={{ '--crew': speaker.css }} key={id} onClick={dismissHint}>
-        <span class="coach__portrait" aria-hidden="true">
-          <CrewPortrait crew={speaker.id} color={speaker.css} size={48} mood="happy" />
-        </span>
-        <div class="coach__body">
-          <p class="coach__voice">
-            <strong>{crewName(speaker.id)}</strong>
-          </p>
-          <p class="coach__text">{t(`coach.hint_${id}`)}</p>
-          <div class="coach__actions">
-            <button type="button" class="btn btn--small btn--primary" onClick={dismissHint}>
-              {t('coach.ok')}
-            </button>
-          </div>
-        </div>
-      </div>
-    </>
-  );
-}
-
 export function Coach() {
   const step = tutorialStep.value;
-  const hint = contextHint.value;
   if (onboardingOpen.value) return <Onboarding review vars={facts()} />;
   if (helpOpen.value) return <Help />;
-  if (step === 'welcome') return <Onboarding vars={facts()} />;
-  if (step) return <Bubble step={step} />;
-  if (hint) return <Hint id={hint} />;
+  if (tutorialEnd.value) return <TutorialDone />;
+  if (step === 'welcome') return <Onboarding vars={facts()} tutorial={gameMode.value === 'tutorial'} />;
+  // La burbuja cede el sitio a los avisos de fin de día, a la tarjeta de acto y a los avisos cortos.
+  const busy = dayDone.value !== null || milestone.value !== null || reacting.value || resolving.value || toast.value !== null || actCard.value !== null;
+  if (step) return busy ? null : <Bubble step={step} />;
   return null;
 }

@@ -54,18 +54,13 @@
       "url": "https://svs.gsfc.nasa.gov/4720"
     },
     "nasa_3d_resources": {
-      "name_es": "Modelos 3D del módulo lunar y el vehículo",
-      "name_en": "Lunar module and vehicle 3D models",
-      "explain_es": "El módulo de aterrizaje y el vehículo de exploración son modelos 3D publicados por NASA.",
-      "explain_en": "The lander and the exploration vehicle are 3D models published by NASA.",
-      "status": "verified",
-      "requires_files": [
-        "models/lander.glb",
-        "models/rover.glb"
-      ],
-      "status_without_files": "game_balance",
-      "source_name": "NASA 3D Resources",
-      "url": "https://github.com/nasa/NASA-3D-Resources"
+      "name_es": "Modelos 3D de la base, el módulo lunar y el vehículo",
+      "name_en": "3D models of the base, the lunar lander and the rover",
+      "explain_es": "Los modelos de la base los hizo el equipo con Blender. No son modelos de NASA: solo miramos sus imágenes públicas como referencia.",
+      "explain_en": "The team built the base models with Blender. They are not NASA models: we only looked at its public images as a reference.",
+      "status": "game_balance",
+      "source_name": "Modelado propio del equipo Halo Sur (scripts/blender/build_models.py)",
+      "url": null
     },
     "bvad": {
       "name_es": "Consumo de oxígeno, agua y comida",

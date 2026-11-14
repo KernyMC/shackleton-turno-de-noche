@@ -8,11 +8,13 @@
 import { CREW, crewFullName } from '../data/crew';
 import { t } from '../i18n';
 import { defaultConfig } from '../sim/config';
+import { isUnlocked } from '../sim/acts';
 import { getLight } from '../sim/engine';
 import { MODULE_IDS } from '../sim/types';
 import type { GameState, ModuleId } from '../sim/types';
 import type { Verdict } from '../sim/verdict';
-import { budget, focusModule, plan, preview, requestRepair, resolving, setPlanValue } from '../state/store';
+import { unlockFlash } from '../state/acts';
+import { budget, focusModule, plan, preview, requestClean, requestRepair, resolving, setPlanValue } from '../state/store';
 import { CrewPortrait } from './CrewPortrait';
 import { EnergyFlow } from './EnergyFlow';
 import { num, signed } from './format';
@@ -31,7 +33,7 @@ function yieldOf(id: ModuleId, value: number, game: GameState): { icon: IconName
   const b = defaultConfig.balance;
   const fx = b.effects;
   const e = value / b.modules[id].maxEnergy;
-  if (isSheltered(id, game) || game.modules[id].broken) return null;
+  if (!isUnlocked(game, id) || isSheltered(id, game) || game.modules[id].broken) return null;
   switch (id) {
     case 'recycler':
       return { icon: 'life_support', text: signed(fx.recyclerLifeSupport * e) };
@@ -50,9 +52,11 @@ function Column({ id, game, onClamped }: { id: ModuleId; game: GameState; onClam
   const max = defaultConfig.balance.modules[id].maxEnergy;
   const value = plan.value[id];
   const blocks = Math.ceil(max / BLOCK);
-  const broken = game.modules[id].broken;
-  const sheltered = isSheltered(id, game);
-  const disabled = broken || resolving.value || (budget.value?.available ?? 0) < 1;
+  const locked = !isUnlocked(game, id);
+  const flash = unlockFlash.value?.module === id;
+  const broken = !locked && game.modules[id].broken;
+  const sheltered = !locked && isSheltered(id, game);
+  const disabled = locked || broken || resolving.value || (budget.value?.available ?? 0) < 1;
   const active = focusModule.value === id;
   const crew = CREW.find((c) => c.module === id)!;
   const out = yieldOf(id, value, game);
@@ -74,14 +78,14 @@ function Column({ id, game, onClamped }: { id: ModuleId; game: GameState; onClam
 
   return (
     <div
-      class={`meter${active ? ' meter--active' : ''}${broken ? ' meter--broken' : ''}${sheltered ? ' meter--sheltered' : ''}`}
+      class={`meter${active ? ' meter--active' : ''}${broken ? ' meter--broken' : ''}${sheltered ? ' meter--sheltered' : ''}${locked ? ' meter--locked' : ''}${flash ? ' meter--flash' : ''}`}
       style={{ '--mod': COLOR[id] }}
       data-module={id}
-      onPointerDown={() => (focusModule.value = id)}
+      onPointerDown={() => !locked && (focusModule.value = id)}
     >
       <div class="meter__head">
         <span class="meter__icon">
-          <Icon name={broken ? 'alert' : sheltered ? 'shield' : id} size={20} />
+          <Icon name={locked ? 'lock' : broken ? 'alert' : sheltered ? 'shield' : id} size={20} />
         </span>
         <span class="meter__name">{t(`module.${id}`)}</span>
       </div>
@@ -97,6 +101,7 @@ function Column({ id, game, onClamped }: { id: ModuleId; game: GameState; onClam
         aria-valuenow={value}
         aria-valuetext={t('board.valuetext', { valor: value, max, modulo: t(`module.${id}`) })}
         aria-disabled={disabled}
+        aria-hidden={locked ? 'true' : undefined}
         onKeyDown={onKeyDown}
         onFocus={() => (focusModule.value = id)}
       >
@@ -120,12 +125,19 @@ function Column({ id, game, onClamped }: { id: ModuleId; game: GameState; onClam
         })}
       </div>
 
-      <p class="meter__value">
-        <b>{value}</b>
-        <span>/{max}</span>
-      </p>
+      {locked ? (
+        <p class="meter__lock">
+          <b>{t('lock.title')}</b>
+          <span>{t('lock.soon')}</span>
+        </p>
+      ) : (
+        <p class="meter__value">
+          <b>{value}</b>
+          <span>/{max}</span>
+        </p>
+      )}
 
-      {broken ? (
+      {locked ? null : broken ? (
         <p class={`meter__state${game.repairToday === id ? ' meter__state--fixing' : ''}`}>
           <Icon name={game.repairToday === id ? 'workshop' : 'alert'} size={14} />
           {t(game.repairToday === id ? 'board.repairing' : 'board.broken')}
@@ -141,7 +153,7 @@ function Column({ id, game, onClamped }: { id: ModuleId; game: GameState; onClam
         </div>
       )}
 
-      <p class={`meter__out${out?.ready ? ' meter__out--ready' : ''}`}>
+      <p class={`meter__out${out?.ready ? ' meter__out--ready' : ''}`} hidden={locked}>
         {out ? (
           <>
             <Icon name={out.icon} size={14} />
@@ -151,7 +163,7 @@ function Column({ id, game, onClamped }: { id: ModuleId; game: GameState; onClam
           <span class="meter__off">{t(broken ? 'board.broken' : 'board.shelter')}</span>
         )}
       </p>
-      <span class="meter__crew" title={crewFullName(crew.id)}>
+      <span class="meter__crew" title={crewFullName(crew.id)} hidden={locked}>
         <CrewPortrait crew={crew.id} color={crew.css} size={22} />
       </span>
     </div>
@@ -269,6 +281,37 @@ function RepairCards({ game: g }: { game: GameState }) {
   );
 }
 
+/** Polvo en los paneles: una tarjeta como la de reparar, con un solo botón claro. */
+function DustCard({ game: g }: { game: GameState }) {
+  if (!g.dust || g.phase !== 'planning') return null;
+  const min = defaultConfig.balance.effects.workshopMinEnergy;
+  const canClean = isUnlocked(g, 'workshop') && !g.modules.workshop.broken && (budget.value?.available ?? 0) >= min;
+  const on = g.cleanToday;
+  return (
+    <div class="repairs">
+      <div class={`repair repair--dust${on ? ' repair--on' : ''}`}>
+        <span class="repair__icon" aria-hidden="true">
+          <Icon name="sun" size={22} />
+        </span>
+        <div class="repair__body">
+          <p class="repair__title">{t(on ? 'dust.on' : 'dust.title')}</p>
+          {!on && !canClean && <p class="repair__note repair__note--warn">{t('dust.need', { min })}</p>}
+        </div>
+        {on ? (
+          <button type="button" class="btn btn--small btn--ghost" disabled={resolving.value} onClick={() => requestClean(false)}>
+            {t('dust.cancel')}
+          </button>
+        ) : (
+          <button type="button" class="btn btn--small repair__go" disabled={!canClean || resolving.value} onClick={() => requestClean(true)}>
+            <Icon name="workshop" size={16} />
+            {t('dust.button', { min })}
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
 /** Pronóstico de Sol: hoy y los próximos días, para decidir cuánto guardar. */
 function SunForecast({ game: g }: { game: GameState }) {
   const total = defaultConfig.balance.days;
@@ -303,6 +346,7 @@ export function PowerBoard({ game: g, verdict, onClamped }: { game: GameState; v
     <>
       <ShareBar game={g} wasted={verdict.wasted} />
       <RepairCards game={g} />
+      <DustCard game={g} />
       <div class="board" role="group" aria-label={t('board.aria')}>
         {MODULE_IDS.map((id) => (
           <Column key={id} id={id} game={g} onClamped={onClamped} />

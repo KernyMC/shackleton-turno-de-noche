@@ -69,8 +69,24 @@ function HarvestBubble() {
     if (!h) return;
     const p = sceneBridge.project?.('greenhouse');
     if (el.current && p) {
-      el.current.style.left = `${p.x}px`;
-      el.current.style.top = `${p.y - 30}px`;
+      // Zona segura: debajo de la barra superior, la pastilla y los avisos; dentro de la pantalla.
+      const H = window.innerHeight;
+      let floor = 0;
+      let ceiling = H;
+      document
+        .querySelectorAll('.topbar, .act-pill, .daydone, .act-toast, .warn, .alert-toast, .coach, .feed, .resources, .hud__plan, .tablet:not(.tablet--away), .voice')
+        .forEach((node) => {
+          const r = node.getBoundingClientRect();
+          if (r.width < 2 || r.height < 2) return;
+          // Lo que vive en la mitad de arriba empuja hacia abajo; lo de abajo, hacia arriba.
+          if (r.top + r.height / 2 < H / 2) floor = Math.max(floor, r.bottom);
+          else ceiling = Math.min(ceiling, r.top);
+        });
+      const half = 30;
+      const x = Math.min(window.innerWidth - half - 8, Math.max(half + 8, p.x));
+      const y = Math.max(floor + half + 10, Math.min(ceiling - half - 10, p.y - 30));
+      el.current.style.left = `${x}px`;
+      el.current.style.top = `${y}px`;
     }
     // Si nadie la toca, se recoge sola: nunca bloquea el avance.
     const auto = setTimeout(() => collectHarvest(false), 3200);

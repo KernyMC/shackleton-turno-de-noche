@@ -11,15 +11,18 @@ import {
   applyPreset,
   budget,
   executeDay,
+  fastForwarding,
   focusModule,
   game,
   plan,
   preview,
   resolving,
+  startFastForward,
   tabletOpen,
   toggleTablet,
 } from '../state/store';
-import { helpOpen, tutorialStep } from '../state/tutorial';
+import { firstRun, helpOpen, tutorialStep } from '../state/tutorial';
+import { gameMode } from '../state/mode';
 import { reacting } from '../state/rewards';
 import { playCommit } from '../audio/sfx';
 import { EventPanel } from './EventPanel';
@@ -79,6 +82,18 @@ function Planner({ game: g }: { game: GameState }) {
           <svg width="18" height="18" viewBox="0 0 20 20" aria-hidden="true"><path d="M6 4l10 6-10 6Z" fill="currentColor" /></svg>
           {resolving.value ? t('tablet.resolving') : t('tablet.execute', { dia: g.day })}
         </button>
+        {gameMode.value !== 'tutorial' && !(firstRun.value && g.day <= 2) && !resolving.value && !fastForwarding.value && g.phase === 'planning' && (
+          <button
+            type="button"
+            class="btn btn--ghost btn--ff"
+            title={t('ff.hint')}
+            aria-label={t('ff.hint')}
+            onClick={() => void startFastForward()}
+          >
+            <Icon name="ff" size={18} />
+            {t('ff.button')}
+          </button>
+        )}
         {g.lastPlan && (
           <button
             type="button"
@@ -130,13 +145,14 @@ export function Tablet() {
   const day = g?.day;
   useEffect(() => {
     if (!open || !g || g.phase !== 'planning' || resolving.value || !g.lastPlan) return;
-    const total = Object.values(plan.value).reduce((a, b) => a + b, 0);
-    if (total === 0) applyPreset('repeat');
+    // El Taller puede venir ya reservado por un evento (limpiar, reparar): eso no cuenta como plan hecho.
+    const p = plan.value;
+    if (p.recycler + p.greenhouse + p.shield === 0) applyPreset('repeat');
   }, [open, day, g?.phase, resolving.value]);
 
   if (!open || !g) return null;
   // Mientras la base reacciona al día ejecutado, el panel se aparta para que se vea la maqueta.
-  const away = !inEvent && (resolving.value || reacting.value);
+  const away = !inEvent && (resolving.value || reacting.value || fastForwarding.value);
 
   const onKeyDown = (e: KeyboardEvent): void => {
     if (e.key === 'Escape') {

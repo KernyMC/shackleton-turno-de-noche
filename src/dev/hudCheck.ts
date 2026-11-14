@@ -21,13 +21,14 @@ const BLOCKS = [
   '.warn',
   '.alert-toast',
   '.coach',
-  '.celebrate__card',
+  '.celebrate:not(.celebrate--big) .celebrate__card',
   '.harvest',
   '.scene__hint',
   '.scene__label',
-  '[class^="crewp-panel"], .crewp-panel',
+  '.crewp',
   '[class*="actpill"], .act-pill',
   '[class*="ffbar"], .ff-bar',
+  '.act-toast',
 ];
 
 /** Pares que SÍ pueden tocarse: uno vive dentro del otro. */
@@ -109,7 +110,18 @@ export function hudCheck(): {
     const cx = Math.min(W - 1, Math.max(0, r.left + r.width / 2));
     const cy = Math.min(H - 1, Math.max(0, r.top + r.height / 2));
     const top = document.elementFromPoint(cx, cy);
-    if (top && top !== el && !el.contains(top) && !top.contains(el)) {
+    // Bajo el pie fijo del panel (se llega con scroll) no cuenta como tapado.
+    const underFooter = !!top?.closest('.tablet__actions') && !!el.closest('.tablet') && !el.closest('.tablet__actions');
+    // Fuera de la zona visible de un contenedor con scroll (se llega desplazando) tampoco cuenta.
+    let scrolledOut = false;
+    for (let a = el.parentElement; a && a !== document.body; a = a.parentElement) {
+      const oy = getComputedStyle(a).overflowY;
+      if (oy !== 'auto' && oy !== 'scroll') continue;
+      const ar = a.getBoundingClientRect();
+      if (cy < ar.top || cy > ar.bottom) scrolledOut = true;
+      break;
+    }
+    if (top && top !== el && !el.contains(top) && !top.contains(el) && !underFooter && !scrolledOut) {
       const who = top.closest('[class]')?.className?.toString().split(' ')[0] ?? top.tagName.toLowerCase();
       buttons.push(`tapado por .${who}: ${label}`);
     }

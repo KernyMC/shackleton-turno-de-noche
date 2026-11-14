@@ -34,6 +34,17 @@ function audio(): AudioContext | null {
   }
 }
 
+/** Contexto de audio compartido (lo usa el ambiente). Quien lo pida decide si respeta mute y pestaña oculta. */
+export function sharedContext(): AudioContext | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    ctx ??= new AudioContext();
+    return ctx;
+  } catch {
+    return null;
+  }
+}
+
 /** Nota corta con envolvente suave. */
 function tone(freq: number, start: number, duration: number, volume = 0.06, type: OscillatorType = 'sine', slideTo?: number): void {
   const ac = audio();

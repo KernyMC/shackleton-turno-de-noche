@@ -26,7 +26,10 @@ export type IconName =
   | 'bolt'
   | 'arrow'
   | 'lungs'
-  | 'crew';
+  | 'crew'
+  | 'target'
+  | 'lock'
+  | 'ff';
 
 const PATHS: Record<IconName, JSX.Element> = {
   // Dos flechas en ciclo.
@@ -150,6 +153,29 @@ const PATHS: Record<IconName, JSX.Element> = {
       <path d="M3.5 17c0-2.4 2.8-4 6.5-4s6.5 1.6 6.5 4" />
       <circle cx="10" cy="8" r="5.5" />
       <path d="M6.8 7.2a3.2 2.6 0 0 1 6.4 0v1a3.2 2.6 0 0 1-6.4 0Z" />
+    </>
+  ),
+  // Diana: la meta del acto.
+  target: (
+    <>
+      <circle cx="10" cy="10" r="7.5" />
+      <circle cx="10" cy="10" r="4" />
+      <circle cx="10" cy="10" r="0.9" />
+    </>
+  ),
+  // Candado: módulo en construcción.
+  lock: (
+    <>
+      <rect x="4.5" y="9" width="11" height="8" rx="2" />
+      <path d="M7 9V6.5a3 3 0 0 1 6 0V9" />
+      <path d="M10 12.5v1.8" />
+    </>
+  ),
+  // Doble flecha: avanzar varios días.
+  ff: (
+    <>
+      <path d="M3 5l6 5-6 5Z" />
+      <path d="M10.5 5l6 5-6 5Z" />
     </>
   ),
   // Información.

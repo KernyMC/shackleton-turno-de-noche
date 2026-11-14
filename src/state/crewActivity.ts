@@ -2,6 +2,7 @@
 // Devuelve una clave i18n (`crew.act.*`) y sus variables; el texto vive en i18n.
 import { crewById } from '../data/crew';
 import type { CrewId } from '../data/crew';
+import { isUnlocked } from '../sim/acts';
 import type { GameState } from '../sim/types';
 
 export interface CrewActivity {
@@ -17,6 +18,7 @@ export function crewActivity(g: GameState, id: CrewId): CrewActivity {
   const mod = member.module;
   const stormShelter = g.stormToday !== null && g.shelterToday;
   if (stormShelter) return { key: 'crew.act.shelter', special: true };
+  if (!isUnlocked(g, mod)) return { key: 'crew.act.locked', special: true };
   if (id === 'lucia' && g.repairToday) return { key: 'crew.act.repairing', vars: { module: g.repairToday }, special: true };
   const roverOut = g.roverSendToday || g.pendingEffects.some((e) => e.kind === 'rover_water');
   if (id === 'lucia' && roverOut) return { key: 'crew.act.rover', special: true };

@@ -17,6 +17,9 @@ interface OptionView {
   /** Líneas de consecuencia, ya traducidas. */
   effects: string[];
   recommended?: boolean;
+  /** Lo que se gana y lo que se pierde, en dos líneas con etiqueta (eventos de polvo). */
+  gain?: string;
+  lose?: string;
 }
 
 function formatDate(iso: string): string {
@@ -67,6 +70,22 @@ function optionView(event: PendingEvent, option: EventOption, game: GameState): 
           t(game.difficulty === 'comandante' ? 'event.effect.rover_gain_maybe' : 'event.effect.rover_gain', { valor: fx.roverLifeSupport }),
         ],
       };
+    case 'dust.clean':
+      return {
+        icon: 'workshop',
+        effects: [],
+        gain: t('event.effect.dust_clean_gain'),
+        lose: t('event.effect.dust_clean_cost', { min: fx.workshopMinEnergy }),
+      };
+    case 'dust.tilt':
+      return {
+        icon: 'sun',
+        effects: [],
+        gain: t('event.effect.dust_tilt_gain'),
+        lose: t('event.effect.dust_tilt_cost', { pct: Math.round(fx.dustSolarFactor * 100) }),
+      };
+    case 'harvest.ok':
+      return { icon: 'food', effects: [t('event.effect.harvest', { valor: fx.harvestFood })] };
     case 'ice.skip':
       return { icon: 'close', effects: [t('event.effect.nothing')] };
     default:
@@ -74,7 +93,7 @@ function optionView(event: PendingEvent, option: EventOption, game: GameState): 
   }
 }
 
-const EVENT_ICON: Record<string, IconName> = { storm: 'sun', breakdown: 'alert', ice: 'life_support', night_warning: 'moon' };
+const EVENT_ICON: Record<string, IconName> = { storm: 'sun', breakdown: 'alert', ice: 'life_support', night_warning: 'moon', dust: 'sun', harvest: 'food' };
 
 export function EventPanel({ game }: { game: GameState }) {
   const event = game.pendingEvent;
@@ -157,6 +176,16 @@ export function EventPanel({ game }: { game: GameState }) {
               {view.effects.map((line) => (
                 <span key={line} class="option__effect">{line}</span>
               ))}
+              {view.gain && (
+                <span class="option__effect option__effect--gain">
+                  <b>{t('event.gain')}</b> {view.gain}
+                </span>
+              )}
+              {view.lose && (
+                <span class="option__effect option__effect--lose">
+                  <b>{t('event.lose')}</b> {view.lose}
+                </span>
+              )}
               {option.disabledReason && (
                 <span class="option__reason">
                   <Icon name="alert" size={14} />

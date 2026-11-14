@@ -1,0 +1,153 @@
+/* PIEL DE JUEGO: «Consola de misión Apolo» (docs/ARTE.md §8b).
+   Esta hoja se carga la ÚLTIMA y solo cambia el aspecto: tipografías, superficies, bordes, sombras
+   y botones. No mueve ni redimensiona la estructura. Reglas de la piel:
+   - Paneles OPACOS de hardware: sin vidrio, sin desenfoque, borde de 2 px y sombra dura.
+   - Botones físicos: bisel arriba, sombra dura abajo, y se hunden 2 px al pulsar.
+   - Tres tipografías auto-alojadas (funcionan sin red):
+       Barlow Condensed → títulos, etiquetas y botones (mayúsculas, como rótulos de consola)
+       B612             → texto (la fuente de cabina de Airbus: muy legible)
+       B612 (tabular)   → números, con cifras de ancho fijo como un display
+   - El ámbar sigue siendo el único color cálido. Nada de degradados, neón ni pastillas blandas. */
+
+html:root {
+  --panel: #1b1d21;
+  --panel-2: #23262b;
+  --panel-deep: #101215;
+  --panel-border: #3a3e45;
+  --edge-hi: #5a5f68;
+  --glass: #1b1d21;
+  --glass-strong: #17191d;
+  --line: #3a3e45;
+  --text: #ece8df;
+  --text-dim: #b4b0a6;
+  --accent-deep: #c9731e;
+  --danger: #ff5a4d;
+  --r-panel: 6px;
+  --radius: 5px;
+  --shadow: 0 4px 0 rgb(0 0 0 / 0.85);
+  --font-display: 'Barlow Condensed', 'Arial Narrow', sans-serif;
+  --font-title: 'B612', system-ui, sans-serif;
+  /* Números: B612 con cifras tabulares. (B612 Mono separa demasiado la coma decimal: "1, 2".) */
+  --font-mono: 'B612', system-ui, sans-serif;
+}
+
+/* Fuera el vidrio: ninguna superficie desenfoca lo que tiene detrás. */
+html * { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
+
+/* ---------- Tipografía ---------- */
+html body { font-family: var(--font-title); }
+html b, html .eflow__value, html .res__value b, html .hud__day b, html .meter__value b, html .hud__value b {
+  font-family: var(--font-mono); font-weight: 700; font-variant-numeric: tabular-nums;
+}
+html h1, html h2, html h3,
+html .hud__label, html .res__name, html .meter__name, html .eflow__label, html .card__kicker,
+html .forecast__label, html .sunfc__title, html .sunfc__label, html .hud__day, html .hud__night,
+html .voice__who, html .coach__voice strong, html .title__kicker, html .title__bar, html .feed__line,
+html .repair__title, html .crewscreen__heading, html .segmented__btn strong, html .crewchip__name {
+  font-family: var(--font-display);
+}
+html h1, html h2, html h3 { font-weight: 700; letter-spacing: 0.01em; }
+html .hud__label, html .eflow__label, html .forecast__label, html .sunfc__label, html .card__kicker, html .title__kicker {
+  font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em;
+}
+html .hud__label { font-size: 0.82rem; }
+html .eflow__label, html .sunfc__label { font-size: 0.78rem; }
+html .res__name, html .meter__name { font-weight: 700; font-size: 1.02rem; letter-spacing: 0.03em; text-transform: uppercase; }
+html .meter__name { font-size: 0.86rem; }
+html .feed__line { font-size: 0.98rem; font-weight: 600; letter-spacing: 0.01em; }
+html .hud__day { font-weight: 600; font-size: 0.9rem; }
+html .hud__night { font-size: 0.95rem; font-weight: 600; }
+html .tablet__head h2, html .card h2 { font-size: 1.35rem; text-transform: uppercase; letter-spacing: 0.03em; }
+html .title__name { font-family: var(--font-display); font-style: normal; font-weight: 700; letter-spacing: 0.01em; text-transform: uppercase; }
+html .title__bar { font-style: normal; font-weight: 700; }
+
+/* ---------- Superficies: paneles de hardware ---------- */
+html .topbar, html .res, html .feed, html .tablet, html .voice__bubble, html .celebrate__card,
+html .card, html .coach, html .daydone, html .warn, html .act-pill, html .act-toast, html .ff-bar,
+html .sunfc, html .forecast, html .repair, html .crewcard, html .crewchip, html .segmented__btn,
+html .db-voice__bubble, html .db-journey, html .db-chips li, html .db-more {
+  border-width: 2px; border-style: solid; border-radius: var(--r-panel);
+  box-shadow: var(--shadow), inset 0 1px 0 rgb(255 255 255 / 0.07);
+}
+html .topbar, html .res, html .feed, html .tablet, html .voice__bubble, html .card, html .coach,
+html .daydone, html .act-pill, html .act-toast, html .ff-bar, html .celebrate__card {
+  background-color: var(--panel); border-color: var(--line);
+}
+html .tablet { background-color: var(--glass-strong); }
+html .sunfc, html .forecast { background-color: var(--panel-deep); border-color: var(--line); box-shadow: inset 0 2px 0 rgb(0 0 0 / 0.5); }
+/* Cabecera del panel: franja de consola con dos remaches. */
+html .tablet__head {
+  margin: -0.8rem -1.1rem 0.6rem; padding: 0.6rem 1.1rem 0.55rem 1.6rem;
+  background: radial-gradient(circle at 12px 50%, var(--edge-hi) 0 2.5px, #000 3px 4px, transparent 4.5px), var(--panel-deep);
+  border-bottom: 2px solid var(--line);
+}
+html .res--critical { border-color: var(--danger); box-shadow: var(--shadow); }
+html .eflow__step { border-radius: var(--radius); background: var(--panel-deep); box-shadow: inset 0 0 0 2px var(--line); }
+html .eflow__step--spend { background: #2a2010; box-shadow: inset 0 0 0 2px var(--accent-deep); }
+html .eflow__tip { border-radius: var(--radius); border: 2px solid #000; background: var(--text); color: #15171a; font-weight: 700; box-shadow: 3px 3px 0 #000; }
+html .float, html .daydone { border-radius: var(--radius); }
+html .meter { border-width: 2px; border-radius: var(--r-panel); background: var(--panel-2); }
+html .meter__track { border-radius: 4px; background: var(--panel-deep); box-shadow: inset 0 0 0 2px var(--line); }
+html .meter__block { border-radius: 2px; }
+
+/* ---------- Botones físicos ---------- */
+html .btn {
+  font-family: var(--font-display); font-weight: 700; font-size: 1.05rem; letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--text); background: var(--panel-2); border: 2px solid var(--edge-hi); border-radius: var(--radius);
+  box-shadow: 0 3px 0 #000, inset 0 2px 0 rgb(255 255 255 / 0.12);
+  transition: transform 60ms, box-shadow 60ms, filter 120ms;
+}
+html .btn:hover:not(:disabled) { border-color: var(--accent); filter: brightness(1.08); }
+html .btn:active:not(:disabled) { transform: translateY(2px); box-shadow: 0 1px 0 #000; }
+html .btn:focus-visible, html .iconbtn:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+html .btn--primary {
+  background: var(--accent); color: #1a1206; border-color: var(--accent-deep);
+  box-shadow: 0 4px 0 var(--accent-deep), inset 0 2px 0 rgb(255 255 255 / 0.35);
+}
+html .btn--primary:active:not(:disabled) { box-shadow: 0 1px 0 var(--accent-deep); }
+html .btn--ghost { background: transparent; box-shadow: none; border-color: var(--line); }
+html .btn--small { font-size: 0.95rem; }
+html .btn:disabled { opacity: 1; background: var(--panel-deep); color: #8b8980; border-style: dashed; border-color: var(--line); box-shadow: none; }
+html .btn--execute { font-size: 1.3rem; }
+html .hud__plan {
+  animation: none; border-radius: var(--r-panel); font-size: 1.35rem;
+  box-shadow: 0 5px 0 var(--accent-deep), inset 0 2px 0 rgb(255 255 255 / 0.35);
+}
+html .hud__plan:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--accent-deep); }
+/* El botón centrado conserva su centrado al hundirse. */
+@media (min-width: 1541px), (max-width: 899px) {
+  html .hud__plan:active { transform: translate(-50%, 3px); }
+}
+html .title__start { border-radius: var(--r-panel); box-shadow: 0 5px 0 var(--accent-deep), inset 0 2px 0 rgb(255 255 255 / 0.35); font-size: 1.5rem; }
+html .iconbtn {
+  border: 2px solid var(--line); border-radius: var(--radius); background: var(--panel-2); color: var(--text);
+  box-shadow: 0 2px 0 #000, inset 0 1px 0 rgb(255 255 255 / 0.1); transition: transform 60ms, box-shadow 60ms;
+}
+html .iconbtn:hover { border-color: var(--accent); background: var(--panel-2); }
+html .iconbtn:active { transform: translateY(2px); box-shadow: none; }
+html .iconbtn--on { border-color: var(--accent); background: #2a2010; color: var(--accent); }
+html .meter__steps button { border-width: 2px; border-radius: var(--radius); background: var(--panel-deep); box-shadow: 0 2px 0 #000; font-family: var(--font-mono); }
+html .meter__steps button:active:not(:disabled) { transform: translateY(2px); box-shadow: none; }
+html .option { border-width: 2px; border-radius: var(--r-panel); background: var(--panel-2); box-shadow: 0 3px 0 #000, inset 0 2px 0 rgb(255 255 255 / 0.08); transition: transform 60ms, box-shadow 60ms; }
+html .option:active:not(:disabled) { transform: translateY(2px); box-shadow: 0 1px 0 #000; }
+html .option__head strong { font-family: var(--font-display); font-size: 1.2rem; text-transform: uppercase; letter-spacing: 0.03em; }
+html .linkbtn { font-family: var(--font-title); }
+
+/* ---------- Barras: segmentos tipo LED ---------- */
+html .hud__bar, html .gauge__bar { height: 10px; border-radius: 2px; background: var(--panel-deep); box-shadow: inset 0 0 0 1px var(--line); }
+html .hud__bar span, html .gauge__bar span {
+  border-radius: 0;
+  background-image: repeating-linear-gradient(90deg, transparent 0 8px, rgb(0 0 0 / 0.6) 8px 10px);
+}
+html .share__bar { border-radius: 2px; height: 16px; box-shadow: inset 0 0 0 2px var(--line); }
+html .hud__dot { border-radius: 1px; }
+
+/* Con movimiento reducido los botones no se desplazan al pulsar. */
+@media (prefers-reduced-motion: reduce) {
+  html .btn, html .iconbtn, html .option, html .meter__steps button { transition: none; }
+  html .btn:active:not(:disabled), html .iconbtn:active, html .option:active:not(:disabled), html .meter__steps button:active:not(:disabled) { transform: none; }
+  html .hud__plan:active { transform: none; }
+}
+@media (prefers-reduced-motion: reduce) and (min-width: 1541px), (prefers-reduced-motion: reduce) and (max-width: 899px) {
+  html .hud__plan:active { transform: translateX(-50%); }
+}

@@ -14,6 +14,7 @@ import { createDust } from './dust';
 import { createEnergyFlow } from './energyFlow';
 import { createRepairFx } from './repairFx';
 import { CREW } from '../data/crew';
+import { createCrewQuips } from './crewQuips';
 import { createCrewWalk } from './crewWalk';
 import type { CrewWalkState } from './crewWalk';
 import { createRocket } from './rocket';
@@ -51,6 +52,14 @@ export interface World {
   setLabels(names: Record<ModuleId, string>): void;
   setShelter(active: boolean): void;
   setRoverAway(away: boolean): void;
+  /** El rover espera junto a los paneles solares (limpieza de polvo de hoy). */
+  setRoverClean(on: boolean): void;
+  /** Polvo sobre los paneles solares; `puff`: se acaban de limpiar (sale la nube de polvo). */
+  setDust(dusty: boolean, puff?: boolean): void;
+  /** Se desbloqueó un módulo: la tripulación aplaude una vez (sin efecto con movimiento reducido). */
+  celebrate(): void;
+  /** Globo de diálogo sobre un tripulante (máx. 6 palabras, ~3,5 s). Scene.tsx decide cuándo y qué. */
+  say(crewId: string, text: string): void;
   /** Tormenta solar en curso: tinte en el horizonte. */
   setStorm(active: boolean): void;
   /**
@@ -269,13 +278,22 @@ export function createWorld(container: HTMLElement, cb: WorldCallbacks): World {
   scene.add(energy.group);
   const repairFx = createRepairFx(terrain.heightAt);
   scene.add(repairFx.group);
+  // Globos de frases sobre la tripulación.
+  const quips = createCrewQuips(
+    (id, out) => {
+      const i = CREW.findIndex((c) => c.id === id);
+      return i >= 0 && walkers.anchor(i, out);
+    },
+    Object.fromEntries(CREW.map((c) => [c.id, c.color])),
+  );
+  scene.add(quips.group);
   // Avería (baliza y humo; los astronautas cercanos miran) y tormenta solar (cielo, lluvia, domo, dosis).
   const alarmFx = createAlarmFx(terrain.heightAt, (id) => walkers.lookAt(id));
   scene.add(alarmFx.group);
   const stormFx = createStormFx(terrain.heightAt);
   stormFx.setCrewSource((i, out) => walkers.anchor(i, out), walkers.count);
   scene.add(stormFx.group);
-  if (import.meta.env.DEV) Object.assign(window, { __energy: energy, __repairFx: repairFx, __alarm: alarmFx, __storm: stormFx });
+  if (import.meta.env.DEV) Object.assign(window, { __energy: energy, __repairFx: repairFx, __alarm: alarmFx, __storm: stormFx, __quips: quips });
   const dust = createDust(terrain.heightAt);
   scene.add(dust.points);
   void base.ready.then((models) => cb.onAssets?.({ models }));
@@ -883,6 +901,7 @@ export function createWorld(container: HTMLElement, cb: WorldCallbacks): World {
     energy.setSun(sunShown, azimuthShown);
     energy.update(dt, time, reducedMotion);
     repairFx.update(dt, time, reducedMotion);
+    quips.update(dt, reducedMotion, walkers.group.visible);
     alarmFx.update(dt, time, reducedMotion);
     stormFx.setSun(azimuthShown, sunElevation);
     stormFx.update(dt, time, reducedMotion);
@@ -916,6 +935,10 @@ export function createWorld(container: HTMLElement, cb: WorldCallbacks): World {
     setLabels: (names) => base.setLabels(names),
     setShelter: (active) => base.setShelter(active),
     setRoverAway: (away) => base.setRoverAway(away),
+    setRoverClean: (on) => base.setRoverClean(on),
+    setDust: (dusty, puff) => energy.setDust(dusty, puff),
+    celebrate: () => walkers.celebrate(),
+    say: (crewId, text) => quips.say(crewId, text),
     setStorm: (active) => void (stormTarget = active ? 1 : 0),
     setViewShift: (up, right = 0) => {
       lastActivity = performance.now();
@@ -1043,6 +1066,7 @@ export function createWorld(container: HTMLElement, cb: WorldCallbacks): World {
       walkers.dispose();
       energy.dispose();
       repairFx.dispose();
+      quips.dispose();
       alarmFx.dispose();
       stormFx.dispose();
       sky.dispose();

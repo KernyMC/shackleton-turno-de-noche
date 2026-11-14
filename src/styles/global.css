@@ -158,7 +158,7 @@ b { font-family: var(--font-mono); }
   --r-panel: 14px;
   --shadow: 0 12px 32px -14px rgb(0 0 0 / 0.9);
   --gutter: 10px;
-  --topbar-h: 62px;
+  --topbar-h: 82px;
   --panel-w: clamp(380px, 28vw, 440px);
 }
 .glass, .topbar, .res, .feed, .tablet, .voice__bubble, .celebrate__card {
@@ -174,7 +174,7 @@ b { font-family: var(--font-mono); }
 /* Barra superior */
 .topbar {
   position: absolute; top: var(--gutter); left: var(--gutter); right: var(--gutter); min-height: var(--topbar-h);
-  display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 1rem; padding: 0.35rem 0.6rem 0.35rem 0.75rem;
+  display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 1rem; padding: 0.35rem 0.6rem 0.35rem 0.75rem;
   pointer-events: auto;
 }
 .topbar__dose { justify-self: start; display: flex; align-items: center; gap: 0.6rem; }
@@ -310,10 +310,12 @@ b { font-family: var(--font-mono); }
   .topbar__tools { grid-area: tools; gap: 0.15rem; }
   .topbar__day { grid-area: day; padding: 0; grid-template-columns: auto 1fr; justify-items: start; align-items: center; column-gap: 0.6rem; }
   .topbar__day .hud__night { grid-column: 1 / -1; }
-  .iconbtn { width: 36px; height: 36px; }
+  .iconbtn { width: 40px; height: 40px; }
+  .topbar__dose .hud__label, .topbar__dose .hud__dim, .topbar__dose .hud__trend { display: none; }
+  .topbar__tools .iconbtn--data { display: none; }
   .hud__dot { width: 5px; height: 7px; }
   .hud__day b { font-size: 1.2rem; }
-  .feed { top: auto; bottom: calc(var(--gutter) * 2 + 9.5rem); width: calc(100% - var(--gutter) * 2); }
+  .feed { top: auto; bottom: calc(var(--gutter) * 2 + 10.8rem); width: calc(100% - var(--gutter) * 2); }
   .feed__line:not(:first-child) { display: none; }
   .resources { left: var(--gutter); right: var(--gutter); display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
   .res { width: auto; grid-template-columns: 1fr; padding: 0.45rem 0.5rem; }
@@ -380,7 +382,7 @@ b { font-family: var(--font-mono); }
 .eflow--compact .eflow__icon { width: 26px; height: 26px; }
 .eflow--compact .eflow__value { font-size: 0.95rem; }
 .eflow--compact .eflow__step--spend .eflow__value { font-size: 1.1rem; }
-@media (max-width: 1500px) { .eflow--compact .eflow__label { display: none; } }
+.eflow--compact .eflow__label { display: none; }
 @media (max-width: 1150px) { .eflow--compact .eflow__icon { width: 22px; height: 22px; background: none !important; color: var(--accent) !important; } .eflow--compact .eflow__step { gap: 0.2rem; padding: 0.2rem 0.35rem; } }
 @media (max-width: 899px) {
   .topbar { grid-template-areas: 'dose tools' 'day day' 'flow flow'; }
@@ -443,6 +445,8 @@ b { font-family: var(--font-mono); }
   .topbar__dose .hud__face { display: none; }
   .topbar__tools { gap: 0.15rem; }
   .topbar__tools .iconbtn { width: 34px; height: 34px; }
+}
+@media (min-width: 900px) and (max-width: 1540px) {
   .hud__plan { left: auto; right: var(--gutter); transform: none; }
 }
 
@@ -917,4 +921,66 @@ b { font-family: var(--font-mono); }
   .budget__text { font-size: 0.8rem; }
   .module__name { font-size: 1.1rem; }
   .module__value b { font-size: 1.6rem; }
+}
+
+/* Móvil estrecho: los botones − / + se apilan para que cada uno mida al menos 40 px de lado. */
+@media (max-width: 480px) {
+  .meter__steps { grid-template-columns: 1fr; }
+  .meter__steps button { min-height: 40px; }
+  .meter__steps button:last-child { order: -1; }
+}
+/* La pista de la maqueta se quita cuando hay una burbuja de cosecha: no deben pisarse. */
+.game:has(.harvest) .scene__hint { display: none; }
+
+/* La burbuja de voz y el panel de tripulación comparten esquina: con el panel abierto, la voz espera. */
+.game:has(.crewp) .voice { display: none; }
+
+/* ============ Arreglos de la revisión del agente hud (regla 10) ============ */
+/* El número de la batería nunca se parte en dos líneas. */
+html .res__value { white-space: nowrap; }
+html .res--battery .res__value b { font-size: 1.85rem; }
+html .res--battery .res__value .hud__dim { margin-left: 0.15rem; font-size: 0.78rem; }
+/* Título del panel en una línea. */
+html .tablet__head h2 { font-size: 1.15rem; letter-spacing: 0.02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+/* El flujo de energía cabe siempre dentro del panel. */
+html .tablet .eflow__row { min-width: 0; }
+html .tablet .eflow__step { min-width: 0; padding: 0.3rem 0.35rem; gap: 0.25rem; }
+html .tablet .eflow__text { min-width: 0; }
+html .tablet .eflow__label { white-space: normal; line-height: 1.05; font-size: 0.7rem; }
+html .tablet .eflow__value { font-size: 0.86rem; }
+html .tablet .eflow__step--spend .eflow__value { font-size: 1rem; }
+html .tablet .eflow__icon { width: 22px; height: 22px; }
+/* Panel de tripulación: empieza debajo de la pastilla de la meta y no convive con la pista de la maqueta. */
+@media (min-width: 1024px) {
+  html .crewp { max-height: calc(100% - var(--act-below, 11rem) - var(--gutter) * 3 - 8.6rem); }
+}
+html .game:has(.crewp) .scene__hint { display: none; }
+/* El registro es más estrecho en anchos medios para no tocar los avisos del centro. */
+@media (min-width: 900px) and (max-width: 1320px) {
+  html .feed { width: min(15rem, 22vw); }
+}
+
+@media (max-width: 899px) {
+  /* Tarjetas de recursos de una línea: sin retrato (la tripulación está en su botón de la barra) y nombre corto. */
+  html .res__face { display: none; }
+  html .res__name { padding-right: 0; white-space: nowrap; font-size: 0.8rem; letter-spacing: 0.01em; min-height: 0; overflow: hidden; text-overflow: ellipsis; }
+  html .res__name .icon { display: inline-block; }
+  html .res--battery .res__value b { font-size: 1.45rem; }
+  /* El botón principal va encima de las tarjetas, en una sola línea. */
+  html .hud__plan { white-space: nowrap; bottom: calc(var(--gutter) * 2 + 6.6rem); font-size: 1.15rem; padding: 0 1.2rem; }
+  html .feed { bottom: calc(var(--gutter) * 2 + 10.9rem); }
+  /* La voz de la tripulación se apila con los demás avisos, debajo de la barra y de la meta. */
+  html .game .voice { top: calc(var(--stk-msgtop, var(--act-below, 12rem)) + var(--stk-msg, 0rem)); bottom: auto; }
+  /* Flujo de energía de la barra: cifras más pequeñas para que quepan los tres pasos. */
+  html .eflow--compact .eflow__row { gap: 0.15rem; }
+  html .eflow--compact .eflow__step { padding: 0.2rem 0.3rem; gap: 0.2rem; min-width: 0; }
+  html .eflow--compact .eflow__value { font-size: 0.8rem; }
+  html .eflow--compact .eflow__step--spend .eflow__value { font-size: 0.95rem; }
+  html .eflow--compact .eflow__icon { width: 20px; height: 20px; }
+  html .eflow--compact .eflow__arrow .icon { width: 11px; height: 11px; }
+  /* Enlaces de texto: zona táctil de 40 px como mínimo. */
+  html .linkbtn { display: inline-flex; align-items: center; justify-content: center; min-height: 40px; min-width: 40px; padding: 0 0.5rem; }
+  /* La hoja del plan aprovecha el alto: fuera lo que ya dice la barra superior. */
+  html .tablet .eflow__note, html .tablet .share__left { display: none; }
+  html .tablet .share { margin: 0.2rem 0 0.4rem; }
 }

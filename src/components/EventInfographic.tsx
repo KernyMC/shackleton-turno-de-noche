@@ -6,7 +6,7 @@ import { defaultConfig } from '../sim/config';
 import type { EventKind, ModuleId, PendingEvent } from '../sim/types';
 import '../styles/infographic.css';
 
-const KINDS_WITH_INFO: readonly EventKind[] = ['storm', 'night_warning', 'breakdown', 'ice'];
+const KINDS_WITH_INFO: readonly EventKind[] = ['storm', 'night_warning', 'breakdown', 'ice', 'dust'];
 
 export function hasInfographic(kind: EventKind): boolean {
   return KINDS_WITH_INFO.includes(kind);
@@ -190,7 +190,7 @@ export function IceDiagram() {
   );
 }
 
-/* ---------- Polvo (evento futuro, aún sin usar) ---------- */
+/* ---------- Polvo en los paneles ---------- */
 export function DustDiagram() {
   return (
     <Frame label={t('info.dust.alt')}>
@@ -262,6 +262,13 @@ export function EventInfographic({ event }: { event: PendingEvent }) {
         <div class="info">
           <IceDiagram />
           <Lines keys={['info.ice.1', 'info.ice.2']} />
+        </div>
+      );
+    case 'dust':
+      return (
+        <div class="info">
+          <DustDiagram />
+          <Lines keys={['info.dust.1', 'info.dust.2']} />
         </div>
       );
     default:

@@ -11,6 +11,8 @@ import type { CrewId } from '../data/crew';
 import { t } from '../i18n';
 import { defaultConfig } from '../sim/config';
 import { getLight } from '../sim/engine';
+import { resourceLevels } from '../sim/thresholds';
+import type { AlertLevel } from '../sim/thresholds';
 import type { GameState, LogEntry } from '../sim/types';
 import { muted, toggleMute } from '../audio/sfx';
 import { faceOf, moodOf } from '../state/rewards';
@@ -19,6 +21,7 @@ import { sourcesOpen } from '../state/sources';
 import { helpOpen } from '../state/tutorial';
 import { CrewPortrait } from './CrewPortrait';
 import { crewOpen, openCrew, toggleCrew } from '../state/crewPanel';
+import { ActGoal } from './ActHud';
 import { EnergyFlow } from './EnergyFlow';
 import { num, signed } from './format';
 import { Icon } from './icons';
@@ -26,17 +29,8 @@ import type { IconName } from './icons';
 
 type Level = 'ok' | 'low' | 'critical';
 
-/** Umbrales de §4.7 del documento original. */
-function resourceLevel(value: number): Level {
-  if (value <= 10) return 'critical';
-  if (value <= 25) return 'low';
-  return 'ok';
-}
-function doseLevel(fraction: number): Level {
-  if (fraction >= 0.9) return 'critical';
-  if (fraction >= 0.7) return 'low';
-  return 'ok';
-}
+/** Zona de alerta del motor (balance.json → thresholds) como nombre de estilo. */
+const LEVEL: Record<AlertLevel, Level> = { 0: 'ok', 1: 'low', 2: 'critical' };
 
 function Status({ level, low, critical }: { level: Level; low: string; critical: string }) {
   if (level === 'ok') return null;
@@ -183,7 +177,7 @@ function Scoreboard({ g }: { g: GameState }) {
 function Dose({ g, mood }: { g: GameState; mood: number }) {
   const limit = defaultConfig.balance.difficulty[g.difficulty].doseLimit;
   const fraction = Math.min(1, g.dose / limit);
-  const level = doseLevel(fraction);
+  const level = LEVEL[resourceLevels(g).dose];
   const r = 17;
   const c = 2 * Math.PI * r;
   return (
@@ -252,7 +246,7 @@ function Tools() {
       >
         <Icon name="crew" size={18} />
       </button>
-      <button type="button" class="iconbtn" aria-label={t('sources.button')} title={t('sources.button')} onClick={() => (sourcesOpen.value = true)}>
+      <button type="button" class="iconbtn iconbtn--data" aria-label={t('sources.button')} title={t('sources.button')} onClick={() => (sourcesOpen.value = true)}>
         <Icon name="data" size={18} />
       </button>
       <button type="button" class="iconbtn" aria-label={t('help.button')} title={t('help.button')} onClick={() => (helpOpen.value = true)}>
@@ -299,9 +293,10 @@ function Feed({ g }: { g: GameState }) {
 function Resources({ g, moods }: { g: GameState; moods: Record<CrewId, number> }) {
   const capacity = defaultConfig.balance.difficulty[g.difficulty].batteryCapacity;
   const noSun = getLight(g.day, g.difficulty) < 0.1;
-  const life = resourceLevel(g.lifeSupport);
-  const food = resourceLevel(g.food);
-  const battery: Level = g.battery / capacity <= 0.15 ? (noSun ? 'critical' : 'low') : 'ok';
+  const levels = resourceLevels(g);
+  const life = LEVEL[levels.lifeSupport];
+  const food = LEVEL[levels.food];
+  const battery: Level = levels.battery > 0 ? (noSun ? 'critical' : 'low') : 'ok';
   const items = [
     { id: 'life', icon: 'life_support' as const, label: t('hud.life_support'), value: g.lifeSupport, max: 100, level: life, delta: lastDelta(g, 'lifeSupport'), crew: 'valeria' as const },
     { id: 'food', icon: 'food' as const, label: t('hud.food'), value: g.food, max: 100, level: food, delta: lastDelta(g, 'food'), crew: 'mateo' as const },
@@ -350,6 +345,7 @@ export function Hud() {
           <Tools />
         </div>
       </header>
+      <ActGoal />
       <Feed g={g} />
       <Resources g={g} moods={moods} />
       {!tabletOpen.value && (

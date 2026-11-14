@@ -116,7 +116,7 @@ function drawDose(canvas: HTMLCanvasElement, text: string): void {
   ctx.strokeStyle = '#b48cff';
   ctx.stroke();
   let size = 56;
-  const font = (px: number): string => `800 ${px}px 'Space Grotesk', system-ui, sans-serif`;
+  const font = (px: number): string => `800 ${px}px 'Barlow Condensed', system-ui, sans-serif`;
   ctx.font = font(size);
   const maxW = w * 0.82;
   const measured = ctx.measureText(text).width;

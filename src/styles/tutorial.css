@@ -1,0 +1,44 @@
+/* Modo Tutorial: tarjeta final, selector de tres modos y detalles de la burbuja. Prefijo tut-. */
+
+/* Burbuja: etiqueta del día y aviso de recurso bajo. */
+.tut-day { color: var(--text-dim); font-family: var(--font-mono); font-size: 0.75rem; letter-spacing: 0.04em; white-space: nowrap; }
+.tut-warn { color: var(--accent); font-size: 1rem; }
+.tut-help-play { margin-left: 0.5rem; }
+
+/* Tarjeta «¡Tutorial completado!». */
+.tut-done { z-index: 30; }
+.tut-done__card { width: min(28rem, 100%); }
+.tut-done__sub { margin: 0 0 0.8rem; font-size: 1.1rem; }
+.tut-done__learned { display: grid; gap: 0.5rem; margin: 0 0 1rem; padding: 0; list-style: none; }
+.tut-done__learned li { display: grid; grid-template-columns: 2.6rem 1fr; gap: 0.7rem; align-items: center; padding: 0.4rem 0.6rem; background: #0f1114; border: 1px solid var(--panel-border); border-radius: 10px; font-size: 1.05rem; line-height: 1.3; }
+.tut-done__icon { display: grid; place-items: center; width: 2.6rem; height: 2.6rem; border-radius: 50%; color: var(--accent); background: rgb(255 179 71 / 0.12); }
+.tut-done__actions { display: grid; gap: 0.6rem; justify-items: stretch; }
+.tut-done__actions .btn { min-height: 52px; font-size: 1.05rem; }
+.tut-done__actions .linkbtn { justify-self: center; }
+
+/* Selector de modo en la pantalla de tripulación: tres opciones en columna. */
+.segmented--3 { grid-template-columns: minmax(0, 1fr); gap: 0.35rem; }
+.segmented--3 .segmented__btn { position: relative; padding: 0.45rem 0.7rem; min-height: 48px; }
+.segmented--3 .segmented__btn span { font-size: 0.8rem; }
+.tut-badge {
+  position: absolute; top: 0.4rem; right: 0.6rem;
+  padding: 0.1rem 0.5rem; border-radius: 999px;
+  background: var(--accent); color: #1a1205 !important; font-weight: 700; font-size: 0.72rem !important; letter-spacing: 0.03em;
+}
+@media (max-width: 760px) {
+  .segmented--3 .segmented__btn { padding: 0.35rem 0.6rem; min-height: 44px; }
+  .segmented--3 .segmented__btn span { font-size: 0.74rem; }
+}
+/* Con tres modos, el panel de tripulación en móvil sube un poco para que quepa el botón de empezar. */
+@media (max-width: 760px) {
+  .crewscreen .crewscreen__panel { padding-top: calc(30vh - 0.5rem); padding-bottom: 0.9rem; gap: 0.7rem; }
+}
+
+/* Burbuja en celular: más compacta y pegada a la hoja, para no tapar los recursos ni la meta del acto. */
+@media (max-width: 899px) {
+  .game.game .coach { bottom: calc(52% + 0.35rem); gap: 0.5rem; padding: 0.35rem 0.6rem 0.35rem 0.4rem; }
+  .game .coach__portrait { width: 38px; height: 38px; }
+  .game .coach .coach__text { font-size: 0.95rem; line-height: 1.25; margin: 0.1rem 0 0.15rem; }
+  .game .coach__actions { gap: 0.4rem; }
+  .game .coach__actions .btn, .game .coach__actions .linkbtn { min-height: 42px; display: inline-flex; align-items: center; padding-inline: 0.6rem; }
+}

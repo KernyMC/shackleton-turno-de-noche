@@ -3,7 +3,7 @@ import { crewActivity } from './crewActivity';
 import { createGame } from '../sim/engine';
 import type { GameState } from '../sim/types';
 
-const base = (): GameState => createGame(7, 'cadete');
+const base = (): GameState => ({ ...createGame(7, 'cadete'), unlocked: ['recycler', 'greenhouse', 'shield', 'workshop'] });
 
 describe('crewActivity', () => {
   it('sin nada especial, cada quien hace su tarea normal', () => {
@@ -41,5 +41,12 @@ describe('crewActivity', () => {
     g.history = [{ day: 1, plan: { recycler: 0, greenhouse: 10, shield: 5, workshop: 0 } } as never];
     expect(crewActivity(g, 'valeria')).toMatchObject({ key: 'crew.act.noenergy', vars: { module: 'recycler' } });
     expect(crewActivity(g, 'mateo').key).toBe('crew.act.mateo');
+  });
+
+  it('un módulo aún bloqueado: su tripulante prepara el módulo', () => {
+    const g = { ...base(), unlocked: ['recycler' as const, 'greenhouse' as const] };
+    expect(crewActivity(g, 'lucia')).toEqual({ key: 'crew.act.locked', special: true });
+    expect(crewActivity(g, 'amaru').key).toBe('crew.act.locked');
+    expect(crewActivity(g, 'valeria').key).toBe('crew.act.valeria');
   });
 });

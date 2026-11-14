@@ -1,6 +1,7 @@
 // Raíz de la app: máquina de estados de pantallas (menú, juego y debrief).
 import { Scene } from '../scene/Scene';
 import { useEffect } from 'preact/hooks';
+import { ActLayer } from '../components/ActHud';
 import { Alerts } from '../components/Alerts';
 import { Coach } from '../components/Coach';
 import { Debrief } from '../components/Debrief';
@@ -10,7 +11,9 @@ import { Loader } from '../components/Loader';
 import { SourcesPanel } from '../components/SourcesPanel';
 import { Rewards } from '../components/Rewards';
 import { StormWarning } from '../components/StormWarning';
+import { startActsWatcher } from '../state/acts';
 import { startRewardsWatcher } from '../state/rewards';
+import { startAmbient } from '../audio/ambient';
 import { startSoundWatcher } from '../audio/watch';
 import { Menu } from '../components/Menu';
 import { Tablet } from '../components/Tablet';
@@ -45,6 +48,7 @@ function CurrentScreen() {
       <Alerts />
       <Tablet />
       <Coach />
+      <ActLayer />
       <SourcesPanel />
     </div>
   );
@@ -55,6 +59,8 @@ export default function App() {
   useEffect(() => startTutorialWatcher(), []);
   useEffect(() => startRewardsWatcher(), []);
   useEffect(() => startSoundWatcher(), []);
+  useEffect(() => startActsWatcher(), []);
+  useEffect(() => startAmbient(), []);
   // El Loader vive fuera de las pantallas para no desmontarse al cambiar de una a otra.
   return (
     <>

@@ -11,7 +11,9 @@ import { CrewPortrait } from './CrewPortrait';
 import { Icon } from './icons';
 import '../styles/onboarding.css';
 
-const TOTAL = 6;
+/** Tarjetas de la presentación completa y de la corta del tutorial: tripulación, energía, cómo se gana. */
+const ALL_CARDS = [0, 1, 2, 3, 4, 5];
+const TUTORIAL_CARDS = [5, 1, 4];
 const AMBER = '#ffb347';
 const INK = '#ece8df';
 const DIM = '#a7a399';
@@ -193,7 +195,9 @@ function ArtGoal() {
   );
 }
 
-export function Onboarding({ review = false, vars }: { review?: boolean; vars: Vars }) {
+export function Onboarding({ review = false, vars, tutorial = false }: { review?: boolean; vars: Vars; tutorial?: boolean }) {
+  const cards = tutorial && !review ? TUTORIAL_CARDS : ALL_CARDS;
+  const TOTAL = cards.length;
   const [index, setIndex] = useState(0);
   const dialog = useRef<HTMLElement>(null);
   const primary = useRef<HTMLButtonElement>(null);
@@ -202,6 +206,8 @@ export function Onboarding({ review = false, vars }: { review?: boolean; vars: V
 
   const close = (): void => {
     if (review) onboardingOpen.value = false;
+    // En el modo Tutorial, saltar la presentación no termina la guía: pasa al primer paso.
+    else if (tutorial) ackTutorial();
     else skipTutorial();
   };
   const finish = (): void => {
@@ -248,10 +254,11 @@ export function Onboarding({ review = false, vars }: { review?: boolean; vars: V
   // El foco vuelve al botón principal al abrir y al cambiar de tarjeta.
   useEffect(() => primary.current?.focus(), [index]);
 
-  const n = index + 1;
+  const card = cards[index] ?? 0;
+  const n = card + 1;
   const title = t(`onb.${n}.title`);
   let body: JSX.Element;
-  switch (index) {
+  switch (card) {
     case 0:
       body = (
         <>
@@ -301,14 +308,14 @@ export function Onboarding({ review = false, vars }: { review?: boolean; vars: V
           <ul class="onb-rules">
             <li class="onb-rules__win">
               <Icon name="check" size={26} />
-              <span>{t('onb.5.win', vars)}</span>
+              <span>{t(tutorial && !review ? 'onb.t.win' : 'onb.5.win', vars)}</span>
             </li>
             <li class="onb-rules__lose">
               <Icon name="alert" size={26} />
-              <span>{t('onb.5.lose')}</span>
+              <span>{t(tutorial && !review ? 'onb.t.lose' : 'onb.5.lose')}</span>
             </li>
           </ul>
-          <p class="onb-text onb-text--soft">{t('onb.5.safe')}</p>
+          <p class="onb-text onb-text--soft">{t(tutorial && !review ? 'onb.t.safe' : 'onb.5.safe')}</p>
         </>
       );
       break;
@@ -337,7 +344,7 @@ export function Onboarding({ review = false, vars }: { review?: boolean; vars: V
       <section ref={dialog} class="card onb-card" role="dialog" aria-modal="true" aria-labelledby="onb-title">
         <header class="onb-head">
           <p class="card__kicker">{index === 0 ? t('onb.hello', { nombre: name }) : t('onb.kicker')}</p>
-          <span class="onb-dots" role="img" aria-label={t('coach.step', { n, total: TOTAL })}>
+          <span class="onb-dots" role="img" aria-label={t('coach.step', { n: index + 1, total: TOTAL })}>
             {Array.from({ length: TOTAL }, (_, i) => (
               <span key={i} class={`onb-dot${i === index ? ' onb-dot--now' : i < index ? ' onb-dot--done' : ''}`} />
             ))}

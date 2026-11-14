@@ -6,8 +6,8 @@ import { effect, signal } from '@preact/signals';
 import { CREW } from '../data/crew';
 import type { CrewId } from '../data/crew';
 import { defaultConfig } from '../sim/config';
-import type { DaySnapshot, GameState, ModuleId } from '../sim/types';
-import { game, gameId, screen } from './store';
+import type { DaySnapshot, GameState, LogEntry, ModuleId } from '../sim/types';
+import { fastForwarding, game, gameId, screen } from './store';
 
 export type MilestoneId = 'first_harvest' | 'first_night' | 'storm_safe';
 
@@ -46,6 +46,24 @@ let reactTimer: ReturnType<typeof setTimeout> | null = null;
 
 let counter = 0;
 
+/** Firma de una entrada del registro: sirve para no repetir un aviso al volver atrás en el tiempo. */
+export function entrySig(e: LogEntry): string {
+  return `${e.day}|${e.key}|${e.vars ? JSON.stringify(e.vars) : ''}`;
+}
+
+/** Entradas del registro que empiezan por `prefix`, que aún no están en `seen`. Las anota como vistas. */
+export function freshEntries(log: readonly LogEntry[], seen: Set<string>, prefixes: readonly string[]): LogEntry[] {
+  const fresh: LogEntry[] = [];
+  for (const e of log) {
+    if (!prefixes.some((p) => e.key === p || e.key.startsWith(p + '.'))) continue;
+    const sig = entrySig(e);
+    if (seen.has(sig)) continue;
+    seen.add(sig);
+    fresh.push(e);
+  }
+  return fresh;
+}
+
 /** Lo que aportó cada módulo en un día (solo para mostrar; el motor ya lo aplicó). */
 export function dayYields(snap: DaySnapshot, broken: Record<ModuleId, boolean>, difficulty: GameState['difficulty']): FloatItem[] {
   const b = defaultConfig.balance;
@@ -80,10 +98,14 @@ export function faceOf(value: number): 'happy' | 'neutral' | 'worried' {
   return 'worried';
 }
 
+/** Hitos ganados durante el avance rápido: se muestran al detenerse. */
+let deferred: MilestoneId[] = [];
+
 function celebrate(id: MilestoneId): void {
   if (earned.value.includes(id)) return;
   earned.value = [...earned.value, id];
-  milestone.value = id;
+  if (fastForwarding.peek()) deferred.push(id);
+  else milestone.value = id;
 }
 
 /** El jugador toca la burbuja de cosecha (o se recoge sola). */
@@ -104,7 +126,14 @@ let lastDays = 0;
 
 /** Observa las partidas. Se llama una vez al montar la app; devuelve cómo detenerlo. */
 export function startRewardsWatcher(): () => void {
-  return effect(() => {
+  // Al detenerse el avance rápido salen los hitos que se ganaron mientras corría (uno a la vez).
+  const stopFlush = effect(() => {
+    if (fastForwarding.value || deferred.length === 0) return;
+    const [first] = deferred;
+    deferred = [];
+    if (first && screen.peek() === 'game') milestone.value = first;
+  });
+  const stopMain = effect(() => {
     const g = game.value;
     if (!g || screen.value === 'menu') return;
     if (gameId.value !== lastGame) {
@@ -117,6 +146,7 @@ export function startRewardsWatcher(): () => void {
       dayNote.value = null;
       dayDone.value = null;
       reacting.value = false;
+      deferred = [];
       return;
     }
     const days = g.history.length;
@@ -127,6 +157,20 @@ export function startRewardsWatcher(): () => void {
     lastDays = days;
     const snap = g.history[days - 1]!;
     const broken = Object.fromEntries(Object.entries(g.modules).map(([id, m]) => [id, m.broken])) as Record<ModuleId, boolean>;
+
+    // Avance rápido: sin números flotantes, cosecha, voz ni aviso de día (serían un parpadeo
+    // continuo). Los hitos que se ganen se guardan y salen al detenerse.
+    if (fastForwarding.peek()) {
+      floats.value = [];
+      harvest.value = null;
+      dayNote.value = null;
+      dayDone.value = null;
+      xp.value += 10;
+      const lastNightFF = Math.max(...defaultConfig.light.nightDays);
+      if (snap.day === lastNightFF && g.phase !== 'ended') celebrate('first_night');
+      if (snap.sheltered && g.result?.outcome !== 'loss') celebrate('storm_safe');
+      return;
+    }
 
     floats.value = dayYields(snap, broken, g.difficulty);
     dayDone.value = g.phase === 'ended' ? null : { key: ++counter, day: snap.day };
@@ -156,4 +200,8 @@ export function startRewardsWatcher(): () => void {
     if (snap.day === lastNight && g.phase !== 'ended') celebrate('first_night');
     if (snap.sheltered && g.result?.outcome !== 'loss') celebrate('storm_safe');
   });
+  return () => {
+    stopFlush();
+    stopMain();
+  };
 }

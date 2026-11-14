@@ -92,6 +92,27 @@ Diseño por proximidad y medio: lo que oyes te dice dónde estás.
 - Íconos: **SVG de trazo propio**, un solo grosor. Los emojis del documento original solo se permiten en la bitácora.
 - Las consolas de cada módulo muestran su estado en una pantalla física legible desde lejos.
 
+## 8b. Piel de juego: «Consola de misión Apolo» (obligatoria en toda la interfaz)
+
+La interfaz es **una consola física de la base**, no un panel de aplicación. Si algo parece una
+web de administración, está mal. Referencias: las consolas de *Surviving Mars* y *Kerbal Space
+Program*, con el tamaño y la respuesta de los botones de los juegos de Nintendo para niños.
+La piel vive en `src/styles/skin.css` (se carga la última; solo cambia el aspecto).
+
+- **Paneles opacos de hardware:** fondo `--panel` (#1b1d21), borde de 2 px `--line` (#3a3e45),
+  radio de 5–6 px y **sombra dura** (`0 4px 0`, sin desenfoque). Nada de vidrio ni `backdrop-filter`.
+- **Botones físicos:** bisel claro arriba, sombra dura abajo y **se hunden 2 px** al pulsar. El
+  principal es ámbar con sombra ámbar oscuro. Deshabilitado = borde discontinuo, sin sombra.
+- **Tipografías (auto-alojadas con @fontsource; funcionan sin red):**
+  - **Barlow Condensed** 600/700 — títulos, etiquetas y botones, en mayúsculas como rótulos de consola.
+  - **B612** 400/700 — texto. Es la fuente de cabina de Airbus: hecha para leerse rápido.
+  - Números en **B612** 700 con cifras tabulares (`font-variant-numeric: tabular-nums`).
+  - Tamaños mínimos: texto 16 px, etiqueta 12–13 px, número del HUD ≥ 28 px.
+- **Barras** con segmentos tipo LED; **números grandes** antes que frases.
+- **Mayúsculas condensadas** solo en etiquetas y botones, nunca en párrafos.
+- El **ámbar** sigue siendo el único color cálido; el estado se dice con ícono + palabra.
+- Antes de dar por bueno un cambio visual: agente `hud` (regla 10 de `CLAUDE.md`).
+
 ## 9. Postprocesado (al final, con moderación)
 
 `EffectComposer`: bloom solo sobre emisivos (umbral alto: brilla la base, no el suelo) → grano de película leve → viñeta suave. Calidad baja = sin composer.

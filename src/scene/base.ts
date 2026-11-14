@@ -11,6 +11,8 @@ import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 import { CREW } from '../data/crew';
 import type { ModuleId } from '../sim/types';
 import { optionalAssets } from './assets';
+import { createScaffold, createScaffoldMaterial } from './construction';
+import type { Scaffold } from './construction';
 import { buildModuleShape, createModuleLabel, MODULE_TOP } from './modules';
 import type { ModuleLabel } from './modules';
 
@@ -57,6 +59,8 @@ export interface ModuleVisualState {
   /** Energía asignada / máximo, de 0 a 1. */
   efficiency: number;
   broken: boolean;
+  /** Módulo aún no desbloqueado: se ve en obras (andamios, luz apagada, rótulo con candado). */
+  locked?: boolean;
 }
 
 export interface Base {
@@ -81,6 +85,8 @@ export interface Base {
   setShelter(active: boolean): void;
   /** El rover está fuera en una expedición. */
   setRoverAway(away: boolean): void;
+  /** El rover va junto a los paneles solares (limpieza de polvo de hoy). */
+  setRoverClean(on: boolean): void;
   /** Avanza las animaciones. `time` en segundos. */
   update(dt: number, time: number, reducedMotion: boolean): void;
   /** Qué modelos GLB se cargaron (para la ficha de fuente nasa_3d_resources). */
@@ -99,7 +105,28 @@ interface ModuleParts {
   /** Anillo de selección en el suelo, con el color del módulo. */
   select: THREE.Mesh<THREE.RingGeometry, THREE.MeshBasicMaterial>;
   selected: number;
+  /** En obras: objetivo, valor mostrado (1 = andamio completo) y si ya recibió su primer estado. */
+  locked: boolean;
+  lock: number;
+  lockApplied: number;
+  configured: boolean;
+  unlockPending: boolean;
+  /** Destello de desbloqueo: 0..1 de avance; -1 = sin destello. */
+  flashT: number;
+  scaffold: Scaffold;
+  /** Materiales del casco que se oscurecen en obras (los del GLB, con su color original). */
+  tint: { mat: THREE.MeshStandardMaterial; base: THREE.Color }[];
+  stripMat: THREE.MeshStandardMaterial;
 }
+
+/** Qué tan oscuro queda el casco con el andamio completo, la duración del destello y la rapidez de la obra. */
+const LOCK_DARKEN = 0.5;
+const FLASH_SECONDS = 1.6;
+const BUILD_K_LOCK = 5;
+const BUILD_K_UNLOCK = 4;
+/** Dónde espera el rover mientras limpia los paneles (junto al campo solar). */
+const CLEAN_SPOT = { x: 20.5, z: 9.5 };
+const HULL_COLOR = new THREE.Color(HULL);
 
 /** Amortiguación exponencial: `current` persigue a `target` sin saltos (docs/ARTE.md §6). */
 const damp = (current: number, target: number, k: number, dt: number): number =>
@@ -190,9 +217,16 @@ export function createBase(heightAt: (x: number, z: number) => number = () => 0)
   /** Las piezas repetidas de los pasillos se juntan en mallas instanciadas (una llamada de dibujo por tipo). */
   const batches = new Map<THREE.BufferGeometry, { mat: THREE.Material; shadow: boolean; matrices: THREE.Matrix4[]; order: number }>();
   const floorMat = new THREE.MeshStandardMaterial({ color: 0x5b5d62, roughness: 0.8 });
-  const stripMat = new THREE.MeshStandardMaterial({ color: 0x222222, emissive: AMBER, emissiveIntensity: 1.6 });
+  // Cada pasillo tiene su tira de luz: la de un módulo en obras se apaga sola (4 llamadas de dibujo en vez de 1).
+  const stripMats = new Map<ModuleId, THREE.MeshStandardMaterial>();
+  const stripGeos = new Map<ModuleId, THREE.BoxGeometry>();
+  for (const m of MODULES) {
+    stripMats.set(m.id, new THREE.MeshStandardMaterial({ color: 0x222222, emissive: AMBER, emissiveIntensity: 1.6 }));
+    stripGeos.set(m.id, new THREE.BoxGeometry(0.12, 0.03, 1));
+  }
+  let corridorLevel = 1;
   const floorGeo = new THREE.BoxGeometry(1.15, 0.08, 1);
-  const stripGeo = new THREE.BoxGeometry(0.12, 0.03, 1);
+  const scaffoldMat = createScaffoldMaterial();
   const routes = {} as Record<ModuleId, THREE.Vector3[]>;
   const coarse = typeof window !== 'undefined' && window.matchMedia?.('(pointer: coarse)').matches;
   const frameMat = new THREE.MeshStandardMaterial({ color: 0x6a6b6e, roughness: 0.55, metalness: 0.35 });
@@ -231,7 +265,7 @@ export function createBase(heightAt: (x: number, z: number) => number = () => 0)
     piece(floorGeo, floorMat, at((r0 + r1) / 2, floorY), flat, [1, 1, r1 - r0 + 0.6]);
     for (const side of [-1, 1]) {
       const pos = at((r0 + r1) / 2, floorY + 0.05).add(new THREE.Vector3(-dir.z, 0, dir.x).multiplyScalar(side * 0.48));
-      piece(stripGeo, stripMat, pos, flat, [1, 1, r1 - r0]);
+      piece(stripGeos.get(id)!, stripMats.get(id)!, pos, flat, [1, 1, r1 - r0]);
     }
     // Ruta para la tripulación: desde dentro del refugio hasta dentro del módulo.
     const feet = TUBE_Y - 0.62;
@@ -288,6 +322,11 @@ export function createBase(heightAt: (x: number, z: number) => number = () => 0)
     halo.position.set(m.x, y + 0.06, m.z);
     group.add(shape, lamp, halo);
     shapes.set(m.id, shape);
+    // Andamios (ocultos mientras el módulo está desbloqueado).
+    const scaffold = createScaffold(m.id, scaffoldMat);
+    scaffold.group.position.set(m.x, y, m.z);
+    scaffold.group.rotation.y = Math.atan2(m.x, m.z);
+    group.add(scaffold.group);
 
     // Rótulo con ícono y nombre: dice qué es cada módulo sin tener que adivinar.
     if (typeof document !== 'undefined') {
@@ -300,7 +339,11 @@ export function createBase(heightAt: (x: number, z: number) => number = () => 0)
     // Pasillo hacia el refugio central.
     corridor(m.id, m.x, m.z);
 
-    parts.set(m.id, { material, band, lamp, target: { efficiency: 0, broken: false }, shown: 0, hover: 0, select, selected: 0 });
+    parts.set(m.id, {
+      material, band, lamp, target: { efficiency: 0, broken: false }, shown: 0, hover: 0, select, selected: 0,
+      locked: false, lock: 0, lockApplied: -1, configured: false, unlockPending: false, flashT: -1,
+      scaffold, tint: [], stripMat: stripMats.get(m.id)!,
+    });
   }
 
   for (const [geo, batch] of batches) {
@@ -345,6 +388,8 @@ export function createBase(heightAt: (x: number, z: number) => number = () => 0)
   const roverHome = rover.position.clone();
   let roverAway = 0;
   let roverAwayTarget = 0;
+  let roverClean = 0;
+  let roverCleanTarget = 0;
 
   let disposed = false;
   const loadModels = async (): Promise<string[]> => {
@@ -429,6 +474,14 @@ export function createBase(heightAt: (x: number, z: number) => number = () => 0)
             }
             o.userData.moduleId = id;
             pickables.push(o);
+            // El casco del modelo también se oscurece en obras.
+            const part = parts.get(id)!;
+            for (const mat of mats) {
+              if (mat instanceof THREE.MeshStandardMaterial && mat.name !== 'glass' && !part.tint.some((t) => t.mat === mat)) {
+                part.tint.push({ mat, base: mat.color.clone() });
+              }
+            }
+            part.lockApplied = -1;
           }
         });
         shape.add(gltf.scene);
@@ -473,7 +526,18 @@ export function createBase(heightAt: (x: number, z: number) => number = () => 0)
     pickables,
     setModule(id, state) {
       const p = parts.get(id);
-      if (p) p.target = { efficiency: THREE.MathUtils.clamp(state.efficiency, 0, 1), broken: state.broken };
+      if (!p) return;
+      const locked = state.locked === true;
+      const first = !p.configured;
+      if (first) {
+        // El primer estado se aplica de golpe: al cargar la partida no hay obras que se "construyan".
+        p.configured = true;
+        p.lock = locked ? 1 : 0;
+        p.lockApplied = -1;
+      } else if (p.locked && !locked) p.unlockPending = true;
+      if (first || locked !== p.locked) labels.get(id)?.setLocked(locked);
+      p.locked = locked;
+      p.target = { efficiency: THREE.MathUtils.clamp(state.efficiency, 0, 1), broken: state.broken };
     },
     setLabels(names) {
       for (const [id, label] of labels) label.setText(names[id]);
@@ -489,7 +553,7 @@ export function createBase(heightAt: (x: number, z: number) => number = () => 0)
     },
     routes,
     setCorridorLight(level) {
-      stripMat.emissiveIntensity = 1.6 * level;
+      corridorLevel = level;
     },
     setLowQuality(low) {
       for (const tube of tubes) tube.material = low || coarse ? glassLow : glassHigh;
@@ -500,11 +564,38 @@ export function createBase(heightAt: (x: number, z: number) => number = () => 0)
     setRoverAway(away) {
       roverAwayTarget = away ? 1 : 0;
     },
+    setRoverClean(on) {
+      roverCleanTarget = on ? 1 : 0;
+    },
     update(dt, time, reducedMotion) {
       for (const [id, p] of parts) {
+        // Obras: el andamio se levanta o se retira con amortiguación; al desbloquear, destello ámbar suave.
+        if (p.unlockPending) {
+          p.unlockPending = false;
+          if (!reducedMotion) p.flashT = 0;
+        }
+        const lockGoal = p.locked ? 1 : 0;
+        p.lock = reducedMotion ? lockGoal : damp(p.lock, lockGoal, p.locked ? BUILD_K_LOCK : BUILD_K_UNLOCK, dt);
+        if (Math.abs(p.lock - lockGoal) < 0.002) p.lock = lockGoal;
+        if (p.lock !== p.lockApplied) {
+          p.lockApplied = p.lock;
+          p.scaffold.setBuild(p.lock);
+          const shade = 1 - LOCK_DARKEN * p.lock;
+          p.material.color.copy(HULL_COLOR).multiplyScalar(shade);
+          for (const t of p.tint) t.mat.color.copy(t.base).multiplyScalar(shade);
+        }
+        let flash = 0;
+        if (p.flashT >= 0) {
+          p.flashT += dt / FLASH_SECONDS;
+          if (p.flashT >= 1) p.flashT = -1;
+          else flash = Math.sin(Math.PI * p.flashT);
+        }
+        const lit = 1 - p.lock;
+        p.stripMat.emissiveIntensity = 1.6 * corridorLevel * (1 - 0.92 * p.lock);
+        // Un módulo en obras no tiene anillo de selección ni hover.
+        p.hover = damp(p.hover, hovered === id && !p.locked ? 1 : 0, 12, dt);
         p.shown = damp(p.shown, p.target.efficiency, 7, dt);
-        p.hover = damp(p.hover, hovered === id ? 1 : 0, 12, dt);
-        p.selected = damp(p.selected, selectedId === id ? 1 : 0, 10, dt);
+        p.selected = damp(p.selected, selectedId === id && !p.locked ? 1 : 0, 10, dt);
         // Late suave (menos de 1 vez por segundo) y crece un poco al elegirse.
         const beat = reducedMotion ? 1 : 0.75 + 0.25 * Math.sin(time * 4);
         p.select.material.opacity = p.selected * 0.85 * beat + p.hover * 0.25;
@@ -522,9 +613,9 @@ export function createBase(heightAt: (x: number, z: number) => number = () => 0)
           p.band.emissive.setHex(AMBER);
           p.lamp.color.setHex(AMBER);
           // Un módulo sin energía se ve apagado desde lejos; con energía, brilla.
-          p.band.emissiveIntensity = 0.05 + p.shown * 2.6;
-          p.lamp.intensity = p.shown * 42;
-          p.material.emissiveIntensity = p.shown * 0.06 + p.hover * 0.12;
+          p.band.emissiveIntensity = (0.05 + p.shown * 2.6) * lit + flash * 2.2;
+          p.lamp.intensity = p.shown * 42 * lit + flash * 34;
+          p.material.emissiveIntensity = (p.shown * 0.06 + p.hover * 0.12) * lit + flash * 0.12;
         }
       }
       shelterShown = damp(shelterShown, shelterTarget, 4, dt);
@@ -534,7 +625,13 @@ export function createBase(heightAt: (x: number, z: number) => number = () => 0)
 
       // El rover sale hacia el sur y vuelve, sin teletransportes.
       roverAway = damp(roverAway, roverAwayTarget, 0.9, dt);
-      rover.position.set(roverHome.x + roverAway * 30, roverHome.y, roverHome.z + roverAway * 70);
+      roverClean = reducedMotion ? roverCleanTarget : damp(roverClean, roverCleanTarget, 0.9, dt);
+      if (Math.abs(roverClean - roverCleanTarget) < 0.002) roverClean = roverCleanTarget;
+      // Limpieza de polvo: el rover se acerca al campo solar y vuelve (la altura sigue al terreno).
+      const rx = roverHome.x + roverClean * (CLEAN_SPOT.x - roverHome.x);
+      const rz = roverHome.z + roverClean * (CLEAN_SPOT.z - roverHome.z);
+      const ry = roverClean > 0.001 ? heightAt(rx, rz) : roverHome.y;
+      rover.position.set(rx + roverAway * 30, ry, rz + roverAway * 70);
       rover.visible = roverAway < 0.97;
     },
     ready: loadModels(),

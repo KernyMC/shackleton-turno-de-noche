@@ -4,19 +4,24 @@ import { effect, signal } from '@preact/signals';
 import { useEffect, useRef } from 'preact/hooks';
 import { t } from '../i18n';
 import { defaultConfig } from '../sim/config';
+import { isUnlocked } from '../sim/acts';
 import { getLight, getStormDose } from '../sim/engine';
 import { MODULE_IDS } from '../sim/types';
 import type { ModuleId } from '../sim/types';
 import { num } from '../components/format';
-import { focusModule, game, interact, nearTarget, plan, realAssets, resolving, skyView, tabletOpen, toggleTablet } from '../state/store';
+import { fastForwarding, focusModule, game, interact, nearTarget, plan, realAssets, resolving, skyView, tabletOpen, toggleTablet } from '../state/store';
 import { tutorialStep } from '../state/tutorial';
 import { clearReady, markReady } from '../state/loading';
 import { sceneBridge } from './bridge';
 import type { Mood } from './crewWalk';
+import { pickQuip } from './quipRules';
 import type { World } from './world';
 
 /** Radianes que avanza el Sol por el horizonte cada día (12°). */
 const SUN_STEP = (12 * Math.PI) / 180;
+/** Globos de la tripulación: como mucho uno cada tantos días, y una pausa tras cerrarse el día (deja pasar el aplauso y la resolución). */
+const QUIP_MIN_DAYS = 2;
+const QUIP_DELAY_MS = 700;
 
 export function Scene() {
   const host = useRef<HTMLDivElement>(null);
@@ -61,6 +66,7 @@ export function Scene() {
           const level = (['S1', 'S2', 'S3', 'S4'] as const).find((l) => l === raw) ?? null;
           w.setStormFx(level, { sheltered: g.shelterToday, pending: pendingStorm });
           w.setRoverAway(g.pendingEffects.some((e) => e.kind === 'rover_water'));
+          w.setRoverClean(g.cleanToday);
         }),
       );
       // Las luces de los módulos responden EN VIVO al plan que se está editando.
@@ -74,8 +80,46 @@ export function Scene() {
             w.setModule(id, {
               efficiency: sheltered ? 0 : p[id] / defaultConfig.balance.modules[id].maxEnergy,
               broken: g.modules[id].broken,
+              locked: !isUnlocked(g, id),
             });
           }
+        }),
+      );
+      // Al cerrarse un día: polvo en los paneles (y su nube al limpiar), aplauso si se desbloqueó un módulo y,
+      // a veces, un globo de la tripulación. Todo compara el estado anterior con el nuevo; nada cambia las reglas.
+      let prevGame = game.peek();
+      let lastQuipDay = -Infinity;
+      let quipTimer: ReturnType<typeof setTimeout> | null = null;
+      stops.push(() => {
+        if (quipTimer !== null) clearTimeout(quipTimer);
+      });
+      stops.push(
+        effect(() => {
+          const g = game.value;
+          const before = prevGame;
+          prevGame = g;
+          if (!g) return;
+          const dayClosed = before !== null && g.day === before.day + 1;
+          w.setDust(g.dust, dayClosed && before.dust && !g.dust);
+          if (!dayClosed) {
+            // Partida nueva o vuelta atrás en el tiempo: el contador de globos empieza de cero.
+            if (before === null || g.day < before.day || g.day === 1) lastQuipDay = -Infinity;
+            return;
+          }
+          if (g.unlocked.some((id) => !before.unlocked.includes(id))) w.celebrate();
+          if (fastForwarding.peek() || g.day - lastQuipDay < QUIP_MIN_DAYS) return;
+          const quip = pickQuip(before, g);
+          if (!quip) return;
+          if (quipTimer !== null) clearTimeout(quipTimer);
+          quipTimer = setTimeout(() => {
+            quipTimer = null;
+            const now = game.peek();
+            // Ni con un evento pendiente, ni con tormenta hoy, ni resolviendo el día o avanzando rápido.
+            if (!now || now.day !== g.day || now.phase !== 'planning' || now.pendingEvent || now.stormToday !== null) return;
+            if (resolving.peek() || fastForwarding.peek() || g.day - lastQuipDay < QUIP_MIN_DAYS) return;
+            lastQuipDay = g.day;
+            w.say(quip.crew, t(quip.key));
+          }, QUIP_DELAY_MS);
         }),
       );
       // Rótulos de los módulos en el idioma actual (t() lee el idioma, así que se actualizan solos).
