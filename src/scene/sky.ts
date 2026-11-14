@@ -10,6 +10,10 @@ export interface Sky {
    * Portada: lleva la Tierra a `position` con tamaño `scale` (0 = posición normal, 1 = póster).
    */
   setHero(amount: number, position: THREE.Vector3, scale: number): void;
+  /** Mirar al cielo: 0 = la Tierra en su sitio bajo, 1 = elevada para verse sobre el borde del cráter. */
+  setLift(amount: number): void;
+  /** Fracción de estrellas que se dibujan (1 = todas). Para calidad baja. */
+  setDetail(fraction: number): void;
   dispose(): void;
 }
 
@@ -56,6 +60,9 @@ function earthTexture(): THREE.CanvasTexture {
   texture.colorSpace = THREE.SRGBColorSpace;
   return texture;
 }
+
+/** Posición de la Tierra cuando se mira al cielo: ~22° sobre el horizonte desde la cámara, por encima del borde del cráter. */
+export const EARTH_SKY = new THREE.Vector3(-190, 201, -330);
 
 export function createSky(scene: THREE.Scene): Sky {
   const group = new THREE.Group();
@@ -112,6 +119,16 @@ export function createSky(scene: THREE.Scene): Sky {
   });
   const earth = new THREE.Mesh(new THREE.SphereGeometry(16, 64, 32), earthMat);
   const EARTH_HOME = new THREE.Vector3(-190, 62, -330);
+  const homeNow = EARTH_HOME.clone();
+  const heroPos = new THREE.Vector3();
+  let heroE = 0;
+  let heroScale = 1;
+  let lift = 0;
+  const place = (): void => {
+    earth.position.lerpVectors(homeNow, heroPos, heroE);
+    earth.scale.setScalar(1 + (heroScale - 1) * heroE);
+    earth.rotation.y = 1.1 + heroE * 0.9;
+  };
   earth.position.copy(EARTH_HOME);
   earth.rotation.set(0.4, 1.1, 0.25);
   group.add(earth);
@@ -172,10 +189,19 @@ export function createSky(scene: THREE.Scene): Sky {
 
   return {
     setHero(amount, position, scale) {
-      const e = amount * amount * (3 - 2 * amount);
-      earth.position.lerpVectors(EARTH_HOME, position, e);
-      earth.scale.setScalar(1 + (scale - 1) * e);
-      earth.rotation.y = 1.1 + e * 0.9;
+      heroE = amount * amount * (3 - 2 * amount);
+      heroPos.copy(position);
+      heroScale = scale;
+      place();
+    },
+    setLift(amount) {
+      if (Math.abs(amount - lift) < 0.0005) return;
+      lift = amount;
+      homeNow.lerpVectors(EARTH_HOME, EARTH_SKY, lift * lift * (3 - 2 * lift));
+      place();
+    },
+    setDetail(fraction) {
+      for (const layer of layers) layer.geo.setDrawRange(0, Math.floor(layer.geo.attributes.position!.count * fraction));
     },
     update(sun, storm) {
       // De noche se ven todas; de día quedan tenues (la cámara está expuesta para el suelo).

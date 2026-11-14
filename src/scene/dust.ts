@@ -10,10 +10,14 @@ const AREA = 38; // semilado del volumen (m) alrededor del centro de la base
 const MAX_HEIGHT = 3;
 const BASE_OPACITY = 0.25;
 const NIGHT_FLOOR = 0.04; // fracción de opacidad que queda de noche
+/** La altura del suelo se vuelve a muestrear cuando la mota se ha movido más de esto (m). */
+const RESAMPLE_DIST = 0.3;
 
 export interface Dust {
   points: THREE.Points;
   update(dt: number, time: number, sunlight: number, reducedMotion: boolean): void;
+  /** Fracción de motas que se dibujan y mueven (1 = todas, 0 = apagado). Para calidad baja. */
+  setDensity(fraction: number): void;
   dispose(): void;
 }
 
@@ -47,6 +51,10 @@ export function createDust(heightAt: (x: number, z: number) => number): Dust {
   const velocity = new Float32Array(COUNT * 3);
   const lift = new Float32Array(COUNT); // altura sobre el suelo
   const phase = new Float32Array(COUNT);
+  const ground = new Float32Array(COUNT); // altura del suelo en caché
+  const sampleX = new Float32Array(COUNT);
+  const sampleZ = new Float32Array(COUNT);
+  let active = COUNT;
   for (let i = 0; i < COUNT; i++) {
     positions[i * 3] = (rand() * 2 - 1) * AREA;
     positions[i * 3 + 2] = (rand() * 2 - 1) * AREA;
@@ -54,7 +62,10 @@ export function createDust(heightAt: (x: number, z: number) => number): Dust {
     phase[i] = rand() * Math.PI * 2;
     velocity[i * 3] = (rand() - 0.5) * 0.16;
     velocity[i * 3 + 2] = (rand() - 0.5) * 0.16;
-    positions[i * 3 + 1] = heightAt(positions[i * 3]!, positions[i * 3 + 2]!) + lift[i]!;
+    ground[i] = heightAt(positions[i * 3]!, positions[i * 3 + 2]!);
+    sampleX[i] = positions[i * 3]!;
+    sampleZ[i] = positions[i * 3 + 2]!;
+    positions[i * 3 + 1] = ground[i]! + lift[i]!;
   }
 
   const geometry = new THREE.BufferGeometry();
@@ -79,8 +90,8 @@ export function createDust(heightAt: (x: number, z: number) => number): Dust {
     update(dt, time, sunlight, reducedMotion) {
       // Brillo: casi nada de noche, más con sol (ya viene amortiguado desde el mundo).
       material.opacity = BASE_OPACITY * (NIGHT_FLOOR + (1 - NIGHT_FLOOR) * sunlight);
-      if (reducedMotion) return;
-      for (let i = 0; i < COUNT; i++) {
+      if (reducedMotion || active === 0) return;
+      for (let i = 0; i < active; i++) {
         let x = positions[i * 3]! + velocity[i * 3]! * dt;
         let z = positions[i * 3 + 2]! + velocity[i * 3 + 2]! * dt;
         // Al salir del volumen reaparece por el lado contrario.
@@ -90,9 +101,20 @@ export function createDust(heightAt: (x: number, z: number) => number): Dust {
         else if (z < -AREA) z += AREA * 2;
         positions[i * 3] = x;
         positions[i * 3 + 2] = z;
-        positions[i * 3 + 1] = heightAt(x, z) + lift[i]! + Math.sin(time * 0.15 + phase[i]!) * 0.12;
+        // El suelo cambia despacio: se muestrea de nuevo solo cuando la mota ya se ha movido un poco.
+        if (Math.abs(x - sampleX[i]!) > RESAMPLE_DIST || Math.abs(z - sampleZ[i]!) > RESAMPLE_DIST) {
+          ground[i] = heightAt(x, z);
+          sampleX[i] = x;
+          sampleZ[i] = z;
+        }
+        positions[i * 3 + 1] = ground[i]! + lift[i]! + Math.sin(time * 0.15 + phase[i]!) * 0.12;
       }
       geometry.attributes.position!.needsUpdate = true;
+    },
+    setDensity(fraction) {
+      active = Math.round(COUNT * Math.min(1, Math.max(0, fraction)));
+      geometry.setDrawRange(0, active);
+      points.visible = active > 0;
     },
     dispose() {
       geometry.dispose();

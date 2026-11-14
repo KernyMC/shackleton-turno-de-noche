@@ -146,7 +146,7 @@ function regolithTexture(): THREE.CanvasTexture {
 
 export function createTerrain(options: TerrainOptions = {}): Terrain {
   const size = options.size ?? 200;
-  const segments = options.segments ?? 128;
+  const segments = options.segments ?? 96;
   const baseRadius = options.baseRadius ?? 30;
   const maxRelief = options.maxRelief ?? 18;
 

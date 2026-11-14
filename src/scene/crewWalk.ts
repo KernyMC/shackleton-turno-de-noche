@@ -147,6 +147,8 @@ export function createCrewWalk(routes: Record<ModuleId, THREE.Vector3[]>, member
 
   const walkers: Walker[] = members.map((member, i) => {
     const astro = createAstronaut(member.color, i * 1.3);
+    // Dentro del vidrio su sombra no se ve: no la calculamos (rendimiento).
+    astro.group.traverse((o) => (o.castShadow = false));
     astro.group.scale.setScalar(SCALE);
     group.add(astro.group);
     const moodBadge = badge((ctx) => drawMood(ctx, 'happy'), 0.6);

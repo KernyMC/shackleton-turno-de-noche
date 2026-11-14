@@ -13,7 +13,7 @@ import { CREW } from '../data/crew';
 import { createCrewWalk } from './crewWalk';
 import type { CrewWalkState } from './crewWalk';
 import { createRocket } from './rocket';
-import { createSky } from './sky';
+import { createSky, EARTH_SKY } from './sky';
 import type { ModuleVisualState } from './base';
 import { createTerrain, TEXTURE_URLS } from './terrain';
 
@@ -126,18 +126,75 @@ const WALK_PART = 0.62;
 const damp = (current: number, target: number, k: number, dt: number): number =>
   current + (target - current) * (1 - Math.exp(-k * dt));
 
+/** Dirección fija de la portada (la cámara de portada solo se mece unos centímetros). */
+const TITLE_FORWARD = TITLE_TARGET.clone().sub(TITLE_EYE).normalize();
+const TITLE_RIGHT = new THREE.Vector3().crossVectors(TITLE_FORWARD, new THREE.Vector3(0, 1, 0)).normalize();
+
+/**
+ * Calidad adaptativa. Cada escalón baja el coste: primero la resolución, luego sombras y detalles.
+ * Los fps medidos (media de una ventana) mandan: por debajo de dropFps se baja; con holgura sostenida se sube.
+ */
+type Tier = 'high' | 'medium' | 'low';
+const QUALITY_STEPS: { pixelRatio: number; tier: Tier }[] = [
+  { pixelRatio: 2, tier: 'high' },
+  { pixelRatio: 1.5, tier: 'high' },
+  { pixelRatio: 1.25, tier: 'medium' },
+  { pixelRatio: 1, tier: 'medium' },
+  { pixelRatio: 1, tier: 'low' },
+];
+const QUALITY = {
+  windowSec: 1.5, // ventana de medida
+  warmupSec: 1.2, // tras un cambio o el arranque (compilación de shaders) no se mide
+  dropFps: 50,
+  panicFps: 28, // por debajo se bajan dos escalones de golpe
+  raiseFps: 56,
+  raiseAfterSec: 8, // holgura sostenida antes de subir
+  raiseAfterMaxSec: 120, // si subir provocó una bajada, se espera el doble cada vez, hasta este tope
+  regretSec: 20, // bajar antes de este tiempo tras subir cuenta como arrepentimiento
+  stallSec: 0.25, // un fotograma más lento que esto (pestaña dormida) no cuenta
+};
+/** Sombras: mapa grande en alta, la mitad de lado en media; se redibujan a esta cadencia o cuando se mueve el Sol. */
+const SHADOW_SIZE: Record<Tier, number> = { high: 2048, medium: 1024, low: 1024 };
+const SHADOW_REFRESH_MS = 66;
+const SHADOW_REFRESH_INTRO_MS = 33;
+const SUN_SHADOW_EPS = 0.0015; // rad de cambio del Sol que obliga a redibujar sombras
+const DENSITY: Record<Tier, { dust: number; stars: number }> = {
+  high: { dust: 1, stars: 1 },
+  medium: { dust: 0.5, stars: 1 },
+  low: { dust: 0, stars: 0.5 },
+};
+/** Modo ahorro: tras esto sin interacción (y fuera de la presentación) se limita a ~30 fps. */
+const SAVER_AFTER_MS = 6000;
+const SAVER_FRAME_MS = 28;
+/** El hover (rayo contra los módulos) se resuelve como mucho a esta cadencia. */
+const HOVER_MS = 60;
+/** Mirar al cielo: la Tierra queda a esta fracción del medio campo de visión sobre el centro (tercio superior). */
+const SKY_EARTH_HEADROOM = 0.4;
+const wrapAngle = (a: number): number => Math.atan2(Math.sin(a), Math.cos(a));
+
 export function createWorld(container: HTMLElement, cb: WorldCallbacks): World {
-  const renderer = new THREE.WebGLRenderer({ antialias: true });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  // Con pantallas densas (DPR >= 1.5) el antialias de hardware sale muy caro y casi no se nota: se decide al crear.
+  const deviceRatio = Math.min(window.devicePixelRatio || 1, 2);
+  const renderer = new THREE.WebGLRenderer({ antialias: deviceRatio < 1.5, powerPreference: 'high-performance' });
+  const ladder = QUALITY_STEPS.map((q) => ({ pixelRatio: Math.min(deviceRatio, q.pixelRatio), tier: q.tier })).filter(
+    (q, i, all) => i === 0 || q.pixelRatio !== all[i - 1]!.pixelRatio || q.tier !== all[i - 1]!.tier,
+  );
+  let qualityStep = 0;
+  renderer.setPixelRatio(ladder[0]!.pixelRatio);
   renderer.shadowMap.enabled = true;
+  // Las sombras se redibujan solo cuando cambia el Sol o a baja cadencia (hay figuras que se mueven).
+  renderer.shadowMap.autoUpdate = false;
+  renderer.shadowMap.needsUpdate = true;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.outputColorSpace = THREE.SRGBColorSpace;
+  if (import.meta.env.DEV) Object.assign(window, { __renderer: renderer });
   container.appendChild(renderer.domElement);
   const dom = renderer.domElement;
   dom.style.touchAction = 'none';
 
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(0x000000);
+  if (import.meta.env.DEV) Object.assign(window, { __scene: scene });
   const camera = new THREE.PerspectiveCamera(46, 1, 0.5, 1400);
   const lookAt = CENTER_LOOK.clone();
   const lookGoal = CENTER_LOOK.clone();
@@ -221,6 +278,14 @@ export function createWorld(container: HTMLElement, cb: WorldCallbacks): World {
   const introEye = new THREE.Vector3();
   const introTarget = new THREE.Vector3();
   const orbitEye = new THREE.Vector3();
+  // Vectores temporales: el bucle no crea objetos.
+  const tmpA = new THREE.Vector3();
+  const tmpB = new THREE.Vector3();
+  const tmpPos = new THREE.Vector3();
+  const tmpMid = new THREE.Vector3();
+  const tmpAhead = new THREE.Vector3();
+  const tmpCentroid = new THREE.Vector3();
+  const tmpProject = new THREE.Vector3();
 
   // --- Cámara en órbita ---
   let angle = 0.6;
@@ -249,12 +314,26 @@ export function createWorld(container: HTMLElement, cb: WorldCallbacks): World {
   const skyTarget = new THREE.Vector3();
   let skyLook: number | null = null; // elevación objetivo del botón "Mirar el cielo"
   let elevationBeforeSky = ORBIT.elevation;
+  /** Ángulo de órbita al que gira la cámara (hacia la Tierra al ir al cielo; el anterior al volver). */
+  let angleGoal: number | null = null;
+  let angleBeforeSky = 0;
+  let skyOn = false;
+  let skyAmount = 0; // 0..1, amortiguado: mezcla la mirada al cielo y eleva la Tierra
   const placeCamera = (): void => {
     camera.position.copy(orbitPosition(orbitEye));
     // Cuanto más baja la cámara, más levanta la mirada: con la cámara a ras de suelo se ve el cielo.
     const lift = THREE.MathUtils.clamp((SKY_LOOK_START - elevation) / (SKY_LOOK_START - ORBIT.minElevation), 0, 1);
     const e = lift * lift * (3 - 2 * lift);
-    skyTarget.copy(lookAt).setY(lookAt.y + e * 70);
+    let liftY = 70;
+    if (skyAmount > 0.001) {
+      // Mirar al cielo: la mirada sube lo justo para que la Tierra quede centrada y en el tercio superior.
+      const flat = Math.hypot(camera.position.x - lookAt.x, camera.position.z - lookAt.z);
+      const earthDist = Math.hypot(EARTH_SKY.x - camera.position.x, EARTH_SKY.z - camera.position.z);
+      const earthElevation = Math.atan2(EARTH_SKY.y - camera.position.y, earthDist);
+      const pitch = earthElevation - SKY_EARTH_HEADROOM * THREE.MathUtils.degToRad(gameFov() / 2);
+      liftY = THREE.MathUtils.lerp(70, Math.tan(pitch) * flat + (camera.position.y - lookAt.y), skyAmount);
+    }
+    skyTarget.copy(lookAt).setY(lookAt.y + e * liftY);
     camera.lookAt(skyTarget);
   };
   /** Cámara baja de la presentación, con un travelling lateral muy lento. */
@@ -267,8 +346,9 @@ export function createWorld(container: HTMLElement, cb: WorldCallbacks): World {
     if (introView < 0.999) {
       // Entre la portada y la fila: la cámara se aparta y baja con suavidad.
       const sway = reducedMotion ? 0 : Math.sin(time * 0.12) * 0.25;
-      const titleEye = TITLE_EYE.clone().add(new THREE.Vector3(sway, sway * 0.3, 0));
-      titleEye.y += terrain.heightAt(TITLE_EYE.x, TITLE_EYE.z);
+      const titleEye = tmpA.copy(TITLE_EYE);
+      titleEye.x += sway;
+      titleEye.y += sway * 0.3 + terrain.heightAt(TITLE_EYE.x, TITLE_EYE.z);
       introEye.lerpVectors(titleEye, introEye, e);
       introTarget.lerpVectors(TITLE_TARGET, introTarget, e);
     }
@@ -283,13 +363,17 @@ export function createWorld(container: HTMLElement, cb: WorldCallbacks): World {
       a.group.rotation.y = faceTitle * (1 - e);
     }
     // Tierra de póster y cohete subiendo, solo en la portada.
-    const forward = TITLE_TARGET.clone().sub(TITLE_EYE).normalize();
-    const right = new THREE.Vector3().crossVectors(forward, new THREE.Vector3(0, 1, 0)).normalize();
-    heroEarth.copy(TITLE_EYE).addScaledVector(forward, 260).addScaledVector(right, 105).add(new THREE.Vector3(0, 55, 0));
+    const forward = TITLE_FORWARD;
+    const right = TITLE_RIGHT;
+    heroEarth.copy(TITLE_EYE).addScaledVector(forward, 260).addScaledVector(right, 105);
+    heroEarth.y += 55;
     sky.setHero(1 - e, heroEarth, 4.2);
     const loop = reducedMotion ? 0.45 : (time * 0.035) % 1;
-    rocket.group.position.copy(TITLE_EYE).addScaledVector(forward, 150).addScaledVector(right, 18 + loop * 40).add(new THREE.Vector3(0, 6 + loop * 55, 0));
-    rocket.group.lookAt(rocket.group.position.clone().addScaledVector(right, 40).add(new THREE.Vector3(0, 55, 0)));
+    rocket.group.position.copy(TITLE_EYE).addScaledVector(forward, 150).addScaledVector(right, 18 + loop * 40);
+    rocket.group.position.y += 6 + loop * 55;
+    tmpB.copy(rocket.group.position).addScaledVector(right, 40);
+    tmpB.y += 55;
+    rocket.group.lookAt(tmpB);
     rocket.group.rotateX(Math.PI / 2);
     rocket.setVisible((1 - e) * Math.min(1, loop * 6, (1 - loop) * 6));
   };
@@ -334,19 +418,26 @@ export function createWorld(container: HTMLElement, cb: WorldCallbacks): World {
   };
 
   let lastPointer = { x: 0, y: 0 };
+  let lastPickAt = 0;
+  /** Última vez que pasó algo (puntero, rueda, panel...): sale del modo ahorro. Distinto de lastInteraction, que gobierna la órbita automática. */
+  let lastActivity = performance.now();
   const onPointerDown = (e: PointerEvent): void => {
+    lastActivity = performance.now();
     drag = { id: e.pointerId, x: e.clientX, y: e.clientY, startX: e.clientX, startY: e.clientY, moved: false };
     dom.setPointerCapture(e.pointerId);
     lastInteraction = performance.now();
   };
   const onPointerMove = (e: PointerEvent): void => {
     lastPointer = { x: e.clientX, y: e.clientY };
+    lastActivity = performance.now();
     if (drag && e.pointerId === drag.id) {
       if (Math.hypot(e.clientX - drag.startX, e.clientY - drag.startY) > CLICK_SLOP_PX) drag.moved = true;
       if (drag.moved && !introMode) {
         angle -= (e.clientX - drag.x) * 0.006;
         elevation = THREE.MathUtils.clamp(elevation + (e.clientY - drag.y) * 0.004, ORBIT.minElevation, ORBIT.maxElevation);
         skyLook = null;
+        angleGoal = null;
+        skyOn = false;
         dom.style.cursor = 'grabbing';
       }
       drag.x = e.clientX;
@@ -387,6 +478,7 @@ export function createWorld(container: HTMLElement, cb: WorldCallbacks): World {
   const onWheel = (e: WheelEvent): void => {
     if (introMode) return;
     e.preventDefault();
+    lastActivity = performance.now();
     radiusGoal = THREE.MathUtils.clamp(radiusGoal + e.deltaY * 0.045, ORBIT.minRadius, ORBIT.maxRadius);
     lastInteraction = performance.now();
   };
@@ -416,7 +508,7 @@ export function createWorld(container: HTMLElement, cb: WorldCallbacks): World {
       lookAt.copy(lookGoal);
       radius = radiusGoal;
     }
-    lastInteraction = performance.now();
+    lastInteraction = lastActivity = performance.now();
   }
 
   const applyViewOffset = (): void => {
@@ -435,57 +527,141 @@ export function createWorld(container: HTMLElement, cb: WorldCallbacks): World {
     portrait = w / h < 0.8;
     applyViewOffset();
     camera.updateProjectionMatrix();
+    qualityWarmup = QUALITY.warmupSec;
+    shadowDirty = true;
   });
   resize.observe(container);
 
-  // No gastar batería con la pestaña oculta.
+  // No gastar batería con la pestaña oculta ni con el lienzo fuera de pantalla.
   let running = true;
+  let tabVisible = true;
+  let canvasVisible = true;
+  const syncRunning = (): void => {
+    const next = tabVisible && canvasVisible;
+    if (next && !running) {
+      timer.reset();
+      qualityWarmup = QUALITY.warmupSec;
+      lastActivity = performance.now();
+    }
+    running = next;
+  };
   const onVisibility = (): void => {
-    running = !document.hidden;
-    if (running) timer.reset();
+    tabVisible = !document.hidden;
+    syncRunning();
   };
   document.addEventListener('visibilitychange', onVisibility);
+  const intersection =
+    typeof IntersectionObserver !== 'undefined'
+      ? new IntersectionObserver((entries) => {
+          canvasVisible = entries[entries.length - 1]!.isIntersecting;
+          syncRunning();
+        })
+      : null;
+  intersection?.observe(container);
 
-  // Calidad automática: si en los primeros segundos de juego va por debajo de 40 FPS,
-  // se quitan las sombras y la transmisión del vidrio.
+  // --- Calidad adaptativa: mide el tiempo de fotograma durante todo el juego (docs: DECISIONES.md) ---
+  let shadowDirty = true;
+  let shadowAt = -Infinity;
+  let shadowAzimuth = NaN;
+  let shadowElevation = NaN;
+  const applyTier = (tier: Tier): void => {
+    const shadows = tier !== 'low';
+    renderer.shadowMap.enabled = shadows;
+    sun.castShadow = shadows;
+    const size = SHADOW_SIZE[tier];
+    if (sun.shadow.mapSize.x !== size) {
+      sun.shadow.mapSize.set(size, size);
+      sun.shadow.map?.dispose();
+      sun.shadow.map = null;
+    }
+    // La transmisión del vidrio renderiza la escena una vez más: en media va a la mitad de resolución, en baja se quita.
+    renderer.transmissionResolutionScale = tier === 'high' ? 1 : 0.5;
+    base.setLowQuality(tier === 'low');
+    dust.setDensity(DENSITY[tier].dust);
+    sky.setDetail(DENSITY[tier].stars);
+    shadowDirty = true;
+  };
+  const applyStep = (step: number): void => {
+    qualityStep = THREE.MathUtils.clamp(step, 0, ladder.length - 1);
+    const q = ladder[qualityStep]!;
+    if (renderer.getPixelRatio() !== q.pixelRatio) {
+      renderer.setPixelRatio(q.pixelRatio);
+      renderer.setSize(width, height);
+    }
+    applyTier(q.tier);
+    if (import.meta.env.DEV) Object.assign(window, { __quality: { step: qualityStep, ...q } });
+  };
   let qualityTime = 0;
   let qualityFrames = 0;
-  let qualityDone = false;
-  const measureQuality = (dt: number): void => {
-    if (qualityDone || introMode || !running) return;
-    qualityTime += dt;
+  let qualityWarmup = QUALITY.warmupSec;
+  let goodTime = 0;
+  let raiseAfter = QUALITY.raiseAfterSec;
+  let lastRaiseAt = -Infinity;
+  const measureQuality = (rawDt: number, now: number, saver: boolean): void => {
+    if (!running || saver) return;
+    if (rawDt > QUALITY.stallSec) {
+      qualityTime = qualityFrames = 0;
+      return;
+    }
+    if (qualityWarmup > 0) {
+      qualityWarmup -= rawDt;
+      return;
+    }
+    qualityTime += rawDt;
     qualityFrames++;
-    if (qualityTime < 3) return;
-    qualityDone = true;
-    if (qualityFrames / qualityTime < 40) {
-      renderer.shadowMap.enabled = false;
-      sun.castShadow = false;
-      base.setLowQuality(true);
+    if (qualityTime < QUALITY.windowSec) return;
+    const fps = qualityFrames / qualityTime;
+    const spent = qualityTime;
+    qualityTime = qualityFrames = 0;
+    if (fps < QUALITY.dropFps && qualityStep < ladder.length - 1) {
+      if (now - lastRaiseAt < QUALITY.regretSec * 1000) raiseAfter = Math.min(raiseAfter * 2, QUALITY.raiseAfterMaxSec);
+      goodTime = 0;
+      applyStep(qualityStep + (fps < QUALITY.panicFps ? 2 : 1));
+      qualityWarmup = QUALITY.warmupSec;
+    } else if (fps >= QUALITY.raiseFps && qualityStep > 0) {
+      goodTime += spent;
+      if (goodTime >= raiseAfter) {
+        goodTime = 0;
+        lastRaiseAt = now;
+        applyStep(qualityStep - 1);
+        qualityWarmup = QUALITY.warmupSec;
+      }
+    } else {
+      goodTime = 0;
     }
   };
+  applyStep(0);
 
   const timer = new THREE.Timer();
+  let lastFrameAt = 0;
   renderer.setAnimationLoop(() => {
     if (!running) return;
+    const now = performance.now();
+    // Modo ahorro: en reposo (sin interacción, sin presentación ni vuelo) basta con ~30 fps; la cámara orbita muy despacio.
+    const saver = !introMode && !fly && !drag && now - lastActivity > SAVER_AFTER_MS;
+    if (saver && now - lastFrameAt < SAVER_FRAME_MS) return;
+    lastFrameAt = now;
+    if (import.meta.env.DEV) Object.assign(window, { __renderer: renderer, __scene: scene });
     timer.update();
-    const dt = Math.min(timer.getDelta(), 0.1);
+    const rawDt = timer.getDelta();
+    const dt = Math.min(rawDt, 0.1);
     const time = timer.getElapsed();
 
     if (fly) {
       const t = Math.min(1, (performance.now() - fly.start) / fly.duration);
       // 1) La tripulación camina en fila hasta la escotilla y entra.
-      const centroid = new THREE.Vector3();
+      const centroid = tmpCentroid.set(0, 0, 0);
       let walking = 0;
       [...crew.entries()].forEach(([id, a], i) => {
         const from = fly!.starts.get(id)!;
         const local = THREE.MathUtils.clamp((t - 0.04 - i * 0.05) / (WALK_PART - 0.1), 0, 1);
         const turn = THREE.MathUtils.clamp((t - i * 0.03) / 0.1, 0, 1);
         // Dos tramos: hacia el centro de la fila y luego en fila india hasta la escotilla.
-        const mid = new THREE.Vector3(from.x * 0.25, 0, (from.z + ENTRY.z) / 2 + 2);
+        const mid = tmpMid.set(from.x * 0.25, 0, (from.z + ENTRY.z) / 2 + 2);
         const k = ease(local);
-        const pos = k < 0.5 ? from.clone().lerp(mid, k * 2) : mid.clone().lerp(ENTRY, (k - 0.5) * 2);
+        const pos = k < 0.5 ? tmpPos.copy(from).lerp(mid, k * 2) : tmpPos.copy(mid).lerp(ENTRY, (k - 0.5) * 2);
         pos.y = terrain.heightAt(pos.x, pos.z);
-        const ahead = (k < 0.5 ? mid : ENTRY).clone().sub(pos);
+        const ahead = tmpAhead.copy(k < 0.5 ? mid : ENTRY).sub(pos);
         a.group.position.copy(pos);
         if (turn < 1) a.group.rotation.y = Math.PI * ease(turn);
         else if (ahead.lengthSq() > 0.01) a.group.rotation.y = Math.atan2(ahead.x, ahead.z);
@@ -503,8 +679,8 @@ export function createWorld(container: HTMLElement, cb: WorldCallbacks): World {
       if (t < WALK_PART) {
         // La cámara se acerca detrás de ellos y los sigue con la mirada.
         const w = ease(t / WALK_PART);
-        flyEye.copy(fly.fromEye).lerp(new THREE.Vector3(centroid.x * 0.5, fly.fromEye.y + 1.2, ENTRY.z + 17), w);
-        flyTarget.copy(fly.fromTarget).lerp(new THREE.Vector3(centroid.x, 1.6, centroid.z - 2), w);
+        flyEye.copy(fly.fromEye).lerp(tmpA.set(centroid.x * 0.5, fly.fromEye.y + 1.2, ENTRY.z + 17), w);
+        flyTarget.copy(fly.fromTarget).lerp(tmpB.set(centroid.x, 1.6, centroid.z - 2), w);
         camera.position.copy(flyEye);
         camera.lookAt(flyTarget);
       } else {
@@ -529,7 +705,12 @@ export function createWorld(container: HTMLElement, cb: WorldCallbacks): World {
       camera.position.copy(introEye);
       camera.lookAt(introTarget);
     } else {
-      if (!reducedMotion && !drag && performance.now() - lastInteraction > RESUME_AFTER_MS) angle += AUTO_SPEED * dt;
+      if (angleGoal !== null && !drag) {
+        // Gira por el camino más corto hasta el ángulo objetivo (la Tierra al mirar al cielo; el anterior al volver).
+        const delta = wrapAngle(angleGoal - angle);
+        angle = reducedMotion || Math.abs(delta) < 0.002 ? angleGoal : angle + delta * (1 - Math.exp(-2.2 * dt));
+        if (angle === angleGoal && !skyOn) angleGoal = null;
+      } else if (!reducedMotion && !drag && !skyOn && now - lastInteraction > RESUME_AFTER_MS) angle += AUTO_SPEED * dt;
       if (skyLook !== null && !drag) elevation = reducedMotion ? skyLook : damp(elevation, skyLook, 2.2, dt);
       // El punto de mira y el radio persiguen su objetivo (doble clic, rueda).
       if (reducedMotion) {
@@ -566,6 +747,8 @@ export function createWorld(container: HTMLElement, cb: WorldCallbacks): World {
     // Tormenta: un resplandor violeta suave desde arriba y el cielo deja de ser negro puro.
     stormGlow.intensity = stormShown * (reducedMotion ? 0.14 : 0.12 + 0.05 * Math.sin(time * 2.2));
     sky.update(sunShown, stormShown);
+    skyAmount = reducedMotion ? (skyOn ? 1 : 0) : damp(skyAmount, skyOn ? 1 : 0, 2.2, dt);
+    sky.setLift(skyAmount);
     // De noche se sube la exposición para que la base ilumine su entorno.
     renderer.toneMappingExposure = 1.75 - sunShown * 0.45;
 
@@ -577,8 +760,9 @@ export function createWorld(container: HTMLElement, cb: WorldCallbacks): World {
       camera.updateProjectionMatrix();
     }
 
-    if (pointerDirty && !drag) {
+    if (pointerDirty && !drag && now - lastPickAt >= HOVER_MS) {
       pointerDirty = false;
+      lastPickAt = now;
       if (introMode && introViewTarget === 1) setCrewHovered(pickCrew(lastPointer.x, lastPointer.y));
       else setHovered(pick(lastPointer.x, lastPointer.y));
     }
@@ -602,7 +786,22 @@ export function createWorld(container: HTMLElement, cb: WorldCallbacks): World {
     walkers.setNight(night);
     walkers.group.visible = !introMode && !fly;
     if (walkers.group.visible) walkers.update(dt, time, reducedMotion);
-    measureQuality(dt);
+    measureQuality(rawDt, now, saver);
+    if (renderer.shadowMap.enabled) {
+      // Sombras: se redibujan si el Sol se movió, tras cambios de calidad o de tamaño, y a baja cadencia
+      // (las figuras de los pasillos y el rover se mueven). El resto del tiempo se reutiliza el mapa.
+      const refresh = introMode || fly ? SHADOW_REFRESH_INTRO_MS : SHADOW_REFRESH_MS;
+      const sunMoved = Math.abs(azimuthShown - shadowAzimuth) + Math.abs(sunElevation - shadowElevation) > SUN_SHADOW_EPS;
+      if (shadowDirty || sunMoved || now - shadowAt >= refresh) {
+        renderer.shadowMap.needsUpdate = true;
+        shadowDirty = false;
+        shadowAt = now;
+        if (sunMoved) {
+          shadowAzimuth = azimuthShown;
+          shadowElevation = sunElevation;
+        }
+      }
+    }
     renderer.render(scene, camera);
   });
 
@@ -616,6 +815,7 @@ export function createWorld(container: HTMLElement, cb: WorldCallbacks): World {
     setRoverAway: (away) => base.setRoverAway(away),
     setStorm: (active) => void (stormTarget = active ? 1 : 0),
     setViewShift: (up, right = 0) => {
+      lastActivity = performance.now();
       shiftTarget = THREE.MathUtils.clamp(up, 0, 0.5);
       shiftXTarget = THREE.MathUtils.clamp(right, -0.5, 0.5);
     },
@@ -625,19 +825,27 @@ export function createWorld(container: HTMLElement, cb: WorldCallbacks): World {
     projectModule(id) {
       const m = MODULES.find((mod) => mod.id === id);
       if (!m) return null;
-      const v = new THREE.Vector3(m.x, terrain.heightAt(m.x, m.z) + 5, m.z).project(camera);
+      const v = tmpProject.set(m.x, terrain.heightAt(m.x, m.z) + 5, m.z).project(camera);
       if (v.z > 1) return null;
       const rect = dom.getBoundingClientRect();
       return { x: rect.left + ((v.x + 1) / 2) * rect.width, y: rect.top + ((1 - v.y) / 2) * rect.height };
     },
     setSkyLook(on) {
+      if (on === skyOn) return;
       if (on) {
-        elevationBeforeSky = Math.max(elevation, SKY_LOOK_START);
+        if (!skyOn) {
+          elevationBeforeSky = Math.max(elevation, SKY_LOOK_START);
+          angleBeforeSky = angle;
+        }
         skyLook = ORBIT.minElevation;
+        // La cámara se pone al otro lado de la Tierra respecto al punto de mira, mirándola de frente.
+        angleGoal = Math.atan2(lookGoal.x - EARTH_SKY.x, lookGoal.z - EARTH_SKY.z);
       } else {
         skyLook = elevationBeforeSky;
+        angleGoal = angleBeforeSky;
       }
-      lastInteraction = performance.now();
+      skyOn = on;
+      lastInteraction = lastActivity = performance.now();
     },
     setReducedMotion: (reduced) => void (reducedMotion = reduced),
     showCrew(members) {
@@ -658,6 +866,7 @@ export function createWorld(container: HTMLElement, cb: WorldCallbacks): World {
         crewGroup.add(a.group);
         crew.set(m.id, a);
       });
+      lastActivity = performance.now();
       introMode = members.length > 0;
       if (introMode) fovShown = -1; // la presentación entra directa con su campo de visión
       dom.style.cursor = introMode ? 'default' : 'grab';
@@ -699,6 +908,7 @@ export function createWorld(container: HTMLElement, cb: WorldCallbacks): World {
       renderer.setAnimationLoop(null);
       resize.disconnect();
       document.removeEventListener('visibilitychange', onVisibility);
+      intersection?.disconnect();
       dom.removeEventListener('pointerdown', onPointerDown);
       dom.removeEventListener('pointermove', onPointerMove);
       dom.removeEventListener('pointerup', onPointerUp);

@@ -183,7 +183,9 @@ export function createBase(heightAt: (x: number, z: number) => number = () => 0)
     transparent: true, side: THREE.DoubleSide, depthWrite: false,
   });
   const glassLow = new THREE.MeshStandardMaterial({ color: 0xcfe2ee, roughness: 0.1, transparent: true, opacity: 0.22, side: THREE.DoubleSide, depthWrite: false });
-  const tubes: THREE.Mesh[] = [];
+  const tubes: THREE.InstancedMesh[] = [];
+  /** Las piezas repetidas de los pasillos se juntan en mallas instanciadas (una llamada de dibujo por tipo). */
+  const batches = new Map<THREE.BufferGeometry, { mat: THREE.Material; shadow: boolean; matrices: THREE.Matrix4[]; order: number }>();
   const floorMat = new THREE.MeshStandardMaterial({ color: 0x5b5d62, roughness: 0.8 });
   const stripMat = new THREE.MeshStandardMaterial({ color: 0x222222, emissive: AMBER, emissiveIntensity: 1.6 });
   const floorGeo = new THREE.BoxGeometry(1.15, 0.08, 1);
@@ -213,38 +215,28 @@ export function createBase(heightAt: (x: number, z: number) => number = () => 0)
     const across = new THREE.Quaternion().setFromUnitVectors(AXIS_Z, dir);
     const r0 = HUB_RADIUS;
     const r1 = dist - MODULE_RADIUS;
-    const piece = (geo: THREE.BufferGeometry, mat: THREE.Material, pos: THREE.Vector3, q: THREE.Quaternion, length?: number): THREE.Mesh => {
-      const mesh = new THREE.Mesh(geo, mat);
-      mesh.position.copy(pos);
-      mesh.quaternion.copy(q);
-      if (length !== undefined) mesh.scale.y = length;
-      mesh.castShadow = true;
-      mesh.receiveShadow = true;
-      group.add(mesh);
-      return mesh;
+    const scaleV = new THREE.Vector3();
+    const piece = (geo: THREE.BufferGeometry, mat: THREE.Material, pos: THREE.Vector3, q: THREE.Quaternion, scale?: [number, number, number], shadow = false, order = 0): void => {
+      let batch = batches.get(geo);
+      if (!batch) batches.set(geo, (batch = { mat, shadow, matrices: [], order }));
+      batch.matrices.push(new THREE.Matrix4().compose(pos, q, scaleV.set(scale?.[0] ?? 1, scale?.[1] ?? 1, scale?.[2] ?? 1)));
     };
-    const tube = piece(tubeGeo, coarse ? glassLow : glassHigh, at((r0 + r1) / 2), along, r1 - r0);
-    tube.castShadow = false;
-    tube.renderOrder = 3;
-    tubes.push(tube);
+    piece(tubeGeo, coarse ? glassLow : glassHigh, at((r0 + r1) / 2), along, [1, r1 - r0, 1], false, 3);
     // Suelo interior y tira de luz cálida a lo largo del pasillo.
     const floorY = TUBE_Y - 0.66;
-    const floor = piece(floorGeo, floorMat, at((r0 + r1) / 2, floorY), new THREE.Quaternion().setFromUnitVectors(AXIS_Z, dir));
-    floor.scale.z = r1 - r0 + 0.6;
-    floor.castShadow = false;
+    const flat = new THREE.Quaternion().setFromUnitVectors(AXIS_Z, dir);
+    piece(floorGeo, floorMat, at((r0 + r1) / 2, floorY), flat, [1, 1, r1 - r0 + 0.6]);
     for (const side of [-1, 1]) {
-      const strip = piece(stripGeo, stripMat, at((r0 + r1) / 2, floorY + 0.05), new THREE.Quaternion().setFromUnitVectors(AXIS_Z, dir));
-      strip.position.add(new THREE.Vector3(-dir.z, 0, dir.x).multiplyScalar(side * 0.48));
-      strip.scale.z = r1 - r0;
-      strip.castShadow = false;
+      const pos = at((r0 + r1) / 2, floorY + 0.05).add(new THREE.Vector3(-dir.z, 0, dir.x).multiplyScalar(side * 0.48));
+      piece(stripGeo, stripMat, pos, flat, [1, 1, r1 - r0]);
     }
     // Ruta para la tripulación: desde dentro del refugio hasta dentro del módulo.
     const feet = TUBE_Y - 0.62;
     routes[id] = [r0 - 0.4, r0 + 0.6, (r0 + r1) / 2, r1 - 0.4, r1 + 0.6].map((r) => at(r, feet));
     // Esclusas: el tubo entra en un collarín más ancho en cada extremo.
-    piece(collarGeo, frameMat, at(r0 + 0.3), along, 0.9);
-    piece(collarGeo, frameMat, at(r1 - 0.3), along, 0.9);
-    // Anillos cada ~2,2 m y patas que apoyan el tubo en el suelo.
+    piece(collarGeo, frameMat, at(r0 + 0.3), along, [1, 0.9, 1], true);
+    piece(collarGeo, frameMat, at(r1 - 0.3), along, [1, 0.9, 1], true);
+    // Anillos cada ~2,2 m (finos: no proyectan sombra) y patas que apoyan el tubo en el suelo.
     const span = r1 - r0 - 1.4;
     const count = Math.max(1, Math.round(span / 2.2));
     for (let i = 0; i <= count; i++) {
@@ -253,8 +245,7 @@ export function createBase(heightAt: (x: number, z: number) => number = () => 0)
       if (i % 2 === 1) {
         const ground = at(r, 0).y;
         const top = at(r).y - 0.75;
-        const leg = piece(legGeo, frameMat, at(r, 0).setY((ground + top) / 2), across);
-        leg.scale.y = Math.max(0.1, top - ground);
+        piece(legGeo, frameMat, at(r, 0).setY((ground + top) / 2), across, [1, Math.max(0.1, top - ground), 1], true);
       }
     }
   };
@@ -307,6 +298,17 @@ export function createBase(heightAt: (x: number, z: number) => number = () => 0)
     corridor(m.id, m.x, m.z);
 
     parts.set(m.id, { material, band, lamp, target: { efficiency: 0, broken: false }, shown: 0, hover: 0, select, selected: 0 });
+  }
+
+  for (const [geo, batch] of batches) {
+    const inst = new THREE.InstancedMesh(geo, batch.mat, batch.matrices.length);
+    batch.matrices.forEach((m, i) => inst.setMatrixAt(i, m));
+    inst.instanceMatrix.needsUpdate = true;
+    inst.castShadow = batch.shadow;
+    inst.receiveShadow = true;
+    inst.renderOrder = batch.order;
+    group.add(inst);
+    if (geo === tubeGeo) tubes.push(inst);
   }
 
   // Refugio: semienterrado bajo regolito, como se blindan las bases reales contra la radiación.
