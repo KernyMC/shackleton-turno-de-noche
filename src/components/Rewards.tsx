@@ -102,9 +102,7 @@ function HarvestBubble() {
       el.current.style.left = `${x}px`;
       el.current.style.top = `${y}px`;
     }
-    // Si nadie la toca, se recoge sola: nunca bloquea el avance.
-    const auto = setTimeout(() => collectHarvest(false), 3200);
-    return () => clearTimeout(auto);
+    // Si nadie la toca, se recoge sola (lo programa el estado): nunca bloquea el avance.
   }, [h?.key]);
   if (!h) return null;
   return (

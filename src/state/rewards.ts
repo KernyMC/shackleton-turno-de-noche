@@ -108,8 +108,21 @@ function celebrate(id: MilestoneId): void {
   else milestone.value = id;
 }
 
+/** La cosecha se recoge sola tras este tiempo: tocarla es un extra, nunca una obligación. */
+const HARVEST_MS = 2600;
+let harvestTimer: ReturnType<typeof setTimeout> | null = null;
+
+/** Muestra la ficha de cosecha y programa su recogida automática. */
+function offerHarvest(amount: number): void {
+  if (harvestTimer) clearTimeout(harvestTimer);
+  harvest.value = { key: ++counter, amount };
+  harvestTimer = setTimeout(() => collectHarvest(false), HARVEST_MS);
+}
+
 /** El jugador toca la burbuja de cosecha (o se recoge sola). */
 export function collectHarvest(byPlayer: boolean): void {
+  if (harvestTimer) clearTimeout(harvestTimer);
+  harvestTimer = null;
   const h = harvest.value;
   if (!h) return;
   harvest.value = null;
@@ -180,7 +193,7 @@ export function startRewardsWatcher(): () => void {
     reactTimer = setTimeout(() => (reacting.value = false), REACT_MS);
 
     const greenhouseWorked = snap.plan.greenhouse > 0 && !snap.sheltered && !broken.greenhouse;
-    if (greenhouseWorked) harvest.value = { key: ++counter, amount: snap.plan.greenhouse };
+    if (greenhouseWorked) offerHarvest(snap.plan.greenhouse);
 
     // Voz del día: habla quien está preocupado; si todos están bien, se turnan y un día de cada
     // dos hay silencio (una voz que habla siempre se vuelve ruido).

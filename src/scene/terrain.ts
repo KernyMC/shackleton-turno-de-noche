@@ -141,6 +141,20 @@ function discGeometry(radius: number, rings: number, sectors: number, uvSize: nu
   return geometry;
 }
 
+/**
+ * El cráter Shackleton, junto a la base. La base está en su borde iluminado (donde se planean las
+ * bases reales) y el interior, en sombra permanente, cae a un lado. Forma aproximada del cráter
+ * real: profundidad ≈ 1/5 del diámetro, paredes de unos 30° y fondo plano pequeño. No está a
+ * escala (el real mide unos 21 km) ni usa el relieve medido: es un dibujo fiel en proporciones.
+ */
+const SHACKLETON = { x: -82, z: -142, radius: 118, depth: 47, floor: 0.3, lip: 2.6 };
+
+/** Cuánto se hunde el terreno en (x, z) por el cráter (0 fuera, 1 en el fondo). */
+function shackletonBowl(x: number, z: number): number {
+  const t = Math.hypot(x - SHACKLETON.x, z - SHACKLETON.z) / SHACKLETON.radius;
+  return t >= 1 ? 0 : 1 - smoothstep(SHACKLETON.floor, 1, t);
+}
+
 interface Crater { x: number; z: number; r: number; depth: number }
 
 /** Cráteres repartidos fuera de la zona de la base (semilla fija: mismo paisaje siempre). */
@@ -217,11 +231,19 @@ export function createTerrain(options: TerrainOptions = {}): Terrain {
     const rise = smoothMin(far * far * RIM_SLOPE, crest, 9);
     const crestRadius = baseRadius * 1.5 + Math.sqrt(crest / RIM_SLOPE);
     const hills = Math.sin(x * 0.043 + z * 0.021 + 0.6) * Math.cos(z * 0.051 - x * 0.017) * Math.min(1, far / 90) * 2.2;
-    return h + hills + rise * (1 - 0.5 * smoothstep(crestRadius + 8, crestRadius + 110, r));
+    const ground = h + hills + rise * (1 - 0.5 * smoothstep(crestRadius + 8, crestRadius + 110, r));
+    // Shackleton: dentro de su círculo el suelo se allana hacia el nivel del borde y cae al fondo;
+    // justo en el borde hay un labio levantado.
+    const st = Math.hypot(x - SHACKLETON.x, z - SHACKLETON.z) / SHACKLETON.radius;
+    if (st > 1.35) return ground;
+    const inside = 1 - smoothstep(0.85, 1.2, st);
+    const rimLevel = 5;
+    const lip = SHACKLETON.lip * Math.exp(-((st - 1) * (st - 1)) / 0.012);
+    return ground * (1 - inside) + (rimLevel - SHACKLETON.depth * shackletonBowl(x, z)) * inside + lip;
   };
 
   const geometry = discGeometry(size * 1.65, Math.round(segments * 1.08), segments * 2 - 16, size * 3);
-  const material = new THREE.MeshStandardMaterial({ color: 0x9a9892, roughness: 1, metalness: 0 });
+  const material = new THREE.MeshStandardMaterial({ color: 0x9a9892, roughness: 1, metalness: 0, vertexColors: true });
   const grain = typeof document !== 'undefined' ? regolithTexture() : null;
   if (grain) {
     material.map = grain;
@@ -233,7 +255,16 @@ export function createTerrain(options: TerrainOptions = {}): Terrain {
 
   const applyHeights = (): void => {
     const pos = geometry.attributes.position as THREE.BufferAttribute;
-    for (let i = 0; i < pos.count; i++) pos.setY(i, heightFn(pos.getX(i), pos.getZ(i)));
+    const shade = new Float32Array(pos.count * 3);
+    for (let i = 0; i < pos.count; i++) {
+      const x = pos.getX(i);
+      const z = pos.getZ(i);
+      pos.setY(i, heightFn(x, z));
+      // Interior de Shackleton: nunca le da el Sol. Se oscurece con la profundidad.
+      const dark = 1 - 0.95 * smoothstep(0.04, 0.42, shackletonBowl(x, z));
+      shade[i * 3] = shade[i * 3 + 1] = shade[i * 3 + 2] = dark;
+    }
+    geometry.setAttribute('color', new THREE.BufferAttribute(shade, 3));
     pos.needsUpdate = true;
     geometry.computeVertexNormals();
   };

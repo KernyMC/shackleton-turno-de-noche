@@ -61,8 +61,8 @@ function earthTexture(): THREE.CanvasTexture {
   return texture;
 }
 
-/** Posición de la Tierra cuando se mira al cielo: ~22° sobre el horizonte desde la cámara, por encima del borde del cráter. */
-export const EARTH_SKY = new THREE.Vector3(-190, 201, -330);
+/** Posición de la Tierra cuando se mira al cielo: ~20° sobre el horizonte desde la cámara, encima del cráter Shackleton. */
+export const EARTH_SKY = new THREE.Vector3(-190, 150, -330);
 /** Cuánto crece la Tierra al mirar al cielo (0.7 = 70 % más grande). */
 const SKY_GROW = 0.7;
 

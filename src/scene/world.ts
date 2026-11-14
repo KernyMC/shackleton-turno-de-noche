@@ -209,8 +209,8 @@ const SAVER_AFTER_MS = 6000;
 const SAVER_FRAME_MS = 28;
 /** El hover (rayo contra los módulos) se resuelve como mucho a esta cadencia. */
 const HOVER_MS = 60;
-/** Mirar al cielo: la Tierra queda a esta fracción del medio campo de visión sobre el centro (casi centrada, libre de la barra y la meta). */
-const SKY_EARTH_HEADROOM = 0.06;
+/** Mirar al cielo: la Tierra queda a esta fracción del medio campo de visión sobre el centro (algo sobre el centro, libre de la barra y la meta, con el cráter debajo). */
+const SKY_EARTH_HEADROOM = 0.16;
 const wrapAngle = (a: number): number => Math.atan2(Math.sin(a), Math.cos(a));
 
 export function createWorld(container: HTMLElement, cb: WorldCallbacks): World {
