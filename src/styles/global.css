@@ -44,18 +44,50 @@ b { font-family: var(--font-mono); }
 .btn--primary { background: var(--accent); color: #1a1205; border-color: var(--accent); font-weight: 700; }
 .btn--ghost { background: transparent; }
 
-.menu {
-  min-height: 100%;
-  display: grid;
-  place-content: center;
-  gap: 1rem;
-  padding: 1.5rem;
-  text-align: center;
+/* ---------- Menú de inicio ---------- */
+.menu { position: fixed; inset: 0; overflow-y: auto; background: var(--bg); }
+.menu__backdrop { position: fixed; inset: 0; pointer-events: none; }
+.menu__backdrop canvas { display: block; }
+/* Velo: oscurece abajo y a la izquierda para que el texto se lea sobre la base. */
+.menu::after {
+  content: ''; position: fixed; inset: 0; pointer-events: none;
+  background:
+    linear-gradient(to right, rgb(11 12 14 / 0.9) 0%, rgb(11 12 14 / 0.55) 42%, rgb(11 12 14 / 0) 72%),
+    linear-gradient(to top, rgb(11 12 14 / 0.85) 0%, rgb(11 12 14 / 0) 45%);
 }
-.menu h1 { margin: 0; font-size: clamp(2rem, 6vw, 4rem); }
-.menu__subtitle { margin: 0; color: var(--text-dim); }
-.menu__actions { display: grid; gap: 0.75rem; margin-top: 1rem; }
-.menu__footer { margin-top: 2rem; color: var(--text-dim); font-size: 0.85rem; max-width: 40ch; justify-self: center; }
+.menu__content {
+  position: relative; z-index: 1;
+  min-height: 100%; max-width: 44rem; padding: clamp(1.25rem, 5vw, 4rem);
+  display: grid; align-content: center; gap: 1.25rem;
+}
+.menu__title h1 { margin: 0.2rem 0 0.6rem; font-size: clamp(2.2rem, 7vw, 4.5rem); line-height: 0.98; letter-spacing: -0.02em; }
+.menu__subtitle { margin: 0; max-width: 34rem; font-size: clamp(1rem, 2.2vw, 1.25rem); line-height: 1.4; color: var(--text); }
+.menu__missions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; }
+.mission {
+  display: grid; align-content: start; gap: 0.45rem; padding: 1rem 1.1rem;
+  background: rgb(22 24 28 / 0.88); border: 1px solid var(--panel-border); border-radius: var(--radius);
+  color: var(--text); font: inherit; text-align: left; cursor: pointer;
+}
+.mission:hover, .mission:focus-visible { border-color: var(--accent); outline: none; box-shadow: 0 0 0 2px var(--accent); }
+.mission--recommended { border-color: var(--accent); border-top-width: 3px; }
+.mission__head { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; font-size: 1.4rem; }
+.mission__what { color: var(--text-dim); }
+.mission__facts { display: grid; gap: 0.25rem; margin-top: 0.25rem; font-size: 0.9rem; }
+.mission__facts span { display: flex; align-items: center; gap: 0.4rem; }
+.mission__facts .icon { color: var(--accent); }
+.mission__go {
+  margin-top: 0.5rem; padding: 0.65rem 0.9rem; text-align: center; font-weight: 700;
+  border: 1px solid var(--panel-border); border-radius: var(--radius);
+}
+.mission--recommended .mission__go { background: var(--accent); border-color: var(--accent); color: #1a1205; }
+.menu__row { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.menu .sun { justify-self: start; margin: 0; }
+.menu__footer { color: var(--text-dim); font-size: 0.8rem; max-width: 34rem; }
+@media (max-width: 640px) {
+  .menu__missions { grid-template-columns: minmax(0, 1fr); }
+  .menu::after { background: linear-gradient(to top, rgb(11 12 14 / 0.94) 0%, rgb(11 12 14 / 0.8) 55%, rgb(11 12 14 / 0.25) 100%); }
+  .menu__content { align-content: end; }
+}
 
 .game { position: fixed; inset: 0; }
 .scene, .scene__canvas { position: absolute; inset: 0; }

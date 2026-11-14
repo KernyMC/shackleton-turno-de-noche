@@ -62,6 +62,7 @@ export interface Base {
   setModule(id: ModuleId, state: ModuleVisualState): void;
   /** Nombres traducidos para los rótulos de los módulos. */
   setLabels(names: Record<ModuleId, string>): void;
+  setLabelsVisible(visible: boolean): void;
   /** Resalta el módulo bajo el cursor (o ninguno). */
   setHover(id: ModuleId | null): void;
   /** Refugio activo: brilla en ámbar. */
@@ -335,6 +336,9 @@ export function createBase(heightAt: (x: number, z: number) => number = () => 0)
     },
     setLabels(names) {
       for (const [id, label] of labels) label.setText(names[id]);
+    },
+    setLabelsVisible(visible) {
+      for (const label of labels.values()) label.sprite.visible = visible;
     },
     setHover(id) {
       hovered = id;

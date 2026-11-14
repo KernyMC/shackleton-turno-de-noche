@@ -1,9 +1,6 @@
 {
   "app.title": "Shackleton: Night Shift",
-  "app.subtitle": "A 30-day shift at the Moon's south pole",
   "app.disclaimer": "Independent project created for NASA Space Apps Challenge 2026. Not affiliated with or endorsed by NASA.",
-  "menu.new_cadete": "New game · Cadet",
-  "menu.new_comandante": "New game · Commander",
   "menu.back": "Exit to menu",
   "hud.day": "Day {dia} / {total}",
   "hud.battery": "Battery",
@@ -215,5 +212,18 @@
   "debrief.copy": "Copy my result",
   "debrief.copied": "Copied.",
   "debrief.share.win": "I kept a base running for {dias} days at the Moon's south pole with {estrellas} in Shackleton: Night Shift.",
-  "debrief.share.loss": "I reached day {dia} running a base at the Moon's south pole in Shackleton: Night Shift. Next time I make it to 30!"
+  "debrief.share.loss": "I reached day {dia} running a base at the Moon's south pole in Shackleton: Night Shift. Next time I make it to 30!",
+  "menu.kicker": "Moon's south pole · Shackleton crater",
+  "menu.pitch": "You run the first human base on the Moon. {personas} people, {dias} days and a night of almost a week with no Sun.",
+  "menu.recommended": "Start here",
+  "menu.start": "Begin",
+  "menu.mission.cadete": "Cadet",
+  "menu.mission.comandante": "Commander",
+  "menu.mission.cadete.what": "Your first mission. With room to learn.",
+  "menu.mission.comandante.what": "The full challenge. Every decision counts.",
+  "menu.fact.storms": "{n} solar storms",
+  "menu.fact.storm": "{n} solar storm",
+  "menu.fact.night_soft": "Some light remains at night",
+  "menu.fact.night_dark": "Completely dark night",
+  "menu.fact.dose": "Radiation limit: {n} mSv"
 }

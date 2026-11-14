@@ -66,3 +66,4 @@ Cuando haya valores, la idea es: tamaño del "100 %" del tanque = N días de con
 - 2026-11-14 · La tormenta ya no tiñe toda la escena de morado: resplandor suave y cielo violeta oscuro. · El tinte fuerte tapaba la base.
 - 2026-11-14 · Debrief: el "día decisivo" es el primer día en que el recurso perdedor bajó de 25 (o la radiación pasó del 70 %), y el botón vuelve 2 días antes. · Da margen real para corregir.
 - 2026-11-14 · Los 4 módulos y el refugio aceptan modelos GLB opcionales; la luz, el aro de energía en el suelo y el rótulo se conservan. · Poder usar modelos generados sin perder la lectura de la energía.
+- 2026-11-14 · Menú: la maqueta 3D del juego de fondo (decorativa, sin rótulos), dos tarjetas de misión con 3 diferencias leídas de `balance.json`, Cadete marcada "Empieza aquí". · Enganchar en segundos y elegir sin leer mucho.

@@ -31,8 +31,13 @@ export interface World {
   setRoverAway(away: boolean): void;
   /** Tormenta solar en curso: tinte en el horizonte. */
   setStorm(active: boolean): void;
-  /** Desplaza la imagen hacia arriba (0..0.5 de la altura) cuando un panel tapa la parte inferior. */
-  setViewShift(fraction: number): void;
+  /**
+   * Desplaza la imagen cuando un panel tapa parte de la pantalla: `up` hacia arriba (0..0.5 de la
+   * altura) y `right` hacia la derecha (0..0.5 del ancho).
+   */
+  setViewShift(up: number, right?: number): void;
+  /** Muestra u oculta los rótulos de los módulos. */
+  setLabelsVisible(visible: boolean): void;
   setReducedMotion(reduced: boolean): void;
   dispose(): void;
 }
@@ -97,6 +102,8 @@ export function createWorld(container: HTMLElement, cb: WorldCallbacks): World {
   let stormShown = 0;
   let shiftTarget = 0;
   let shiftShown = 0;
+  let shiftXTarget = 0;
+  let shiftXShown = 0;
   let reducedMotion = false;
 
   // --- Cámara en órbita ---
@@ -183,8 +190,8 @@ export function createWorld(container: HTMLElement, cb: WorldCallbacks): World {
   dom.style.cursor = 'grab';
 
   const applyViewOffset = (): void => {
-    if (shiftShown < 0.002) camera.clearViewOffset();
-    else camera.setViewOffset(width, height, 0, Math.round(height * shiftShown), width, height);
+    if (shiftShown < 0.002 && shiftXShown < 0.002) camera.clearViewOffset();
+    else camera.setViewOffset(width, height, -Math.round(width * shiftXShown), Math.round(height * shiftShown), width, height);
   };
 
   const resize = new ResizeObserver(() => {
@@ -232,9 +239,10 @@ export function createWorld(container: HTMLElement, cb: WorldCallbacks): World {
     // De noche se sube la exposición para que la base ilumine su entorno.
     renderer.toneMappingExposure = 1.55 - sunShown * 0.5;
 
-    const previousShift = shiftShown;
+    const previousShift = shiftShown + shiftXShown;
     shiftShown = damp(shiftShown, shiftTarget, 8, dt);
-    if (Math.abs(shiftShown - previousShift) > 0.0005) {
+    shiftXShown = damp(shiftXShown, shiftXTarget, 8, dt);
+    if (Math.abs(shiftShown + shiftXShown - previousShift) > 0.0005) {
       applyViewOffset();
       camera.updateProjectionMatrix();
     }
@@ -256,7 +264,11 @@ export function createWorld(container: HTMLElement, cb: WorldCallbacks): World {
     setShelter: (active) => base.setShelter(active),
     setRoverAway: (away) => base.setRoverAway(away),
     setStorm: (active) => void (stormTarget = active ? 1 : 0),
-    setViewShift: (fraction) => void (shiftTarget = THREE.MathUtils.clamp(fraction, 0, 0.5)),
+    setViewShift: (up, right = 0) => {
+      shiftTarget = THREE.MathUtils.clamp(up, 0, 0.5);
+      shiftXTarget = THREE.MathUtils.clamp(right, 0, 0.5);
+    },
+    setLabelsVisible: (visible) => base.setLabelsVisible(visible),
     setReducedMotion: (reduced) => void (reducedMotion = reduced),
     dispose() {
       renderer.setAnimationLoop(null);

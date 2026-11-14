@@ -50,7 +50,7 @@ Estados: `libre` · `en curso` · `hecha` · `bloqueada`. Prioridades: P0 impres
 | C-03 | Tablet: planificador con vista previa | P0 | C-01 | Claude | hecha |
 | C-04 | Panel de evento → ver F-04 | P0 | — | | ver F-04 |
 | C-05 | Resumen del día y debrief → ver F-03 y F-05 | P0 | — | | ver F-03, F-05 |
-| C-06 | Menú y selección de dificultad | P0 | — | | libre |
+| C-06 | Menú con la base 3D de fondo y tarjetas de misión | P0 | — | Halo Sur | hecha |
 | C-07 | Pronóstico de luz y aviso de noche | P1 | C-02 | | libre |
 | C-08 | Ficha "¿De dónde sale este número?" | P1 | C-02, D-02 | | libre |
 | C-09 | Debrief completo: gráfica SVG y tarjetas | P1 | C-05, D-02 | | libre |
@@ -83,7 +83,7 @@ Motor, store, tablet, HUD, maqueta 3D y datos NASA están hechos. La partida se 
 Lo que falta para que sea divertida y enseñe está en el **área F** (`docs/DIVERSION.md` explica el porqué):
 
 1. **F-03** predicción y causa en una frase · **F-07** demo de 3 minutos para los jueces.
-2. **C-06** menú con más cuidado visual · resto de F-04 (barra de 30 s).
+2. Resto de F-04 (barra de 30 s) · **D-02** fuentes y datos curiosos · **C-08** ficha "¿De dónde sale este número?".
 3. **F-07** demo de 3 minutos (lo que verán los jueces) · **C-06** menú.
 4. **D-02** fuentes y datos curiosos · **C-08** ficha "¿De dónde sale este número?" (función estrella del Norte).
 5. Si sobra: F-06, F-08, B-01 (terreno bonito), B-06, B-07, C-10, E-01 deploy.
