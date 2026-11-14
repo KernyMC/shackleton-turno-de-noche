@@ -6,6 +6,10 @@ import * as THREE from 'three';
 export interface Sky {
   /** `sun` = luz del día 0..1; `storm` = intensidad de la tormenta 0..1. */
   update(sun: number, storm: number): void;
+  /**
+   * Portada: lleva la Tierra a `position` con tamaño `scale` (0 = posición normal, 1 = póster).
+   */
+  setHero(amount: number, position: THREE.Vector3, scale: number): void;
   dispose(): void;
 }
 
@@ -59,44 +63,78 @@ export function createSky(scene: THREE.Scene): Sky {
   // Material básico: el Sol rasante de la escena no debe apagarla ni teñirla.
   const earthMat = new THREE.MeshBasicMaterial({ map: earthMap, color: 0xd8d8d8, toneMapped: false });
   const earth = new THREE.Mesh(new THREE.SphereGeometry(16, 40, 24), earthMat);
-  earth.position.set(-190, 62, -330);
+  const EARTH_HOME = new THREE.Vector3(-190, 62, -330);
+  earth.position.copy(EARTH_HOME);
   earth.rotation.set(0.4, 1.1, 0.25);
   group.add(earth);
+  // Halo de atmósfera: un borde azul que brilla alrededor de la Tierra.
+  const haloMat = new THREE.MeshBasicMaterial({ color: 0x6fb4ff, transparent: true, opacity: 0.32, side: THREE.BackSide, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false });
+  const halo = new THREE.Mesh(new THREE.SphereGeometry(17.6, 40, 24), haloMat);
+  earth.add(halo);
 
-  // Estrellas: puntos en una esfera lejana.
+  // Estrellas: dos capas (muchas pequeñas, pocas grandes) y una banda densa de Vía Láctea.
   const rand = seeded(42);
-  const count = 1400;
-  const positions = new Float32Array(count * 3);
-  for (let i = 0; i < count; i++) {
-    const u = rand() * 2 - 1;
-    const phi = rand() * Math.PI * 2;
-    const r = Math.sqrt(1 - u * u);
-    positions.set([r * Math.cos(phi) * 600, Math.abs(u) * 600 * 0.9 + 12, r * Math.sin(phi) * 600], i * 3);
-  }
-  const starGeo = new THREE.BufferGeometry();
-  starGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-  const starMat = new THREE.PointsMaterial({ color: 0xffffff, size: 1.6, sizeAttenuation: false, transparent: true, opacity: 0, depthWrite: false });
-  const stars = new THREE.Points(starGeo, starMat);
-  group.add(stars);
+  const palette = [new THREE.Color(0xffffff), new THREE.Color(0xcfe0ff), new THREE.Color(0xfff0d8), new THREE.Color(0xffd9b0)];
+  const bandNormal = new THREE.Vector3(0.35, 0.8, 0.48).normalize();
+  const starLayer = (count: number, size: number, band: boolean): { points: THREE.Points; geo: THREE.BufferGeometry; mat: THREE.PointsMaterial } => {
+    const positions = new Float32Array(count * 3);
+    const colors = new Float32Array(count * 3);
+    const v = new THREE.Vector3();
+    for (let i = 0; i < count; i++) {
+      v.set(rand() * 2 - 1, rand() * 2 - 1, rand() * 2 - 1).normalize();
+      if (band) {
+        // Aplasta el punto hacia el plano de la banda: casi todos quedan cerca de ese círculo.
+        const off = v.dot(bandNormal);
+        v.addScaledVector(bandNormal, -off * (1 - Math.pow(rand(), 3) * 0.35)).normalize();
+      }
+      if (v.y < -0.05) v.y = -v.y; // solo el cielo visible
+      v.multiplyScalar(620);
+      positions.set([v.x, v.y + 10, v.z], i * 3);
+      const c = palette[Math.floor(rand() * palette.length)]!.clone().multiplyScalar(0.55 + rand() * 0.45);
+      colors.set([c.r, c.g, c.b], i * 3);
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+    const mat = new THREE.PointsMaterial({ size, sizeAttenuation: false, vertexColors: true, transparent: true, opacity: 0, depthWrite: false, toneMapped: false });
+    const points = new THREE.Points(geo, mat);
+    group.add(points);
+    return { points, geo, mat };
+  };
+  const layers = [starLayer(2600, 1.3, false), starLayer(260, 2.6, false), starLayer(3200, 1.1, true)];
+  const layerStrength = [1, 1, 0.7];
 
   const background = new THREE.Color(0x000000);
   const stormColor = new THREE.Color(0x1a0f2e);
   scene.background = background;
 
   return {
+    setHero(amount, position, scale) {
+      const e = amount * amount * (3 - 2 * amount);
+      earth.position.lerpVectors(EARTH_HOME, position, e);
+      earth.scale.setScalar(1 + (scale - 1) * e);
+      earth.rotation.y = 1.1 + e * 0.9;
+    },
     update(sun, storm) {
-      starMat.opacity = Math.max(0, 1 - sun * 3.2) * 0.9;
-      stars.visible = starMat.opacity > 0.01;
+      // De noche se ven todas; de día quedan tenues (la cámara está expuesta para el suelo).
+      const night = Math.max(0, 1 - sun * 3.2);
+      layers.forEach((layer, i) => {
+        layer.mat.opacity = (0.22 + 0.78 * night) * layerStrength[i]!;
+      });
       // Tormenta solar: el cielo deja de ser negro puro. Sin tapar la base.
       background.setRGB(0, 0, 0).lerp(stormColor, storm);
     },
     dispose() {
       scene.remove(group);
       earth.geometry.dispose();
+      halo.geometry.dispose();
+      haloMat.dispose();
       earthMat.dispose();
       earthMap.dispose();
-      starGeo.dispose();
-      starMat.dispose();
+      layers.forEach((layer) => {
+        layer.geo.dispose();
+        layer.mat.dispose();
+      });
     },
   };
 }

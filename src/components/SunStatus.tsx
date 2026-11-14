@@ -9,9 +9,20 @@ function formatDate(iso: string): string {
   return d.toLocaleDateString(lang.value === 'es' ? 'es-EC' : 'en-US', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
 }
 
-export function SunStatus() {
+export function SunStatus({ compact = false }: { compact?: boolean }) {
   const w = spaceWeather.value;
   const debug = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1';
+
+  if (compact) {
+    // Una sola línea discreta (portada y pantalla de tripulación).
+    if (w.status !== 'done' || !w.event) return null;
+    return (
+      <p class="sun sun--compact">
+        <Icon name="sun" size={14} />
+        {t('sun.compact', { tipo: t(`sun.type.${w.event.type}`), fecha: formatDate(w.event.date), nivel: w.event.level })}
+      </p>
+    );
+  }
 
   return (
     <>

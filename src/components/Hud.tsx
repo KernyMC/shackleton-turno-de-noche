@@ -9,7 +9,7 @@ import { t } from '../i18n';
 import { defaultConfig } from '../sim/config';
 import { getLight } from '../sim/engine';
 import type { GameState, LogEntry } from '../sim/types';
-import { budget, exitToMenu, game, tabletOpen, toggleTablet } from '../state/store';
+import { budget, exitToMenu, game, skyView, tabletOpen, toggleTablet } from '../state/store';
 import { helpOpen } from '../state/tutorial';
 import { num, signed } from './format';
 import { Icon } from './icons';
@@ -247,6 +247,15 @@ export function Hud() {
             {t('hud.open_tablet')}
           </button>
         )}
+        <button
+          type="button"
+          class={`btn btn--small btn--sky${skyView.value ? ' btn--sky-on' : ''}`}
+          aria-pressed={skyView.value}
+          onClick={() => (skyView.value = !skyView.value)}
+        >
+          <Icon name={skyView.value ? 'recycler' : 'moon'} size={16} />
+          {t(skyView.value ? 'hud.sky_back' : 'hud.sky')}
+        </button>
         <button type="button" class="btn btn--small" onClick={() => (helpOpen.value = true)}>
           {t('help.button')}
         </button>

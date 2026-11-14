@@ -60,6 +60,8 @@ export const dayStates = signal<GameState[]>([]);
 export const nearTarget = signal<TargetId | null>(null);
 /** Módulo que el jugador tocó en la maqueta: la tablet enfoca su slider. */
 export const focusModule = signal<ModuleId | null>(null);
+/** La cámara mira al cielo. */
+export const skyView = signal(false);
 /** La tablet de muñeca está abierta. */
 export const tabletOpen = signal(false);
 /** Recursos reales de NASA que la escena logró cargar (para las fichas de fuente). */

@@ -7,6 +7,7 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
+import { CREW } from '../data/crew';
 import type { ModuleId } from '../sim/types';
 import { optionalAssets } from './assets';
 import { buildModuleShape, createModuleLabel, MODULE_TOP } from './modules';
@@ -65,6 +66,8 @@ export interface Base {
   setLabelsVisible(visible: boolean): void;
   /** Resalta el módulo bajo el cursor (o ninguno). */
   setHover(id: ModuleId | null): void;
+  /** Marca el módulo elegido con un anillo de su color que late (o ninguno). */
+  setSelected(id: ModuleId | null): void;
   /** Refugio activo: brilla en ámbar. */
   setShelter(active: boolean): void;
   /** El rover está fuera en una expedición. */
@@ -84,6 +87,9 @@ interface ModuleParts {
   /** Eficiencia mostrada, que persigue a la objetivo. */
   shown: number;
   hover: number;
+  /** Anillo de selección en el suelo, con el color del módulo. */
+  select: THREE.Mesh<THREE.RingGeometry, THREE.MeshBasicMaterial>;
+  selected: number;
 }
 
 /** Amortiguación exponencial: `current` persigue a `target` sin saltos (docs/ARTE.md §6). */
@@ -234,6 +240,16 @@ export function createBase(heightAt: (x: number, z: number) => number = () => 0)
     const lamp = new THREE.PointLight(AMBER, 0, 24, 1.6);
     lamp.position.set(m.x, y + 5.2, m.z);
     // Aro de energía en el suelo: se queda aunque un modelo GLB sustituya la forma del módulo.
+    // Anillo de selección: grueso, del color del módulo, por encima del aro de energía.
+    const selectColor = CREW.find((c) => c.module === m.id)?.color ?? AMBER;
+    const select = new THREE.Mesh(
+      new THREE.RingGeometry(5.5, 6.3, 64),
+      new THREE.MeshBasicMaterial({ color: selectColor, transparent: true, opacity: 0, depthWrite: false, toneMapped: false }),
+    );
+    select.rotation.x = -Math.PI / 2;
+    select.position.set(m.x, y + 0.09, m.z);
+    select.renderOrder = 2;
+    group.add(select);
     const halo = new THREE.Mesh(new THREE.RingGeometry(4.9, 5.3, 48), band);
     halo.rotation.x = -Math.PI / 2;
     halo.position.set(m.x, y + 0.06, m.z);
@@ -251,7 +267,7 @@ export function createBase(heightAt: (x: number, z: number) => number = () => 0)
     // Pasillo hacia el refugio central.
     corridor(m.x, m.z);
 
-    parts.set(m.id, { material, band, lamp, target: { efficiency: 0, broken: false }, shown: 0, hover: 0 });
+    parts.set(m.id, { material, band, lamp, target: { efficiency: 0, broken: false }, shown: 0, hover: 0, select, selected: 0 });
   }
 
   // Refugio: semienterrado bajo regolito, como se blindan las bases reales contra la radiación.
@@ -376,8 +392,7 @@ export function createBase(heightAt: (x: number, z: number) => number = () => 0)
               o.material = shelterGlow;
             }
           });
-          // La entrada del refugio mira al sur, entre el taller y el blindaje.
-          gltf.scene.rotation.y = Math.PI;
+          // La escotilla del refugio mira al sur (+Z), entre el taller y el blindaje.
           gltf.scene.position.y += heightAt(0, 0);
           shelter.visible = false;
           group.add(gltf.scene);
@@ -391,6 +406,7 @@ export function createBase(heightAt: (x: number, z: number) => number = () => 0)
   };
 
   let hovered: ModuleId | null = null;
+  let selectedId: ModuleId | null = null;
 
   return {
     group,
@@ -408,6 +424,9 @@ export function createBase(heightAt: (x: number, z: number) => number = () => 0)
     setHover(id) {
       hovered = id;
     },
+    setSelected(id) {
+      selectedId = id;
+    },
     setShelter(active) {
       shelterTarget = active ? 1 : 0;
     },
@@ -418,6 +437,12 @@ export function createBase(heightAt: (x: number, z: number) => number = () => 0)
       for (const [id, p] of parts) {
         p.shown = damp(p.shown, p.target.efficiency, 7, dt);
         p.hover = damp(p.hover, hovered === id ? 1 : 0, 12, dt);
+        p.selected = damp(p.selected, selectedId === id ? 1 : 0, 10, dt);
+        // Late suave (menos de 1 vez por segundo) y crece un poco al elegirse.
+        const beat = reducedMotion ? 1 : 0.75 + 0.25 * Math.sin(time * 4);
+        p.select.material.opacity = p.selected * 0.85 * beat + p.hover * 0.25;
+        p.select.scale.setScalar(0.92 + 0.08 * p.selected);
+        p.select.visible = p.select.material.opacity > 0.01;
         if (p.target.broken) {
           // Avería: rojo que late lento (1 Hz, muy por debajo del límite de 3 Hz). Fijo con movimiento reducido.
           const pulse = reducedMotion ? 0.7 : 0.45 + 0.35 * Math.sin(time * Math.PI * 2);

@@ -6,7 +6,7 @@ import { t } from '../i18n';
 import { defaultConfig } from '../sim/config';
 import { getLight } from '../sim/engine';
 import { MODULE_IDS } from '../sim/types';
-import { game, interact, nearTarget, plan, realAssets, tabletOpen, toggleTablet } from '../state/store';
+import { focusModule, game, interact, nearTarget, plan, realAssets, skyView, tabletOpen, toggleTablet } from '../state/store';
 import { tutorialStep } from '../state/tutorial';
 import type { World } from './world';
 
@@ -72,6 +72,9 @@ export function Scene() {
           }),
         ),
       );
+      stops.push(effect(() => w.setSkyLook(skyView.value)));
+      // El módulo elegido (en la base o en el panel) se marca con un anillo de su color.
+      stops.push(effect(() => w.setSelected(tabletOpen.value ? focusModule.value : null)));
       // Con el panel abierto, la base se sube para que no quede tapada.
       stops.push(effect(() => w.setViewShift(tabletOpen.value ? (narrow.matches ? 0.27 : 0.2) : 0)));
     });
