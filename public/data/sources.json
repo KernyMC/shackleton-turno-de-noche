@@ -122,6 +122,20 @@
       "files": [
         "data/food_facts.json"
       ]
+    },
+    "blue_marble": {
+      "name_es": "La Tierra en el cielo (Blue Marble)",
+      "name_en": "Earth in the sky (Blue Marble)",
+      "explain_es": "La Tierra que ves desde la Luna es una foto real de NASA de todo el planeta, de enero de 2004.",
+      "explain_en": "The Earth you see from the Moon is a real NASA photo of the whole planet, from January 2004.",
+      "status": "verified",
+      "source_name": "NASA Earth Observatory — Blue Marble: Next Generation w/ Topography and Bathymetry",
+      "url": "https://science.nasa.gov/earth/earth-observatory/blue-marble-next-generation/base-topography-bathymetry",
+      "files": [
+        "textures/earth_bluemarble.webp"
+      ],
+      "note_es": "Reducida a 2048×1024 con scripts/earth-texture.mjs. La luz y la atmósfera del juego son una recreación.",
+      "note_en": "Downscaled to 2048×1024 with scripts/earth-texture.mjs. The in-game lighting and atmosphere are a recreation."
     }
   }
 }

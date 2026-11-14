@@ -25,7 +25,10 @@ function seeded(seed: number): () => number {
   };
 }
 
-/** Textura de la Tierra dibujada a mano: océano, continentes difusos y nubes. No es un mapa real. */
+/** Textura real de la Tierra (NASA Blue Marble: Next Generation, ver scripts/earth-texture.mjs). */
+const EARTH_TEXTURE_URL = '/textures/earth_bluemarble.webp';
+
+/** Respaldo dibujado a mano: océano, continentes difusos y nubes. No es un mapa real. */
 function earthTexture(): THREE.CanvasTexture {
   const size = 256;
   const canvas = document.createElement('canvas');
@@ -59,17 +62,76 @@ export function createSky(scene: THREE.Scene): Sky {
   scene.add(group);
 
   // La Tierra: siempre en el mismo punto del cielo, baja sobre el horizonte.
-  const earthMap = earthTexture();
-  // Material básico: el Sol rasante de la escena no debe apagarla ni teñirla.
-  const earthMat = new THREE.MeshBasicMaterial({ map: earthMap, color: 0xd8d8d8, toneMapped: false });
-  const earth = new THREE.Mesh(new THREE.SphereGeometry(16, 40, 24), earthMat);
+  // Textura real: Blue Marble: Next Generation (NASA Earth Observatory). Mientras carga, o sin
+  // red y sin el archivo, se usa la dibujada a mano.
+  let earthMap: THREE.Texture = earthTexture();
+  // Iluminación propia: el Sol ilumina la Tierra de lado (fase gibosa vista desde la Luna), con
+  // la cara nocturna casi negra y un borde de atmósfera azul. No depende de las luces de la escena.
+  const earthUniforms = {
+    map: { value: earthMap },
+    lightDir: { value: new THREE.Vector3(1, 0.25, 0.35).normalize() },
+  };
+  const earthMat = new THREE.ShaderMaterial({
+    uniforms: earthUniforms,
+    toneMapped: false,
+    vertexShader: /* glsl */ `
+      varying vec2 vUv;
+      varying vec3 vNormalW;
+      varying vec3 vViewW;
+      void main() {
+        vUv = uv;
+        vec4 world = modelMatrix * vec4(position, 1.0);
+        vNormalW = normalize(mat3(modelMatrix) * normal);
+        vViewW = normalize(cameraPosition - world.xyz);
+        gl_Position = projectionMatrix * viewMatrix * world;
+      }`,
+    fragmentShader: /* glsl */ `
+      uniform sampler2D map;
+      uniform vec3 lightDir;
+      varying vec2 vUv;
+      varying vec3 vNormalW;
+      varying vec3 vViewW;
+      void main() {
+        vec3 n = normalize(vNormalW);
+        vec3 albedo = texture2D(map, vUv).rgb;
+        float d = dot(n, lightDir);
+        float day = smoothstep(-0.12, 0.3, d);
+        vec3 lit = albedo * (0.08 + 1.35 * max(d, 0.0));
+        // Brillo del Sol sobre el mar: un reflejo pequeño donde el agua es oscura y azul.
+        float water = smoothstep(0.12, 0.0, albedo.r - albedo.b * 0.5);
+        vec3 h = normalize(lightDir + vViewW);
+        lit += vec3(1.0, 0.95, 0.85) * pow(max(dot(n, h), 0.0), 40.0) * 0.35 * water * day;
+        vec3 night = albedo * 0.02 + vec3(0.004, 0.008, 0.02);
+        vec3 col = mix(night, lit, day);
+        // Atmósfera: borde azul, más visible en la cara iluminada.
+        float rim = pow(1.0 - max(dot(n, vViewW), 0.0), 2.6);
+        col += vec3(0.32, 0.55, 1.0) * rim * (0.15 + 0.85 * day) * 0.9;
+        gl_FragColor = vec4(col, 1.0);
+        #include <colorspace_fragment>
+      }`,
+  });
+  const earth = new THREE.Mesh(new THREE.SphereGeometry(16, 64, 32), earthMat);
   const EARTH_HOME = new THREE.Vector3(-190, 62, -330);
   earth.position.copy(EARTH_HOME);
   earth.rotation.set(0.4, 1.1, 0.25);
   group.add(earth);
-  // Halo de atmósfera: un borde azul que brilla alrededor de la Tierra.
-  const haloMat = new THREE.MeshBasicMaterial({ color: 0x6fb4ff, transparent: true, opacity: 0.32, side: THREE.BackSide, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false });
-  const halo = new THREE.Mesh(new THREE.SphereGeometry(17.6, 40, 24), haloMat);
+  new THREE.TextureLoader().load(
+    EARTH_TEXTURE_URL,
+    (texture) => {
+      texture.colorSpace = THREE.SRGBColorSpace;
+      texture.anisotropy = 4;
+      earthMap.dispose();
+      earthMap = texture;
+      earthUniforms.map.value = texture;
+    },
+    undefined,
+    () => {
+      /* sin la textura real se queda la dibujada */
+    },
+  );
+  // Halo de atmósfera: un velo azul muy fino alrededor del disco.
+  const haloMat = new THREE.MeshBasicMaterial({ color: 0x6fb4ff, transparent: true, opacity: 0.16, side: THREE.BackSide, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false });
+  const halo = new THREE.Mesh(new THREE.SphereGeometry(16.9, 48, 24), haloMat);
   earth.add(halo);
 
   // Estrellas: dos capas (muchas pequeñas, pocas grandes) y una banda densa de Vía Láctea.

@@ -93,6 +93,7 @@ El juego también los muestra dentro, en el panel «¿De dónde salen los datos?
 | CGI Moon Kit (LOLA y LROC WAC) | Relieve y color del terreno del polo sur lunar, si los mapas están instalados | Real de NASA (opcional; sin ellos, terreno procedural) | [svs.gsfc.nasa.gov/4720](https://svs.gsfc.nasa.gov/4720) |
 | NASA 3D Resources | Modelos 3D del módulo de aterrizaje y el vehículo, si están instalados | Real de NASA (opcional) | [github.com/nasa/NASA-3D-Resources](https://github.com/nasa/NASA-3D-Resources) |
 | Consumo de aire, agua y comida (BVAD) | Cuánto necesita cada astronauta al día | Simulado (valor provisional; falta citar el documento de NASA) | sin enlace todavía |
+| NASA Blue Marble: Next Generation | La Tierra que se ve en el cielo (foto real de enero de 2004, reducida a 2048×1024; `scripts/earth-texture.mjs`) | Real de NASA | [science.nasa.gov/earth/earth-observatory/blue-marble-next-generation](https://science.nasa.gov/earth/earth-observatory/blue-marble-next-generation/base-topography-bathymetry) |
 | Tormentas de ejemplo | Respaldo si no hay datos reales | Simulado | sin enlace |
 | Nivel de tormenta (1–4) y dosis | Convertir cada evento real en nivel y radiación de juego | Decisión del juego | sin enlace |
 | Balance general | Valores para que el juego sea jugable | Decisión del juego | sin enlace |

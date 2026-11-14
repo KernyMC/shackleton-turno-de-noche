@@ -161,7 +161,7 @@ export function createTerrain(options: TerrainOptions = {}): Terrain {
       if (d < 1.6) h += c.depth * (d < 1 ? (d * d - 1) : 0) + c.depth * 0.35 * Math.exp(-((d - 1) ** 2) / 0.05);
     }
     // Borde del cráter suave: deja ver mucho cielo (estrellas y la Tierra).
-    return h + far * far * 0.0016;
+    return h + far * far * 0.0011;
   };
 
   const geometry = new THREE.PlaneGeometry(size * 3, size * 3, segments * 2, segments * 2);

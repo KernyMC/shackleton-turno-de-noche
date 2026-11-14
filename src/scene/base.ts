@@ -193,8 +193,12 @@ export function createBase(heightAt: (x: number, z: number) => number = () => 0)
   const frameMat = new THREE.MeshStandardMaterial({ color: 0x6a6b6e, roughness: 0.55, metalness: 0.35 });
   const UP = new THREE.Vector3(0, 1, 0);
   const AXIS_Z = new THREE.Vector3(0, 0, 1);
-  /** Distancia desde el centro a la que el pasillo entra en el refugio (dentro de su montículo). */
-  const HUB_RADIUS = 4.1;
+  /**
+   * Distancia desde el centro a la que nace el pasillo: dentro del refugio. Con el modelo GLB
+   * (esfera de ~4 m de alto) la esclusa queda justo en su superficie; con el montículo
+   * procedural (más grande) el tramo extra queda escondido dentro.
+   */
+  const HUB_RADIUS = 1.6;
   /** Distancia desde el centro de cada módulo a la que el pasillo se acopla. */
   const MODULE_RADIUS = 3.7;
   const TUBE_Y = 1.0;
@@ -236,7 +240,7 @@ export function createBase(heightAt: (x: number, z: number) => number = () => 0)
     }
     // Ruta para la tripulación: desde dentro del refugio hasta dentro del módulo.
     const feet = TUBE_Y - 0.62;
-    routes[id] = [2.6, r0 + 0.4, (r0 + r1) / 2, r1 - 0.4, r1 + 0.6].map((r) => at(r, feet));
+    routes[id] = [r0 - 0.4, r0 + 0.6, (r0 + r1) / 2, r1 - 0.4, r1 + 0.6].map((r) => at(r, feet));
     // Esclusas: el tubo entra en un collarín más ancho en cada extremo.
     piece(collarGeo, frameMat, at(r0 + 0.3), along, 0.9);
     piece(collarGeo, frameMat, at(r1 - 0.3), along, 0.9);
