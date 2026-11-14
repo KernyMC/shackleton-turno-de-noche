@@ -51,7 +51,7 @@ una URL**; un agente de IA que no pueda abrir la página debe dejarlo como pendi
 - `facts` (8–10): datos curiosos de una frase para los mensajes de la Tierra. Al menos 2 con referencia ecuatoriana comprobable (por ejemplo, comparar con el Chimborazo).
 - `missions` (4 tarjetas "Así lo resuelve una misión real"), con `id` fijo: `night_power` (energía para la noche lunar), `storm_shelter` (refugios contra tormentas solares), `lunar_ice` (hielo en cráteres del polo sur), `recycling` (reciclaje de agua y aire). Cada una: `title_es/en`, `text_es/en` (máx. 2 frases), `source_name`, `url`, `status`.
 
-Tono: 10–15 años, frases cortas, sin jerga. Buscar primero en la lista de recursos oficiales del reto en la web de Space Apps y en páginas de nasa.gov (Artemis, ECLSS, LRO, VIPER/hielo lunar).
+Tono: 7–12 años, frases cortas, sin jerga. Buscar primero en la lista de recursos oficiales del reto en la web de Space Apps y en páginas de nasa.gov (Artemis, ECLSS, LRO, VIPER/hielo lunar).
 
 **Hecho cuando:** ningún texto carece de `url`; ambos JSON son válidos; ES y EN completos.
 

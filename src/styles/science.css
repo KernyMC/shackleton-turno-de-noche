@@ -1,0 +1,8 @@
+/* Tarjeta "Ciencia real" del debrief (ScienceCard.tsx). */
+.sci-card { margin: 0.75rem 0; padding: 0.9rem 1rem; border: 1px solid var(--panel-border); border-left: 4px solid var(--accent); border-radius: 12px; background: rgb(22 24 28 / 0.8); }
+.sci-card__title { margin: 0 0 0.35rem; font-size: 0.8rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); }
+.sci-card__text { margin: 0; font-size: 1.05rem; line-height: 1.45; color: var(--text); }
+.sci-card__hint { margin: 0.4rem 0 0; font-size: 0.9rem; color: var(--text-dim); }
+.sci-card__src { margin: 0.6rem 0 0; font-size: 0.85rem; color: var(--text-dim); }
+.sci-card__src a { color: var(--accent); text-underline-offset: 3px; display: inline-block; min-height: 24px; }
+.sci-card__src a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }

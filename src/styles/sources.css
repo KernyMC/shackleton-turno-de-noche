@@ -1,0 +1,48 @@
+/* Panel "¿De dónde salen los datos?". Todas las clases llevan prefijo src-. */
+.src-overlay {
+  position: fixed; inset: 0; z-index: 60;
+  display: grid; place-items: center; padding: 1rem;
+  background: rgb(11 12 14 / 0.82); overflow-y: auto;
+}
+.src-dialog {
+  width: min(40rem, 100%); max-height: calc(100dvh - 2rem); overflow-y: auto;
+  padding: 1.1rem 1.25rem 1.25rem;
+  background: rgb(17 19 24 / 0.95); border: 1px solid rgb(255 255 255 / 0.09);
+  border-radius: 14px; box-shadow: 0 12px 32px -14px rgb(0 0 0 / 0.9);
+  color: #ece8df; backdrop-filter: blur(10px);
+}
+.src-dialog__head { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; }
+.src-dialog__head h2 { margin: 0; font-size: 1.25rem; }
+.src-dialog__intro { margin: 0.5rem 0 0.9rem; color: #a7a399; line-height: 1.45; }
+.src-dialog__msg { margin: 1rem 0; color: #a7a399; }
+.src-close {
+  display: grid; place-items: center; min-width: 44px; min-height: 44px;
+  background: transparent; border: 1px solid transparent; border-radius: 10px;
+  color: #a7a399; cursor: pointer;
+}
+.src-close:hover { background: rgb(255 255 255 / 0.09); color: #ece8df; }
+.src-close:focus-visible, .src-card__link:focus-visible { outline: 2px solid #ffb347; outline-offset: 2px; }
+.src-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.7rem; }
+.src-card {
+  padding: 0.8rem 0.9rem; border-radius: 14px;
+  background: rgb(255 255 255 / 0.04); border: 1px solid rgb(255 255 255 / 0.09);
+}
+.src-card__top { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 0.5rem; }
+.src-card__name { margin: 0; font-size: 1rem; line-height: 1.3; }
+.src-card__text { margin: 0.4rem 0 0; color: #d7d3c9; line-height: 1.5; font-size: 0.95rem; }
+.src-badge {
+  display: inline-flex; align-items: center; gap: 0.3rem; flex: none;
+  padding: 0.2rem 0.6rem; border-radius: 999px; font-size: 0.8rem; font-weight: 600;
+  border: 1px solid currentColor;
+}
+.src-badge--verified { color: #7ccf8a; }
+.src-badge--simulated { color: #f2d15c; }
+.src-badge--game_balance { color: #ffb347; }
+.src-card__link {
+  display: inline-block; margin-top: 0.55rem; color: #ffb347; font-weight: 600;
+  text-decoration: underline; text-underline-offset: 3px;
+}
+.src-sr {
+  position: absolute; width: 1px; height: 1px; overflow: hidden;
+  clip-path: inset(50%); white-space: nowrap;
+}

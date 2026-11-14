@@ -27,6 +27,7 @@ function facts() {
     reciclador: TUTORIAL_MIN.recycler,
     invernadero: TUTORIAL_MIN.greenhouse,
     taller: cfg.balance.effects.workshopMinEnergy,
+    aviso: cfg.balance.events.warningDays,
   };
 }
 
@@ -124,6 +125,7 @@ function Help() {
         ['greenhouse', 'module.greenhouse', 'module.greenhouse.what'],
         ['shield', 'module.shield', 'module.shield.what'],
         ['workshop', 'module.workshop', 'help.workshop'],
+        ['info', 'help.antenna_name', 'help.antenna'],
       ],
     },
   ];

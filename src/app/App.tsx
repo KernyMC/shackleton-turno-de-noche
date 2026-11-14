@@ -4,7 +4,9 @@ import { useEffect } from 'preact/hooks';
 import { Coach } from '../components/Coach';
 import { Debrief } from '../components/Debrief';
 import { Hud } from '../components/Hud';
+import { SourcesPanel } from '../components/SourcesPanel';
 import { Rewards } from '../components/Rewards';
+import { StormWarning } from '../components/StormWarning';
 import { startRewardsWatcher } from '../state/rewards';
 import { startSoundWatcher } from '../audio/watch';
 import { Menu } from '../components/Menu';
@@ -22,17 +24,27 @@ export default function App() {
       <>
         <Menu />
         <Coach />
+        <SourcesPanel />
       </>
     );
   }
-  if (screen.value === 'debrief') return <Debrief />;
+  if (screen.value === 'debrief') {
+    return (
+      <>
+        <Debrief />
+        <SourcesPanel />
+      </>
+    );
+  }
   return (
     <div class="game">
       <Scene />
       <Hud />
       <Rewards />
+      <StormWarning />
       <Tablet />
       <Coach />
+      <SourcesPanel />
     </div>
   );
 }

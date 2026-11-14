@@ -14,7 +14,7 @@
 
 **Fantasía del jugador:** "Soy la comandante de la primera base humana en el polo sur de la Luna. Cuatro personas dependen de mis decisiones."
 
-**Público:** estudiantes de 10 a 15 años, en español e inglés. También lo van a jugar jueces adultos durante 2–3 minutos: el juego tiene que enganchar en los primeros 30 segundos.
+**Público:** estudiantes de 7 a 12 años (corregido según el texto oficial del reto; antes ponía 10 a 15), en español e inglés. También lo van a jugar jueces adultos durante 2–3 minutos: el juego tiene que enganchar en los primeros 30 segundos.
 
 **Duración de una partida:** 6–8 minutos (30 días de juego, unos 12–15 segundos por día).
 

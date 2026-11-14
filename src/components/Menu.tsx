@@ -12,6 +12,7 @@ import type { World } from '../scene/world';
 import type { Difficulty } from '../sim/types';
 import { loadSpaceWeather } from '../state/spaceWeather';
 import { commanderName, setCommanderName, startGame } from '../state/store';
+import { sourcesOpen } from '../state/sources';
 import { helpOpen } from '../state/tutorial';
 import { CrewPortrait } from './CrewPortrait';
 import { SunStatus } from './SunStatus';
@@ -142,6 +143,10 @@ export function Menu() {
             <nav class="title__links" aria-label={t('crew.more')}>
               <button type="button" class="linkbtn" onClick={() => (helpOpen.value = true)}>
                 {t('help.button')}
+              </button>
+              <span aria-hidden="true">·</span>
+              <button type="button" class="linkbtn" onClick={() => (sourcesOpen.value = true)}>
+                {t('sources.button')}
               </button>
               <span aria-hidden="true">·</span>
               <LanguageButton />

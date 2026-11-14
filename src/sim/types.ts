@@ -179,6 +179,8 @@ export interface Balance {
     iceWindow: [number, number];
     nightWarningDay: number;
     brokenReminderDays: number;
+    /** Días de antelación con que la antena (Taller encendido) avisa de una tormenta. */
+    warningDays: number;
   };
 }
 

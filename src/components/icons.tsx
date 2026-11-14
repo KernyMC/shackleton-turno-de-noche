@@ -21,7 +21,8 @@ export type IconName =
   | 'sound'
   | 'mute'
   | 'sky'
-  | 'info';
+  | 'info'
+  | 'data';
 
 const PATHS: Record<IconName, JSX.Element> = {
   // Dos flechas en ciclo.
@@ -89,6 +90,14 @@ const PATHS: Record<IconName, JSX.Element> = {
   ),
   check: <path d="M4 10.5l4 4 8-9" />,
   close: <path d="M5 5l10 10M15 5 5 15" />,
+  // Base de datos simple: cilindro con dos bandas.
+  data: (
+    <>
+      <ellipse cx="10" cy="5" rx="6" ry="2.5" />
+      <path d="M4 5v10c0 1.4 2.7 2.5 6 2.5s6-1.1 6-2.5V5" />
+      <path d="M4 10c0 1.4 2.7 2.5 6 2.5s6-1.1 6-2.5" />
+    </>
+  ),
   // Signo de pregunta dentro de un círculo.
   help: (
     <>

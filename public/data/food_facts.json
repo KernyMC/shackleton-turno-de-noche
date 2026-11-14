@@ -1,0 +1,32 @@
+{
+  "status": "verified",
+  "source_name": "Canadian Space Agency (CSA / ASC)",
+  "toolkit_url": "https://www.asc-csa.gc.ca/eng/youth-educators/toolkits/food-production/",
+  "downloaded": "2026-11-14",
+  "facts": [
+    {
+      "id": "csa-resupply",
+      "related": "food",
+      "url": "https://www.asc-csa.gc.ca/eng/sciences/food-production/growing-healthy-food-in-space-and-remote-areas.asp",
+      "status": "verified",
+      "text_es": "A la Luna o a Marte llegarán pocas naves con comida, o ninguna. Por eso los astronautas tendrán que cultivarla.",
+      "text_en": "Few ships with food, or none, will reach the Moon or Mars. So astronauts will have to grow their own."
+    },
+    {
+      "id": "csa-calories",
+      "related": "food",
+      "url": "https://www.asc-csa.gc.ca/eng/sciences/food-production/growing-healthy-food-in-space-and-remote-areas.asp",
+      "status": "verified",
+      "text_es": "Cada astronauta come entre 1900 y 3200 calorías al día, según lo que necesite.",
+      "text_en": "Each astronaut eats between 1900 and 3200 calories a day, depending on their needs."
+    },
+    {
+      "id": "csa-gateway",
+      "related": "food",
+      "url": "https://www.asc-csa.gc.ca/eng/sciences/food-production/growing-healthy-food-in-space-and-remote-areas.asp",
+      "status": "verified",
+      "text_es": "Canadá se prepara para alimentar a los astronautas del futuro y explora cómo ayudar a producir alimentos en la superficie de la Luna.",
+      "text_en": "Canada is preparing to feed the astronauts of the future and is exploring how to help produce food on the surface of the Moon."
+    }
+  ]
+}

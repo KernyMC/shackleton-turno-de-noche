@@ -2,7 +2,7 @@
 
 Juego web para NASA Space Apps Challenge 2026 (equipo Halo Sur). Diriges una base en el polo sur lunar
 durante 30 días tocando una **maqueta 3D viva**: repartes energía, sobrevives a la noche lunar y a las
-tormentas solares. No hay personaje caminando. Público: 10–15 años, ES/EN.
+tormentas solares. No hay personaje caminando. Público: 7–12 años, ES/EN.
 
 ## Antes de tocar nada, lee
 

@@ -98,7 +98,8 @@
       23
     ],
     "nightWarningDay": 8,
-    "brokenReminderDays": 5
+    "brokenReminderDays": 5,
+    "warningDays": 2
   },
   "sources": {
     "_nota": "Todos los valores son 'game_balance' o 'simulated' hasta que la tarea D-03 los contraste con el BVAD de NASA.",

@@ -4,7 +4,7 @@
 > (Este texto menciona `DISEÑO.md`: en el repo, el diseño está en `docs/GDD.md` y `docs/ARTE.md`.)
 
 ## El punto principal
-"Shackleton: Turno de Noche" es un juego donde un estudiante de 10–15 años dirige
+"Shackleton: Turno de Noche" es un juego donde un estudiante de 7–12 años dirige
 una base en el polo sur de la Luna durante 30 días y APRENDE, jugando, por qué una
 misión real vive o muere por sus decisiones de energía, soporte vital, comida y
 radiación. Reto: "Build a Junior Astronaut Mission Trainer" (NASA Space Apps 2026).
@@ -23,6 +23,13 @@ radiación. Reto: "Build a Junior Astronaut Mission Trainer" (NASA Space Apps 20
 4. EMOCIÓN Y PULIDO. La noche lunar tiene que sentirse. La tormenta tiene que
    asustar un poco. Que enganche en los primeros 30 segundos (los jueces juegan 2–3 min).
 5. TOQUE ECUATORIANO Y BILINGÜE. Español/inglés y detalles locales (Chimborazo).
+
+## Escribir para 7–12 años (texto oficial del reto)
+- Frases cortas: una idea por frase, idealmente 12 palabras o menos.
+- Palabras de todos los días. Si un término científico es inevitable (dosis, radiación,
+  eyección de masa coronal, mSv), se explica en el mismo lugar con pocas palabras.
+- Ícono + palabra siempre; nunca un párrafo donde basta un dibujo.
+- Dos o tres recursos a la vista como foco; el resto se descubre jugando.
 
 ## Premios que buscamos
 Most Inspirational · Best Use of Science · Best Use of Storytelling.

@@ -83,6 +83,24 @@ Tormentas reales de NASA DONKI (2024) en `public/data/storms_real.json` y, si ho
 número indica si es **verificado**, **simulado** o **decisión de diseño**. Detalle y fuentes en
 [docs/specs/04-datos-nasa.md](docs/specs/04-datos-nasa.md).
 
+### Qué datos usamos y por qué
+
+El juego también los muestra dentro, en el panel «¿De dónde salen los datos?» (ícono de datos en la barra superior y enlace en la portada), que lee `public/data/sources.json`.
+
+| Dataset | Para qué se usa en el juego | Estado | Enlace |
+|---|---|---|---|
+| NASA DONKI (tormentas solares) | Las tormentas del juego son eventos reales de 2024 (y el de esta semana si el Sol está activo) | Real de NASA | [ccmc.gsfc.nasa.gov/tools/DONKI](https://ccmc.gsfc.nasa.gov/tools/DONKI/) |
+| CGI Moon Kit (LOLA y LROC WAC) | Relieve y color del terreno del polo sur lunar, si los mapas están instalados | Real de NASA (opcional; sin ellos, terreno procedural) | [svs.gsfc.nasa.gov/4720](https://svs.gsfc.nasa.gov/4720) |
+| NASA 3D Resources | Modelos 3D del módulo de aterrizaje y el vehículo, si están instalados | Real de NASA (opcional) | [github.com/nasa/NASA-3D-Resources](https://github.com/nasa/NASA-3D-Resources) |
+| Consumo de aire, agua y comida (BVAD) | Cuánto necesita cada astronauta al día | Simulado (valor provisional; falta citar el documento de NASA) | sin enlace todavía |
+| Tormentas de ejemplo | Respaldo si no hay datos reales | Simulado | sin enlace |
+| Nivel de tormenta (1–4) y dosis | Convertir cada evento real en nivel y radiación de juego | Decisión del juego | sin enlace |
+| Balance general | Valores para que el juego sea jugable | Decisión del juego | sin enlace |
+| RadLab (OSDR Radiation Dosimetry) | Comparar la radiación del juego con dosis reales medidas en la ISS (instrumento Lidal, abril de 2022; `public/data/radiation_iss.json`, `npm run data:radlab`) | Real de NASA | [visualization.osdr.nasa.gov/radlab](https://visualization.osdr.nasa.gov/radlab/gui/data-api/) |
+| NASA OSDR (Open Science Data Repository) | Tarjeta «Ciencia real» del final: estudios reales sobre radiación, músculo y hueso, lechuga y chiles en la ISS (`public/data/osdr_facts.json`) | Real de NASA | [osdr.nasa.gov/bio/repo](https://osdr.nasa.gov/bio/repo/) |
+| CSA — Food production on the Moon | Datos de producción de comida en la Luna para la tarjeta del final (`public/data/food_facts.json`) | Real (Agencia Espacial Canadiense, socia del reto) | [asc-csa.gc.ca](https://www.asc-csa.gc.ca/eng/youth-educators/toolkits/food-production/) |
+| Retraso de la señal Tierra–Luna | La antena: la Tierra avisa de las tormentas 2 días antes; la ayuda explica que la señal tarda ~1,3 s a la Luna y 4–24 min a Marte | Física conocida; los 2 días de aviso son decisión del juego | sin enlace |
+
 ## Deploy (Cloudflare Pages)
 
 1. Cloudflare → Workers & Pages → Create → Pages → conectar este repo de GitHub.

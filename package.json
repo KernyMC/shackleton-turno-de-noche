@@ -15,6 +15,7 @@
     "check": "tsc --noEmit",
     "simulate": "tsx scripts/simulate.ts",
     "data:donki": "node scripts/fetch-donki.mjs",
+    "data:radlab": "node scripts/fetch-radlab.mjs",
     "check:nasa": "tsx scripts/check-spaceweather.ts",
     "models:build": "node scripts/blender/run.mjs build",
     "models:preview": "node scripts/blender/run.mjs preview",

@@ -1,0 +1,19 @@
+{
+  "status": "verified",
+  "source_name": "NASA OSDR RadLab — Radiation Dosimetry Database",
+  "api_doc_url": "https://visualization.osdr.nasa.gov/radlab/gui/data-api/",
+  "query_url": "https://visualization.osdr.nasa.gov/radlab/api/?spacecraft=ISS&instrument_family=Lidal&timestamp%3E=2022-04-01&timestamp%3C2022-05-01&absorbed_dose_rate&format=csv",
+  "downloaded": "2026-11-14",
+  "spacecraft": "ISS",
+  "instrument_family": "Lidal",
+  "date_from": "2022-04-01",
+  "date_to_exclusive": "2022-05-01",
+  "samples": 8640,
+  "days_with_data": 30,
+  "unit_as_published": "µGy/hour (absorbed_dose_rate)",
+  "mean_absorbed_dose_rate_ugy_per_hour": 6.068,
+  "min_ugy_per_hour": 1.795,
+  "max_ugy_per_hour": 88.468,
+  "mean_absorbed_dose_ugy_per_day": 146,
+  "note": "ugy_per_day = media por hora x 24 (cálculo nuestro). Es dosis ABSORBIDA en µGy, no dosis equivalente en mSv."
+}

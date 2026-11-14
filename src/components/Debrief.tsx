@@ -13,6 +13,7 @@ import type { CrewId } from '../data/crew';
 import { CrewPortrait } from './CrewPortrait';
 import { DebriefCinematic } from './DebriefCinematic';
 import { num } from './format';
+import { ScienceCard } from './ScienceCard';
 import { Icon } from './icons';
 import type { IconName } from './icons';
 
@@ -243,7 +244,10 @@ export function Debrief() {
         <li><Icon name="battery" size={20} /><b>{num(review.wasted, 0)}</b><span>{t('debrief.chip.wasted')}</span></li>
       </ul>
 
-      {/* 6. Para quien quiera analizar: gráfica, decisiones y compartir, plegado */}
+      {/* 6. Ciencia real ligada a lo que pasó (NASA OSDR, RadLab o la CSA), con su enlace */}
+      <ScienceCard won={won} cause={cause} />
+
+      {/* 7. Para quien quiera analizar: gráfica, decisiones y compartir, plegado */}
       <details class="db-more">
         <summary>{t('debrief.more')}</summary>
         <div class="db-more__body">

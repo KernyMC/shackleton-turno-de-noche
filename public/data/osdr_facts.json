@@ -1,0 +1,44 @@
+{
+  "status": "verified",
+  "source_name": "NASA Open Science Data Repository (OSDR)",
+  "queried": "https://osdr.nasa.gov/osdr/data/search?term=KEYWORD (radiation, bone, muscle, lettuce, plant growth)",
+  "downloaded": "2026-11-14",
+  "facts": [
+    {
+      "id": "OSD-73",
+      "related": "radiation",
+      "title": "Transcriptome Profiles in Normal Human Bronchial Epithelial Cells after Exposure to gamma-rays and different HZE particles",
+      "url": "https://osdr.nasa.gov/bio/repo/data/studies/OSD-73",
+      "status": "verified",
+      "text_es": "NASA estudió cómo la radiación del espacio, hecha de partículas muy veloces, afecta a células humanas de las vías respiratorias.",
+      "text_en": "NASA studied how space radiation, made of very fast particles, affects human cells from the airways."
+    },
+    {
+      "id": "OSD-342",
+      "related": "life_support",
+      "title": "Targeting myostatin/activin A protects against skeletal muscle and bone loss during spaceflight [plasma proteomics]",
+      "url": "https://osdr.nasa.gov/bio/repo/data/studies/OSD-342",
+      "status": "verified",
+      "text_es": "Unos ratones viajaron a la Estación Espacial para estudiar por qué se pierde fuerza en músculos y huesos en el espacio y cómo protegerlos.",
+      "text_en": "Some mice flew to the International Space Station to study why muscles and bones get weaker in space and how to protect them."
+    },
+    {
+      "id": "OSD-268",
+      "related": "food",
+      "title": "Microbiological and nutritional analysis of lettuce crops grown on the International Space Station-VEG01B",
+      "url": "https://osdr.nasa.gov/bio/repo/data/studies/OSD-268",
+      "status": "verified",
+      "text_es": "Se cultivó lechuga en la Estación Espacial y luego se analizó en la Tierra para ver sus nutrientes y sus microbios.",
+      "text_en": "Lettuce was grown on the International Space Station and then analyzed on Earth to check its nutrients and microbes."
+    },
+    {
+      "id": "OSD-772",
+      "related": "food",
+      "title": "PH-04 Chile Peppers in Space",
+      "url": "https://osdr.nasa.gov/bio/repo/data/studies/OSD-772",
+      "status": "verified",
+      "text_es": "Uno de los objetivos de NASA es cultivar alimentos en el espacio, como chiles, para completar la dieta de los astronautas con verduras frescas.",
+      "text_en": "One of NASA's goals is to grow food in space, like chile peppers, to add fresh vegetables to astronauts' diets."
+    }
+  ]
+}

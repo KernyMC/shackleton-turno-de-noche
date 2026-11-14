@@ -14,6 +14,7 @@ import type { GameState, LogEntry } from '../sim/types';
 import { muted, toggleMute } from '../audio/sfx';
 import { faceOf, moodOf } from '../state/rewards';
 import { budget, exitToMenu, game, skyView, tabletOpen, toggleTablet } from '../state/store';
+import { sourcesOpen } from '../state/sources';
 import { helpOpen } from '../state/tutorial';
 import { CrewPortrait } from './CrewPortrait';
 import { num, signed } from './format';
@@ -202,6 +203,9 @@ function Tools({ g }: { g: GameState }) {
         onClick={toggleMute}
       >
         <Icon name={muted.value ? 'mute' : 'sound'} size={18} />
+      </button>
+      <button type="button" class="iconbtn" aria-label={t('sources.button')} title={t('sources.button')} onClick={() => (sourcesOpen.value = true)}>
+        <Icon name="data" size={18} />
       </button>
       <button type="button" class="iconbtn" aria-label={t('help.button')} title={t('help.button')} onClick={() => (helpOpen.value = true)}>
         <Icon name="help" size={18} />

@@ -1,0 +1,33 @@
+/* Aviso de la Tierra (antena). Prefijo warn-. Bajo la barra superior (62px + 10px de margen). */
+.warn {
+  position: absolute; z-index: 5; top: 82px; left: 50%; transform: translateX(-50%);
+  width: min(26rem, calc(100% - 20px)); box-sizing: border-box;
+  display: flex; gap: 0.7rem; align-items: flex-start; padding: 0.55rem 0.8rem;
+  background: rgb(22 24 28 / 0.92); border: 1px solid var(--panel-border); border-left: 4px solid var(--warn);
+  border-radius: var(--radius); color: var(--text); pointer-events: none;
+  animation: warn-in 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.warn__icon { color: var(--warn); display: grid; place-items: center; padding-top: 0.1rem; animation: warn-ping 2.4s ease-in-out infinite; }
+.warn__body { min-width: 0; }
+.warn__title { margin: 0; font-weight: 700; font-size: 0.9rem; color: var(--warn); }
+.warn__text { margin: 0.15rem 0 0; font-size: 0.82rem; line-height: 1.35; color: var(--text); }
+.warn__level { display: flex; align-items: center; gap: 3px; margin-bottom: 0.2rem; font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-dim); }
+.warn__level > span:last-child { margin-left: 0.4rem; }
+.warn__pip { width: 16px; height: 6px; background: var(--panel-border); }
+.warn__pip--on { background: var(--accent); }
+
+@keyframes warn-in { from { opacity: 0; transform: translate(-50%, -10px); } to { opacity: 1; transform: translate(-50%, 0); } }
+@keyframes warn-ping { 0%, 100% { opacity: 1; } 50% { opacity: 0.55; } }
+
+@media (min-width: 1024px) {
+  /* Con el panel derecho abierto, el aviso se centra en el espacio libre de la izquierda. */
+  .hud--tablet ~ .warn { left: calc((100% - var(--panel-w, 400px)) / 2); }
+}
+/* La pista de la maqueta baja para no chocar con el aviso. */
+.game:has(.warn) .scene__hint, .game:has(.warn) .scene__label { top: 11.5rem; }
+@media (max-width: 899px) {
+  .warn { top: calc(6px + 6.4rem); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .warn, .warn__icon { animation: none; }
+}
