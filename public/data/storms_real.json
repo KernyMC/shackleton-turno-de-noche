@@ -1,0 +1,3969 @@
+{
+  "simulated": false,
+  "version": 1,
+  "status": "verified",
+  "source": "NASA DONKI",
+  "source_id": "nasa_donki",
+  "source_url": "https://ccmc.gsfc.nasa.gov/tools/DONKI/",
+  "api": "https://api.nasa.gov (DONKI: FLR, CME, SEP)",
+  "range": {
+    "start": "2024-01-01",
+    "end": "2024-12-31"
+  },
+  "fetched_at": "2026-11-14T05:56:10.401Z",
+  "failed_types": [
+    "FLR"
+  ],
+  "level_mapping": {
+    "status": "game_balance",
+    "FLR": "C=1, M=2, X<5=3, X5+=4",
+    "CME": "<700 km/s=1, 700-1200=2, 1200-2000=3, >2000=4",
+    "SEP": "3"
+  },
+  "count": 492,
+  "events": [
+    {
+      "id": "2024-12-31T13:37:00-CME-001",
+      "type": "CME",
+      "date": "2024-12-31",
+      "classOrSpeed": "712 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/36144/-1"
+    },
+    {
+      "id": "2024-12-29T01:23:00-CME-001",
+      "type": "CME",
+      "date": "2024-12-29",
+      "classOrSpeed": "881 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/36076/-1"
+    },
+    {
+      "id": "2024-12-29T06:24:00-CME-001",
+      "type": "CME",
+      "date": "2024-12-29",
+      "classOrSpeed": "1114 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/36050/-1"
+    },
+    {
+      "id": "2024-12-29T11:36:00-CME-001",
+      "type": "CME",
+      "date": "2024-12-29",
+      "classOrSpeed": "729 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/36063/-1"
+    },
+    {
+      "id": "2024-12-29T14:24:00-CME-001",
+      "type": "CME",
+      "date": "2024-12-29",
+      "classOrSpeed": "732 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/36094/-1"
+    },
+    {
+      "id": "2024-12-29T18:24:00-CME-001",
+      "type": "CME",
+      "date": "2024-12-29",
+      "classOrSpeed": "917 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/36088/-1"
+    },
+    {
+      "id": "2024-12-28T02:48:00-CME-001",
+      "type": "CME",
+      "date": "2024-12-28",
+      "classOrSpeed": "727 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/36021/-1"
+    },
+    {
+      "id": "2024-12-28T09:12:00-CME-001",
+      "type": "CME",
+      "date": "2024-12-28",
+      "classOrSpeed": "720 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/36025/-1"
+    },
+    {
+      "id": "2024-12-28T18:36:00-CME-001",
+      "type": "CME",
+      "date": "2024-12-28",
+      "classOrSpeed": "812 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/36037/-1"
+    },
+    {
+      "id": "2024-12-28T22:23:00-CME-001",
+      "type": "CME",
+      "date": "2024-12-28",
+      "classOrSpeed": "835 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/36066/-1"
+    },
+    {
+      "id": "2024-12-27T01:25:00-CME-001",
+      "type": "CME",
+      "date": "2024-12-27",
+      "classOrSpeed": "859 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/35994/-1"
+    },
+    {
+      "id": "2024-12-27T04:39:00-CME-001",
+      "type": "CME",
+      "date": "2024-12-27",
+      "classOrSpeed": "985 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/35996/-1"
+    },
+    {
+      "id": "2024-12-27T06:36:00-CME-001",
+      "type": "CME",
+      "date": "2024-12-27",
+      "classOrSpeed": "811 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/35999/-1"
+    },
+    {
+      "id": "2024-12-26T19:00:00-CME-001",
+      "type": "CME",
+      "date": "2024-12-26",
+      "classOrSpeed": "1240 km/s",
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/35982/-1"
+    },
+    {
+      "id": "2024-12-26T04:12:00-CME-001",
+      "type": "CME",
+      "date": "2024-12-26",
+      "classOrSpeed": "757 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/35971/-1"
+    },
+    {
+      "id": "2024-12-26T05:36:00-CME-001",
+      "type": "CME",
+      "date": "2024-12-26",
+      "classOrSpeed": "934 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/35961/-1"
+    },
+    {
+      "id": "2024-12-26T17:48:00-CME-001",
+      "type": "CME",
+      "date": "2024-12-26",
+      "classOrSpeed": "833 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/35979/-1"
+    },
+    {
+      "id": "2024-12-25T04:48:00-CME-001",
+      "type": "CME",
+      "date": "2024-12-25",
+      "classOrSpeed": "876 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/35933/-1"
+    },
+    {
+      "id": "2024-12-25T08:12:00-CME-001",
+      "type": "CME",
+      "date": "2024-12-25",
+      "classOrSpeed": "792 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/35937/-1"
+    },
+    {
+      "id": "2024-12-25T10:36:00-CME-001",
+      "type": "CME",
+      "date": "2024-12-25",
+      "classOrSpeed": "771 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/35942/-1"
+    },
+    {
+      "id": "2024-12-24T05:24:00-CME-001",
+      "type": "CME",
+      "date": "2024-12-24",
+      "classOrSpeed": "898 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/35913/-1"
+    },
+    {
+      "id": "2024-12-24T20:24:00-CME-001",
+      "type": "CME",
+      "date": "2024-12-24",
+      "classOrSpeed": "1104 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/35928/-1"
+    },
+    {
+      "id": "2024-12-23T11:36:00-CME-001",
+      "type": "CME",
+      "date": "2024-12-23",
+      "classOrSpeed": "823 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/35881/-1"
+    },
+    {
+      "id": "2024-12-23T20:00:00-CME-001",
+      "type": "CME",
+      "date": "2024-12-23",
+      "classOrSpeed": "846 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/35897/-1"
+    },
+    {
+      "id": "2024-12-22T01:25:00-CME-001",
+      "type": "CME",
+      "date": "2024-12-22",
+      "classOrSpeed": "704 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/35843/-1"
+    },
+    {
+      "id": "2024-12-21T16:12:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-12-21",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/35838/-1"
+    },
+    {
+      "id": "2024-12-21T11:48:00-CME-001",
+      "type": "CME",
+      "date": "2024-12-21",
+      "classOrSpeed": "897 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/35811/-1"
+    },
+    {
+      "id": "2024-12-21T17:48:00-CME-001",
+      "type": "CME",
+      "date": "2024-12-21",
+      "classOrSpeed": "836 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/35832/-1"
+    },
+    {
+      "id": "2024-12-21T20:00:00-CME-001",
+      "type": "CME",
+      "date": "2024-12-21",
+      "classOrSpeed": "946 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/35826/-1"
+    },
+    {
+      "id": "2024-12-20T10:24:00-CME-001",
+      "type": "CME",
+      "date": "2024-12-20",
+      "classOrSpeed": "719 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/35783/-1"
+    },
+    {
+      "id": "2024-12-19T17:53:00-CME-001",
+      "type": "CME",
+      "date": "2024-12-19",
+      "classOrSpeed": "814 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/35767/-1"
+    },
+    {
+      "id": "2024-12-18T12:01:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-12-18",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/35736/-1"
+    },
+    {
+      "id": "2024-12-17T16:00:00-CME-001",
+      "type": "CME",
+      "date": "2024-12-17",
+      "classOrSpeed": "3161 km/s",
+      "level": 4,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/35723/-1"
+    },
+    {
+      "id": "2024-12-15T00:53:00-CME-001",
+      "type": "CME",
+      "date": "2024-12-15",
+      "classOrSpeed": "1252 km/s",
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/35667/-1"
+    },
+    {
+      "id": "2024-12-15T14:36:00-CME-001",
+      "type": "CME",
+      "date": "2024-12-15",
+      "classOrSpeed": "1764 km/s",
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/35684/-1"
+    },
+    {
+      "id": "2024-12-15T20:36:00-CME-001",
+      "type": "CME",
+      "date": "2024-12-15",
+      "classOrSpeed": "834 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/35696/-1"
+    },
+    {
+      "id": "2024-12-14T02:00:00-CME-001",
+      "type": "CME",
+      "date": "2024-12-14",
+      "classOrSpeed": "748 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/35656/-1"
+    },
+    {
+      "id": "2024-12-13T04:17:00-CME-001",
+      "type": "CME",
+      "date": "2024-12-13",
+      "classOrSpeed": "796 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/35635/-1"
+    },
+    {
+      "id": "2024-12-12T23:24:00-CME-001",
+      "type": "CME",
+      "date": "2024-12-12",
+      "classOrSpeed": "754 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/35620/-1"
+    },
+    {
+      "id": "2024-12-11T06:24:00-CME-001",
+      "type": "CME",
+      "date": "2024-12-11",
+      "classOrSpeed": "870 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/35581/-1"
+    },
+    {
+      "id": "2024-12-11T21:24:00-CME-001",
+      "type": "CME",
+      "date": "2024-12-11",
+      "classOrSpeed": "1167 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/35603/-1"
+    },
+    {
+      "id": "2024-12-10T07:00:00-CME-001",
+      "type": "CME",
+      "date": "2024-12-10",
+      "classOrSpeed": "1005 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/35547/-1"
+    },
+    {
+      "id": "2024-12-10T07:24:00-CME-001",
+      "type": "CME",
+      "date": "2024-12-10",
+      "classOrSpeed": "905 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/35549/-1"
+    },
+    {
+      "id": "2024-12-10T11:12:00-CME-001",
+      "type": "CME",
+      "date": "2024-12-10",
+      "classOrSpeed": "949 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/35554/-1"
+    },
+    {
+      "id": "2024-12-08T10:20:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-12-08",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/35520/-1"
+    },
+    {
+      "id": "2024-12-08T10:20:00-SEP-002",
+      "type": "SEP",
+      "date": "2024-12-08",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/35521/-1"
+    },
+    {
+      "id": "2024-12-06T02:24:00-CME-001",
+      "type": "CME",
+      "date": "2024-12-06",
+      "classOrSpeed": "795 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/35475/-1"
+    },
+    {
+      "id": "2024-12-05T15:48:00-CME-001",
+      "type": "CME",
+      "date": "2024-12-05",
+      "classOrSpeed": "1096 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/35462/-1"
+    },
+    {
+      "id": "2024-12-03T20:48:00-CME-001",
+      "type": "CME",
+      "date": "2024-12-03",
+      "classOrSpeed": "998 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/35436/-1"
+    },
+    {
+      "id": "2024-11-30T11:12:00-CME-001",
+      "type": "CME",
+      "date": "2024-11-30",
+      "classOrSpeed": "749 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/35403/-1"
+    },
+    {
+      "id": "2024-11-29T06:12:00-CME-001",
+      "type": "CME",
+      "date": "2024-11-29",
+      "classOrSpeed": "729 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/35390/-1"
+    },
+    {
+      "id": "2024-11-29T19:12:00-CME-001",
+      "type": "CME",
+      "date": "2024-11-29",
+      "classOrSpeed": "704 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/35396/-1"
+    },
+    {
+      "id": "2024-11-27T02:48:00-CME-001",
+      "type": "CME",
+      "date": "2024-11-27",
+      "classOrSpeed": "854 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/35360/-1"
+    },
+    {
+      "id": "2024-11-27T19:48:00-CME-001",
+      "type": "CME",
+      "date": "2024-11-27",
+      "classOrSpeed": "780 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/35373/-1"
+    },
+    {
+      "id": "2024-11-25T18:00:00-CME-001",
+      "type": "CME",
+      "date": "2024-11-25",
+      "classOrSpeed": "1092 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/35325/-1"
+    },
+    {
+      "id": "2024-11-25T21:24:00-CME-001",
+      "type": "CME",
+      "date": "2024-11-25",
+      "classOrSpeed": "935 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/35320/-1"
+    },
+    {
+      "id": "2024-11-23T19:24:00-CME-001",
+      "type": "CME",
+      "date": "2024-11-23",
+      "classOrSpeed": "764 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/35281/-1"
+    },
+    {
+      "id": "2024-11-22T00:24:00-CME-001",
+      "type": "CME",
+      "date": "2024-11-22",
+      "classOrSpeed": "886 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/35230/-1"
+    },
+    {
+      "id": "2024-11-22T09:38:00-CME-001",
+      "type": "CME",
+      "date": "2024-11-22",
+      "classOrSpeed": "957 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/35247/-1"
+    },
+    {
+      "id": "2024-11-21T18:12:00-CME-001",
+      "type": "CME",
+      "date": "2024-11-21",
+      "classOrSpeed": "1678 km/s",
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/35201/-1"
+    },
+    {
+      "id": "2024-11-21T18:45:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-11-21",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/35199/-1"
+    },
+    {
+      "id": "2024-11-21T19:10:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-11-21",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/35206/-1"
+    },
+    {
+      "id": "2024-11-21T19:19:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-11-21",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/35211/-1"
+    },
+    {
+      "id": "2024-11-21T19:21:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-11-21",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/35307/-1"
+    },
+    {
+      "id": "2024-11-21T19:23:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-11-21",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/35197/-1"
+    },
+    {
+      "id": "2024-11-21T19:23:00-SEP-002",
+      "type": "SEP",
+      "date": "2024-11-21",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/35203/-1"
+    },
+    {
+      "id": "2024-11-21T19:24:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-11-21",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/35204/-1"
+    },
+    {
+      "id": "2024-11-21T19:24:00-SEP-002",
+      "type": "SEP",
+      "date": "2024-11-21",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/35205/-1"
+    },
+    {
+      "id": "2024-11-21T19:25:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-11-21",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/35208/-1"
+    },
+    {
+      "id": "2024-11-21T13:23:00-CME-001",
+      "type": "CME",
+      "date": "2024-11-21",
+      "classOrSpeed": "736 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/35194/-1"
+    },
+    {
+      "id": "2024-11-21T21:13:00-CME-001",
+      "type": "CME",
+      "date": "2024-11-21",
+      "classOrSpeed": "816 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/35222/-1"
+    },
+    {
+      "id": "2024-11-17T11:00:00-CME-001",
+      "type": "CME",
+      "date": "2024-11-17",
+      "classOrSpeed": "819 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/34683/-1"
+    },
+    {
+      "id": "2024-11-15T10:24:00-CME-001",
+      "type": "CME",
+      "date": "2024-11-15",
+      "classOrSpeed": "704 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/34639/-1"
+    },
+    {
+      "id": "2024-11-15T14:24:00-CME-001",
+      "type": "CME",
+      "date": "2024-11-15",
+      "classOrSpeed": "731 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/34647/-1"
+    },
+    {
+      "id": "2024-11-12T13:36:00-CME-001",
+      "type": "CME",
+      "date": "2024-11-12",
+      "classOrSpeed": "846 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/34573/-1"
+    },
+    {
+      "id": "2024-11-11T01:23:00-CME-001",
+      "type": "CME",
+      "date": "2024-11-11",
+      "classOrSpeed": "984 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/34565/-1"
+    },
+    {
+      "id": "2024-11-10T23:09:00-CME-001",
+      "type": "CME",
+      "date": "2024-11-10",
+      "classOrSpeed": "921 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/34559/-1"
+    },
+    {
+      "id": "2024-11-07T06:09:00-CME-001",
+      "type": "CME",
+      "date": "2024-11-07",
+      "classOrSpeed": "1025 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/34496/-1"
+    },
+    {
+      "id": "2024-11-07T10:24:00-CME-001",
+      "type": "CME",
+      "date": "2024-11-07",
+      "classOrSpeed": "704 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/34511/-1"
+    },
+    {
+      "id": "2024-11-04T01:36:00-CME-001",
+      "type": "CME",
+      "date": "2024-11-04",
+      "classOrSpeed": "1067 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/34402/-1"
+    },
+    {
+      "id": "2024-10-31T09:23:00-CME-001",
+      "type": "CME",
+      "date": "2024-10-31",
+      "classOrSpeed": "723 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/34330/-1"
+    },
+    {
+      "id": "2024-10-30T04:12:00-CME-001",
+      "type": "CME",
+      "date": "2024-10-30",
+      "classOrSpeed": "950 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/34290/-1"
+    },
+    {
+      "id": "2024-10-29T13:23:00-CME-001",
+      "type": "CME",
+      "date": "2024-10-29",
+      "classOrSpeed": "1047 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/34277/-1"
+    },
+    {
+      "id": "2024-10-29T19:56:00-CME-001",
+      "type": "CME",
+      "date": "2024-10-29",
+      "classOrSpeed": "729 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/34284/-1"
+    },
+    {
+      "id": "2024-10-28T08:57:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-10-28",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/34250/-1"
+    },
+    {
+      "id": "2024-10-28T14:00:00-CME-001",
+      "type": "CME",
+      "date": "2024-10-28",
+      "classOrSpeed": "755 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/34263/-1"
+    },
+    {
+      "id": "2024-10-26T06:48:00-CME-001",
+      "type": "CME",
+      "date": "2024-10-26",
+      "classOrSpeed": "1677 km/s",
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/34212/-1"
+    },
+    {
+      "id": "2024-10-26T16:45:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-10-26",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/34214/-1"
+    },
+    {
+      "id": "2024-10-26T18:05:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-10-26",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/34222/-1"
+    },
+    {
+      "id": "2024-10-26T18:57:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-10-26",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/34227/-1"
+    },
+    {
+      "id": "2024-10-26T19:02:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-10-26",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/34229/-1"
+    },
+    {
+      "id": "2024-10-26T19:50:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-10-26",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/34234/-1"
+    },
+    {
+      "id": "2024-10-26T20:06:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-10-26",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/34233/-1"
+    },
+    {
+      "id": "2024-10-26T21:43:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-10-26",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/34311/-1"
+    },
+    {
+      "id": "2024-10-25T07:53:00-CME-001",
+      "type": "CME",
+      "date": "2024-10-25",
+      "classOrSpeed": "701 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/34181/-1"
+    },
+    {
+      "id": "2024-10-25T10:00:00-CME-001",
+      "type": "CME",
+      "date": "2024-10-25",
+      "classOrSpeed": "735 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/34187/-1"
+    },
+    {
+      "id": "2024-10-24T03:48:00-CME-001",
+      "type": "CME",
+      "date": "2024-10-24",
+      "classOrSpeed": "2006 km/s",
+      "level": 4,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/34152/-1"
+    },
+    {
+      "id": "2024-10-24T10:00:00-CME-001",
+      "type": "CME",
+      "date": "2024-10-24",
+      "classOrSpeed": "793 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/34159/-1"
+    },
+    {
+      "id": "2024-10-24T13:48:00-CME-001",
+      "type": "CME",
+      "date": "2024-10-24",
+      "classOrSpeed": "753 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/34170/-1"
+    },
+    {
+      "id": "2024-10-24T14:36:00-CME-001",
+      "type": "CME",
+      "date": "2024-10-24",
+      "classOrSpeed": "855 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/34172/-1"
+    },
+    {
+      "id": "2024-10-24T16:12:00-CME-001",
+      "type": "CME",
+      "date": "2024-10-24",
+      "classOrSpeed": "907 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/34174/-1"
+    },
+    {
+      "id": "2024-10-23T11:12:00-CME-001",
+      "type": "CME",
+      "date": "2024-10-23",
+      "classOrSpeed": "753 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/34128/-1"
+    },
+    {
+      "id": "2024-10-22T10:00:00-CME-001",
+      "type": "CME",
+      "date": "2024-10-22",
+      "classOrSpeed": "888 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/34118/-1"
+    },
+    {
+      "id": "2024-10-21T05:24:00-CME-001",
+      "type": "CME",
+      "date": "2024-10-21",
+      "classOrSpeed": "703 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/34101/-1"
+    },
+    {
+      "id": "2024-10-21T11:24:00-CME-001",
+      "type": "CME",
+      "date": "2024-10-21",
+      "classOrSpeed": "702 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/34097/-1"
+    },
+    {
+      "id": "2024-10-19T09:24:00-CME-001",
+      "type": "CME",
+      "date": "2024-10-19",
+      "classOrSpeed": "1015 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/34082/-1"
+    },
+    {
+      "id": "2024-10-19T09:48:00-CME-001",
+      "type": "CME",
+      "date": "2024-10-19",
+      "classOrSpeed": "708 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/34087/-1"
+    },
+    {
+      "id": "2024-10-16T23:12:00-CME-001",
+      "type": "CME",
+      "date": "2024-10-16",
+      "classOrSpeed": "980 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/34045/-1"
+    },
+    {
+      "id": "2024-10-15T00:36:00-CME-001",
+      "type": "CME",
+      "date": "2024-10-15",
+      "classOrSpeed": "746 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/34005/-1"
+    },
+    {
+      "id": "2024-10-14T09:24:00-CME-001",
+      "type": "CME",
+      "date": "2024-10-14",
+      "classOrSpeed": "829 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/33987/-1"
+    },
+    {
+      "id": "2024-10-14T14:36:00-CME-001",
+      "type": "CME",
+      "date": "2024-10-14",
+      "classOrSpeed": "741 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/33996/-1"
+    },
+    {
+      "id": "2024-10-14T17:36:00-CME-001",
+      "type": "CME",
+      "date": "2024-10-14",
+      "classOrSpeed": "717 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/34009/-1"
+    },
+    {
+      "id": "2024-10-13T01:36:00-CME-001",
+      "type": "CME",
+      "date": "2024-10-13",
+      "classOrSpeed": "1184 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/33967/-1"
+    },
+    {
+      "id": "2024-10-13T02:48:00-CME-001",
+      "type": "CME",
+      "date": "2024-10-13",
+      "classOrSpeed": "1001 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/33972/-1"
+    },
+    {
+      "id": "2024-10-11T12:24:00-CME-001",
+      "type": "CME",
+      "date": "2024-10-11",
+      "classOrSpeed": "808 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/33937/-1"
+    },
+    {
+      "id": "2024-10-10T09:53:00-CME-001",
+      "type": "CME",
+      "date": "2024-10-10",
+      "classOrSpeed": "1323 km/s",
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/33927/-1"
+    },
+    {
+      "id": "2024-10-09T02:12:00-CME-001",
+      "type": "CME",
+      "date": "2024-10-09",
+      "classOrSpeed": "2112 km/s",
+      "level": 4,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/33873/-1"
+    },
+    {
+      "id": "2024-10-09T02:23:00-CME-001",
+      "type": "CME",
+      "date": "2024-10-09",
+      "classOrSpeed": "1348 km/s",
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/33935/-1"
+    },
+    {
+      "id": "2024-10-09T03:50:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-10-09",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/33868/-1"
+    },
+    {
+      "id": "2024-10-09T04:28:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-10-09",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/33893/-1"
+    },
+    {
+      "id": "2024-10-09T04:34:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-10-09",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/33891/-1"
+    },
+    {
+      "id": "2024-10-09T05:05:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-10-09",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/33866/-1"
+    },
+    {
+      "id": "2024-10-09T05:30:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-10-09",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/33892/-1"
+    },
+    {
+      "id": "2024-10-09T06:01:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-10-09",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/33874/-1"
+    },
+    {
+      "id": "2024-10-09T06:01:00-SEP-002",
+      "type": "SEP",
+      "date": "2024-10-09",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/33875/-1"
+    },
+    {
+      "id": "2024-10-09T07:08:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-10-09",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/33894/-1"
+    },
+    {
+      "id": "2024-10-09T08:55:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-10-09",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/33870/-1"
+    },
+    {
+      "id": "2024-10-09T02:09:00-CME-001",
+      "type": "CME",
+      "date": "2024-10-09",
+      "classOrSpeed": "1054 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/33917/-1"
+    },
+    {
+      "id": "2024-10-09T16:12:00-CME-001",
+      "type": "CME",
+      "date": "2024-10-09",
+      "classOrSpeed": "1109 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/33901/-1"
+    },
+    {
+      "id": "2024-10-08T06:12:00-CME-001",
+      "type": "CME",
+      "date": "2024-10-08",
+      "classOrSpeed": "1124 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/33844/-1"
+    },
+    {
+      "id": "2024-10-07T20:12:00-CME-001",
+      "type": "CME",
+      "date": "2024-10-07",
+      "classOrSpeed": "1345 km/s",
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/33829/-1"
+    },
+    {
+      "id": "2024-10-06T05:48:00-CME-001",
+      "type": "CME",
+      "date": "2024-10-06",
+      "classOrSpeed": "775 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/33804/-1"
+    },
+    {
+      "id": "2024-10-06T21:48:00-CME-001",
+      "type": "CME",
+      "date": "2024-10-06",
+      "classOrSpeed": "817 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/33812/-1"
+    },
+    {
+      "id": "2024-10-04T04:13:00-CME-001",
+      "type": "CME",
+      "date": "2024-10-04",
+      "classOrSpeed": "832 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/33751/-1"
+    },
+    {
+      "id": "2024-10-04T13:25:00-CME-001",
+      "type": "CME",
+      "date": "2024-10-04",
+      "classOrSpeed": "921 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/33756/-1"
+    },
+    {
+      "id": "2024-10-04T20:48:00-CME-001",
+      "type": "CME",
+      "date": "2024-10-04",
+      "classOrSpeed": "869 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/33768/-1"
+    },
+    {
+      "id": "2024-10-03T12:48:00-CME-001",
+      "type": "CME",
+      "date": "2024-10-03",
+      "classOrSpeed": "863 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/33703/-1"
+    },
+    {
+      "id": "2024-10-03T13:27:00-CME-001",
+      "type": "CME",
+      "date": "2024-10-03",
+      "classOrSpeed": "706 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/33727/-1"
+    },
+    {
+      "id": "2024-10-03T20:36:00-CME-001",
+      "type": "CME",
+      "date": "2024-10-03",
+      "classOrSpeed": "1077 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/33733/-1"
+    },
+    {
+      "id": "2024-10-01T23:09:00-CME-001",
+      "type": "CME",
+      "date": "2024-10-01",
+      "classOrSpeed": "963 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/33659/-1"
+    },
+    {
+      "id": "2024-09-30T16:12:00-CME-001",
+      "type": "CME",
+      "date": "2024-09-30",
+      "classOrSpeed": "1535 km/s",
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/33634/-1"
+    },
+    {
+      "id": "2024-09-29T06:00:00-CME-001",
+      "type": "CME",
+      "date": "2024-09-29",
+      "classOrSpeed": "1148 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/33608/-1"
+    },
+    {
+      "id": "2024-09-22T21:36:00-CME-001",
+      "type": "CME",
+      "date": "2024-09-22",
+      "classOrSpeed": "1381 km/s",
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/33529/-1"
+    },
+    {
+      "id": "2024-09-18T05:48:00-CME-001",
+      "type": "CME",
+      "date": "2024-09-18",
+      "classOrSpeed": "812 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/33494/-1"
+    },
+    {
+      "id": "2024-09-18T22:12:00-CME-001",
+      "type": "CME",
+      "date": "2024-09-18",
+      "classOrSpeed": "851 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/33510/-1"
+    },
+    {
+      "id": "2024-09-17T04:33:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-09-17",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/33469/-1"
+    },
+    {
+      "id": "2024-09-17T04:40:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-09-17",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/33473/-1"
+    },
+    {
+      "id": "2024-09-17T07:35:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-09-17",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/33467/-1"
+    },
+    {
+      "id": "2024-09-17T08:14:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-09-17",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/33470/-1"
+    },
+    {
+      "id": "2024-09-17T08:54:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-09-17",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/33471/-1"
+    },
+    {
+      "id": "2024-09-17T14:31:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-09-17",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/33476/-1"
+    },
+    {
+      "id": "2024-09-17T15:43:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-09-17",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/33481/-1"
+    },
+    {
+      "id": "2024-09-14T15:36:00-CME-001",
+      "type": "CME",
+      "date": "2024-09-14",
+      "classOrSpeed": "2040 km/s",
+      "level": 4,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/33434/-1"
+    },
+    {
+      "id": "2024-09-14T19:36:00-CME-001",
+      "type": "CME",
+      "date": "2024-09-14",
+      "classOrSpeed": "828 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/33455/-1"
+    },
+    {
+      "id": "2024-09-13T02:00:00-CME-001",
+      "type": "CME",
+      "date": "2024-09-13",
+      "classOrSpeed": "719 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/33385/-1"
+    },
+    {
+      "id": "2024-09-13T10:12:00-CME-001",
+      "type": "CME",
+      "date": "2024-09-13",
+      "classOrSpeed": "768 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/33395/-1"
+    },
+    {
+      "id": "2024-09-11T02:23:00-CME-001",
+      "type": "CME",
+      "date": "2024-09-11",
+      "classOrSpeed": "742 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/33323/-1"
+    },
+    {
+      "id": "2024-09-11T16:48:00-CME-001",
+      "type": "CME",
+      "date": "2024-09-11",
+      "classOrSpeed": "1088 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/33364/-1"
+    },
+    {
+      "id": "2024-09-10T00:23:00-CME-001",
+      "type": "CME",
+      "date": "2024-09-10",
+      "classOrSpeed": "755 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/33297/-1"
+    },
+    {
+      "id": "2024-09-10T20:12:00-CME-001",
+      "type": "CME",
+      "date": "2024-09-10",
+      "classOrSpeed": "955 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/33311/-1"
+    },
+    {
+      "id": "2024-09-09T05:23:00-CME-001",
+      "type": "CME",
+      "date": "2024-09-09",
+      "classOrSpeed": "1688 km/s",
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/33266/-1"
+    },
+    {
+      "id": "2024-09-09T07:58:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-09-09",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/33255/-1"
+    },
+    {
+      "id": "2024-09-09T08:50:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-09-09",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/33257/-1"
+    },
+    {
+      "id": "2024-09-09T16:35:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-09-09",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/33282/-1"
+    },
+    {
+      "id": "2024-09-09T20:55:00-SEP-002",
+      "type": "SEP",
+      "date": "2024-09-09",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/33290/-1"
+    },
+    {
+      "id": "2024-09-09T20:55:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-09-09",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/33287/-1"
+    },
+    {
+      "id": "2024-09-09T20:58:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-09-09",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/33286/-1"
+    },
+    {
+      "id": "2024-09-09T01:25:00-CME-001",
+      "type": "CME",
+      "date": "2024-09-09",
+      "classOrSpeed": "957 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/33264/-1"
+    },
+    {
+      "id": "2024-09-08T10:24:00-CME-001",
+      "type": "CME",
+      "date": "2024-09-08",
+      "classOrSpeed": "842 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/33249/-1"
+    },
+    {
+      "id": "2024-09-05T07:24:00-CME-001",
+      "type": "CME",
+      "date": "2024-09-05",
+      "classOrSpeed": "1577 km/s",
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/33192/-1"
+    },
+    {
+      "id": "2024-09-05T15:51:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-09-05",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/33202/-1"
+    },
+    {
+      "id": "2024-09-03T08:12:00-CME-001",
+      "type": "CME",
+      "date": "2024-09-03",
+      "classOrSpeed": "1515 km/s",
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/33130/-1"
+    },
+    {
+      "id": "2024-09-03T08:39:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-09-03",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/33136/-1"
+    },
+    {
+      "id": "2024-09-03T20:12:00-CME-001",
+      "type": "CME",
+      "date": "2024-09-03",
+      "classOrSpeed": "892 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/33152/-1"
+    },
+    {
+      "id": "2024-09-01T12:23:00-CME-001",
+      "type": "CME",
+      "date": "2024-09-01",
+      "classOrSpeed": "1247 km/s",
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/33098/-1"
+    },
+    {
+      "id": "2024-09-01T23:14:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-09-01",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/33103/-1"
+    },
+    {
+      "id": "2024-09-01T19:36:00-CME-001",
+      "type": "CME",
+      "date": "2024-09-01",
+      "classOrSpeed": "1077 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/33108/-1"
+    },
+    {
+      "id": "2024-08-31T00:23:00-CME-001",
+      "type": "CME",
+      "date": "2024-08-31",
+      "classOrSpeed": "999 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/33083/-1"
+    },
+    {
+      "id": "2024-08-28T04:12:00-CME-001",
+      "type": "CME",
+      "date": "2024-08-28",
+      "classOrSpeed": "758 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/33035/-1"
+    },
+    {
+      "id": "2024-08-23T16:36:00-CME-001",
+      "type": "CME",
+      "date": "2024-08-23",
+      "classOrSpeed": "868 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/33008/-1"
+    },
+    {
+      "id": "2024-08-22T15:09:00-CME-001",
+      "type": "CME",
+      "date": "2024-08-22",
+      "classOrSpeed": "917 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/32970/-1"
+    },
+    {
+      "id": "2024-08-20T07:24:00-CME-001",
+      "type": "CME",
+      "date": "2024-08-20",
+      "classOrSpeed": "858 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/32935/-1"
+    },
+    {
+      "id": "2024-08-20T11:48:00-CME-001",
+      "type": "CME",
+      "date": "2024-08-20",
+      "classOrSpeed": "722 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/32915/-1"
+    },
+    {
+      "id": "2024-08-20T12:12:00-CME-001",
+      "type": "CME",
+      "date": "2024-08-20",
+      "classOrSpeed": "758 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/32912/-1"
+    },
+    {
+      "id": "2024-08-19T16:24:00-CME-001",
+      "type": "CME",
+      "date": "2024-08-19",
+      "classOrSpeed": "1343 km/s",
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/32904/-1"
+    },
+    {
+      "id": "2024-08-17T19:12:00-CME-001",
+      "type": "CME",
+      "date": "2024-08-17",
+      "classOrSpeed": "1013 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/32869/-1"
+    },
+    {
+      "id": "2024-08-15T00:53:00-CME-001",
+      "type": "CME",
+      "date": "2024-08-15",
+      "classOrSpeed": "1382 km/s",
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/32827/-1"
+    },
+    {
+      "id": "2024-08-14T03:48:00-CME-001",
+      "type": "CME",
+      "date": "2024-08-14",
+      "classOrSpeed": "804 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/32802/-1"
+    },
+    {
+      "id": "2024-08-14T09:12:00-CME-001",
+      "type": "CME",
+      "date": "2024-08-14",
+      "classOrSpeed": "823 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/32804/-1"
+    },
+    {
+      "id": "2024-08-12T21:24:00-CME-001",
+      "type": "CME",
+      "date": "2024-08-12",
+      "classOrSpeed": "753 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/32751/-1"
+    },
+    {
+      "id": "2024-08-10T03:12:00-CME-001",
+      "type": "CME",
+      "date": "2024-08-10",
+      "classOrSpeed": "787 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/32682/-1"
+    },
+    {
+      "id": "2024-08-09T21:48:00-CME-001",
+      "type": "CME",
+      "date": "2024-08-09",
+      "classOrSpeed": "887 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/32663/-1"
+    },
+    {
+      "id": "2024-08-07T14:24:00-CME-001",
+      "type": "CME",
+      "date": "2024-08-07",
+      "classOrSpeed": "925 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/32596/-1"
+    },
+    {
+      "id": "2024-08-05T05:53:00-CME-001",
+      "type": "CME",
+      "date": "2024-08-05",
+      "classOrSpeed": "1206 km/s",
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/32548/-1"
+    },
+    {
+      "id": "2024-08-05T17:26:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-08-05",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/32560/-1"
+    },
+    {
+      "id": "2024-08-05T13:48:00-CME-001",
+      "type": "CME",
+      "date": "2024-08-05",
+      "classOrSpeed": "1095 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/32570/-1"
+    },
+    {
+      "id": "2024-08-04T15:37:00-CME-001",
+      "type": "CME",
+      "date": "2024-08-04",
+      "classOrSpeed": "735 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/32525/-1"
+    },
+    {
+      "id": "2024-08-02T05:12:00-CME-001",
+      "type": "CME",
+      "date": "2024-08-02",
+      "classOrSpeed": "1164 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/32467/-1"
+    },
+    {
+      "id": "2024-08-01T11:48:00-CME-001",
+      "type": "CME",
+      "date": "2024-08-01",
+      "classOrSpeed": "1425 km/s",
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/32443/-1"
+    },
+    {
+      "id": "2024-08-01T07:24:00-CME-001",
+      "type": "CME",
+      "date": "2024-08-01",
+      "classOrSpeed": "1100 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/32420/-1"
+    },
+    {
+      "id": "2024-07-31T07:12:00-CME-001",
+      "type": "CME",
+      "date": "2024-07-31",
+      "classOrSpeed": "1310 km/s",
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/32370/-1"
+    },
+    {
+      "id": "2024-07-31T20:10:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-07-31",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/32396/-1"
+    },
+    {
+      "id": "2024-07-31T20:10:00-SEP-002",
+      "type": "SEP",
+      "date": "2024-07-31",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/32397/-1"
+    },
+    {
+      "id": "2024-07-31T13:25:00-CME-001",
+      "type": "CME",
+      "date": "2024-07-31",
+      "classOrSpeed": "1056 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/32448/-1"
+    },
+    {
+      "id": "2024-07-31T18:36:00-CME-001",
+      "type": "CME",
+      "date": "2024-07-31",
+      "classOrSpeed": "1109 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/32413/-1"
+    },
+    {
+      "id": "2024-07-30T19:48:00-CME-001",
+      "type": "CME",
+      "date": "2024-07-30",
+      "classOrSpeed": "1421 km/s",
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/32361/-1"
+    },
+    {
+      "id": "2024-07-30T03:12:00-CME-001",
+      "type": "CME",
+      "date": "2024-07-30",
+      "classOrSpeed": "751 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/32344/-1"
+    },
+    {
+      "id": "2024-07-29T20:00:00-CME-001",
+      "type": "CME",
+      "date": "2024-07-29",
+      "classOrSpeed": "1287 km/s",
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/32340/-1"
+    },
+    {
+      "id": "2024-07-29T13:25:00-CME-001",
+      "type": "CME",
+      "date": "2024-07-29",
+      "classOrSpeed": "1077 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/32317/-1"
+    },
+    {
+      "id": "2024-07-29T14:36:00-CME-001",
+      "type": "CME",
+      "date": "2024-07-29",
+      "classOrSpeed": "942 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/32330/-1"
+    },
+    {
+      "id": "2024-07-28T02:24:00-CME-001",
+      "type": "CME",
+      "date": "2024-07-28",
+      "classOrSpeed": "920 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/32269/-1"
+    },
+    {
+      "id": "2024-07-28T14:36:00-CME-001",
+      "type": "CME",
+      "date": "2024-07-28",
+      "classOrSpeed": "777 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/32282/-1"
+    },
+    {
+      "id": "2024-07-27T04:48:00-CME-001",
+      "type": "CME",
+      "date": "2024-07-27",
+      "classOrSpeed": "1141 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/32232/-1"
+    },
+    {
+      "id": "2024-07-27T06:36:00-CME-001",
+      "type": "CME",
+      "date": "2024-07-27",
+      "classOrSpeed": "803 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/32245/-1"
+    },
+    {
+      "id": "2024-07-25T00:24:00-CME-001",
+      "type": "CME",
+      "date": "2024-07-25",
+      "classOrSpeed": "933 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/32191/-1"
+    },
+    {
+      "id": "2024-07-24T08:23:00-CME-001",
+      "type": "CME",
+      "date": "2024-07-24",
+      "classOrSpeed": "701 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/32154/-1"
+    },
+    {
+      "id": "2024-07-23T00:23:00-CME-001",
+      "type": "CME",
+      "date": "2024-07-23",
+      "classOrSpeed": "1544 km/s",
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/32124/-1"
+    },
+    {
+      "id": "2024-07-23T01:20:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-07-23",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/32110/-1"
+    },
+    {
+      "id": "2024-07-23T02:05:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-07-23",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/32115/-1"
+    },
+    {
+      "id": "2024-07-23T02:28:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-07-23",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/32122/-1"
+    },
+    {
+      "id": "2024-07-23T02:32:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-07-23",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/32121/-1"
+    },
+    {
+      "id": "2024-07-23T02:47:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-07-23",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/32114/-1"
+    },
+    {
+      "id": "2024-07-23T02:55:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-07-23",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/32138/-1"
+    },
+    {
+      "id": "2024-07-23T03:00:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-07-23",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/32118/-1"
+    },
+    {
+      "id": "2024-07-23T14:48:00-CME-001",
+      "type": "CME",
+      "date": "2024-07-23",
+      "classOrSpeed": "950 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/32145/-1"
+    },
+    {
+      "id": "2024-07-21T16:48:00-CME-001",
+      "type": "CME",
+      "date": "2024-07-21",
+      "classOrSpeed": "1224 km/s",
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/32090/-1"
+    },
+    {
+      "id": "2024-07-19T21:36:00-CME-001",
+      "type": "CME",
+      "date": "2024-07-19",
+      "classOrSpeed": "793 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/32064/-1"
+    },
+    {
+      "id": "2024-07-17T19:00:00-CME-001",
+      "type": "CME",
+      "date": "2024-07-17",
+      "classOrSpeed": "812 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/32035/-1"
+    },
+    {
+      "id": "2024-07-16T00:36:00-CME-001",
+      "type": "CME",
+      "date": "2024-07-16",
+      "classOrSpeed": "1352 km/s",
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/31971/-1"
+    },
+    {
+      "id": "2024-07-16T02:12:00-CME-001",
+      "type": "CME",
+      "date": "2024-07-16",
+      "classOrSpeed": "930 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/31988/-1"
+    },
+    {
+      "id": "2024-07-16T23:23:00-CME-001",
+      "type": "CME",
+      "date": "2024-07-16",
+      "classOrSpeed": "853 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/32016/-1"
+    },
+    {
+      "id": "2024-07-15T09:48:00-CME-001",
+      "type": "CME",
+      "date": "2024-07-15",
+      "classOrSpeed": "1611 km/s",
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/31962/-1"
+    },
+    {
+      "id": "2024-07-14T08:00:00-CME-001",
+      "type": "CME",
+      "date": "2024-07-14",
+      "classOrSpeed": "717 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/31954/-1"
+    },
+    {
+      "id": "2024-07-12T23:06:00-CME-001",
+      "type": "CME",
+      "date": "2024-07-12",
+      "classOrSpeed": "1218 km/s",
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/31938/-1"
+    },
+    {
+      "id": "2024-07-10T21:24:00-CME-001",
+      "type": "CME",
+      "date": "2024-07-10",
+      "classOrSpeed": "1659 km/s",
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/31904/-1"
+    },
+    {
+      "id": "2024-07-04T20:24:00-CME-001",
+      "type": "CME",
+      "date": "2024-07-04",
+      "classOrSpeed": "773 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/31828/-1"
+    },
+    {
+      "id": "2024-06-29T03:36:00-CME-001",
+      "type": "CME",
+      "date": "2024-06-29",
+      "classOrSpeed": "885 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/31749/-1"
+    },
+    {
+      "id": "2024-06-29T16:12:00-CME-001",
+      "type": "CME",
+      "date": "2024-06-29",
+      "classOrSpeed": "809 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/31755/-1"
+    },
+    {
+      "id": "2024-06-29T18:48:00-CME-001",
+      "type": "CME",
+      "date": "2024-06-29",
+      "classOrSpeed": "775 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/31761/-1"
+    },
+    {
+      "id": "2024-06-23T07:48:00-CME-001",
+      "type": "CME",
+      "date": "2024-06-23",
+      "classOrSpeed": "795 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/31663/-1"
+    },
+    {
+      "id": "2024-06-21T23:48:00-CME-001",
+      "type": "CME",
+      "date": "2024-06-21",
+      "classOrSpeed": "1208 km/s",
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/31636/-1"
+    },
+    {
+      "id": "2024-06-19T02:48:00-CME-001",
+      "type": "CME",
+      "date": "2024-06-19",
+      "classOrSpeed": "755 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/31609/-1"
+    },
+    {
+      "id": "2024-06-19T06:48:00-CME-001",
+      "type": "CME",
+      "date": "2024-06-19",
+      "classOrSpeed": "1111 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/31593/-1"
+    },
+    {
+      "id": "2024-06-18T11:24:00-CME-001",
+      "type": "CME",
+      "date": "2024-06-18",
+      "classOrSpeed": "729 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/31579/-1"
+    },
+    {
+      "id": "2024-06-17T08:24:00-CME-001",
+      "type": "CME",
+      "date": "2024-06-17",
+      "classOrSpeed": "902 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/31541/-1"
+    },
+    {
+      "id": "2024-06-17T11:00:00-CME-001",
+      "type": "CME",
+      "date": "2024-06-17",
+      "classOrSpeed": "755 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/31546/-1"
+    },
+    {
+      "id": "2024-06-17T11:24:00-CME-001",
+      "type": "CME",
+      "date": "2024-06-17",
+      "classOrSpeed": "974 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/31553/-1"
+    },
+    {
+      "id": "2024-06-15T11:48:00-CME-001",
+      "type": "CME",
+      "date": "2024-06-15",
+      "classOrSpeed": "812 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/31523/-1"
+    },
+    {
+      "id": "2024-06-14T01:36:00-CME-001",
+      "type": "CME",
+      "date": "2024-06-14",
+      "classOrSpeed": "716 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/31509/-1"
+    },
+    {
+      "id": "2024-06-13T03:38:00-CME-001",
+      "type": "CME",
+      "date": "2024-06-13",
+      "classOrSpeed": "1037 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/31481/-1"
+    },
+    {
+      "id": "2024-06-13T04:53:00-CME-001",
+      "type": "CME",
+      "date": "2024-06-13",
+      "classOrSpeed": "1187 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/31478/-1"
+    },
+    {
+      "id": "2024-06-13T15:24:00-CME-001",
+      "type": "CME",
+      "date": "2024-06-13",
+      "classOrSpeed": "1037 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/31472/-1"
+    },
+    {
+      "id": "2024-06-12T23:48:00-CME-001",
+      "type": "CME",
+      "date": "2024-06-12",
+      "classOrSpeed": "1357 km/s",
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/31491/-1"
+    },
+    {
+      "id": "2024-06-12T00:21:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-06-12",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/31435/-1"
+    },
+    {
+      "id": "2024-06-12T00:30:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-06-12",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/31437/-1"
+    },
+    {
+      "id": "2024-06-12T02:58:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-06-12",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/31441/-1"
+    },
+    {
+      "id": "2024-06-12T04:03:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-06-12",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/31452/-1"
+    },
+    {
+      "id": "2024-06-12T16:00:00-CME-001",
+      "type": "CME",
+      "date": "2024-06-12",
+      "classOrSpeed": "862 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/31474/-1"
+    },
+    {
+      "id": "2024-06-11T23:12:00-CME-001",
+      "type": "CME",
+      "date": "2024-06-11",
+      "classOrSpeed": "1312 km/s",
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/31440/-1"
+    },
+    {
+      "id": "2024-06-10T18:36:00-CME-001",
+      "type": "CME",
+      "date": "2024-06-10",
+      "classOrSpeed": "1352 km/s",
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/31420/-1"
+    },
+    {
+      "id": "2024-06-10T11:00:00-CME-001",
+      "type": "CME",
+      "date": "2024-06-10",
+      "classOrSpeed": "983 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/31400/-1"
+    },
+    {
+      "id": "2024-06-10T11:12:00-CME-001",
+      "type": "CME",
+      "date": "2024-06-10",
+      "classOrSpeed": "1117 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/31407/-1"
+    },
+    {
+      "id": "2024-06-10T23:36:00-CME-001",
+      "type": "CME",
+      "date": "2024-06-10",
+      "classOrSpeed": "914 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/31430/-1"
+    },
+    {
+      "id": "2024-06-08T01:53:00-CME-001",
+      "type": "CME",
+      "date": "2024-06-08",
+      "classOrSpeed": "1528 km/s",
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/31346/-1"
+    },
+    {
+      "id": "2024-06-08T02:25:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-06-08",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/31338/-1"
+    },
+    {
+      "id": "2024-06-08T02:55:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-06-08",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/31343/-1"
+    },
+    {
+      "id": "2024-06-08T03:09:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-06-08",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/31359/-1"
+    },
+    {
+      "id": "2024-06-08T03:34:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-06-08",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/31348/-1"
+    },
+    {
+      "id": "2024-06-08T03:36:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-06-08",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/31349/-1"
+    },
+    {
+      "id": "2024-06-08T04:14:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-06-08",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/31351/-1"
+    },
+    {
+      "id": "2024-06-08T04:14:00-SEP-002",
+      "type": "SEP",
+      "date": "2024-06-08",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/31360/-1"
+    },
+    {
+      "id": "2024-06-08T04:20:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-06-08",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/31357/-1"
+    },
+    {
+      "id": "2024-06-08T04:48:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-06-08",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/31358/-1"
+    },
+    {
+      "id": "2024-06-05T01:25:00-CME-001",
+      "type": "CME",
+      "date": "2024-06-05",
+      "classOrSpeed": "1051 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/31300/-1"
+    },
+    {
+      "id": "2024-06-01T19:12:00-CME-001",
+      "type": "CME",
+      "date": "2024-06-01",
+      "classOrSpeed": "1503 km/s",
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/31263/-1"
+    },
+    {
+      "id": "2024-06-01T20:00:00-CME-001",
+      "type": "CME",
+      "date": "2024-06-01",
+      "classOrSpeed": "898 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/31269/-1"
+    },
+    {
+      "id": "2024-05-31T04:17:00-CME-001",
+      "type": "CME",
+      "date": "2024-05-31",
+      "classOrSpeed": "817 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/31245/-1"
+    },
+    {
+      "id": "2024-05-30T09:24:00-CME-001",
+      "type": "CME",
+      "date": "2024-05-30",
+      "classOrSpeed": "750 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/31217/-1"
+    },
+    {
+      "id": "2024-05-29T01:48:00-CME-001",
+      "type": "CME",
+      "date": "2024-05-29",
+      "classOrSpeed": "853 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/31204/-1"
+    },
+    {
+      "id": "2024-05-29T02:12:00-CME-001",
+      "type": "CME",
+      "date": "2024-05-29",
+      "classOrSpeed": "791 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/31210/-1"
+    },
+    {
+      "id": "2024-05-29T14:48:00-CME-001",
+      "type": "CME",
+      "date": "2024-05-29",
+      "classOrSpeed": "1033 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/31200/-1"
+    },
+    {
+      "id": "2024-05-29T17:36:00-CME-001",
+      "type": "CME",
+      "date": "2024-05-29",
+      "classOrSpeed": "723 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/31220/-1"
+    },
+    {
+      "id": "2024-05-28T05:36:00-CME-001",
+      "type": "CME",
+      "date": "2024-05-28",
+      "classOrSpeed": "755 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/31176/-1"
+    },
+    {
+      "id": "2024-05-28T19:48:00-CME-001",
+      "type": "CME",
+      "date": "2024-05-28",
+      "classOrSpeed": "976 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/31191/-1"
+    },
+    {
+      "id": "2024-05-27T07:23:00-CME-001",
+      "type": "CME",
+      "date": "2024-05-27",
+      "classOrSpeed": "1254 km/s",
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/31161/-1"
+    },
+    {
+      "id": "2024-05-24T13:25:00-CME-001",
+      "type": "CME",
+      "date": "2024-05-24",
+      "classOrSpeed": "718 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/31119/-1"
+    },
+    {
+      "id": "2024-05-24T20:48:00-CME-001",
+      "type": "CME",
+      "date": "2024-05-24",
+      "classOrSpeed": "854 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/31147/-1"
+    },
+    {
+      "id": "2024-05-23T22:36:00-CME-001",
+      "type": "CME",
+      "date": "2024-05-23",
+      "classOrSpeed": "943 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/31133/-1"
+    },
+    {
+      "id": "2024-05-20T05:36:00-CME-001",
+      "type": "CME",
+      "date": "2024-05-20",
+      "classOrSpeed": "2678 km/s",
+      "level": 4,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/31034/-1"
+    },
+    {
+      "id": "2024-05-20T20:12:00-CME-001",
+      "type": "CME",
+      "date": "2024-05-20",
+      "classOrSpeed": "836 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/31055/-1"
+    },
+    {
+      "id": "2024-05-18T13:38:00-CME-001",
+      "type": "CME",
+      "date": "2024-05-18",
+      "classOrSpeed": "1585 km/s",
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/31018/-1"
+    },
+    {
+      "id": "2024-05-17T12:48:00-CME-001",
+      "type": "CME",
+      "date": "2024-05-17",
+      "classOrSpeed": "1625 km/s",
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/30974/-1"
+    },
+    {
+      "id": "2024-05-17T04:28:00-CME-001",
+      "type": "CME",
+      "date": "2024-05-17",
+      "classOrSpeed": "854 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/30989/-1"
+    },
+    {
+      "id": "2024-05-17T18:48:00-CME-001",
+      "type": "CME",
+      "date": "2024-05-17",
+      "classOrSpeed": "942 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/31012/-1"
+    },
+    {
+      "id": "2024-05-17T21:24:00-CME-001",
+      "type": "CME",
+      "date": "2024-05-17",
+      "classOrSpeed": "1129 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/31005/-1"
+    },
+    {
+      "id": "2024-05-16T08:12:00-CME-001",
+      "type": "CME",
+      "date": "2024-05-16",
+      "classOrSpeed": "1298 km/s",
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/30970/-1"
+    },
+    {
+      "id": "2024-05-16T13:38:00-CME-001",
+      "type": "CME",
+      "date": "2024-05-16",
+      "classOrSpeed": "1452 km/s",
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/30936/-1"
+    },
+    {
+      "id": "2024-05-16T01:25:00-CME-001",
+      "type": "CME",
+      "date": "2024-05-16",
+      "classOrSpeed": "1103 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/30955/-1"
+    },
+    {
+      "id": "2024-05-16T04:36:00-CME-001",
+      "type": "CME",
+      "date": "2024-05-16",
+      "classOrSpeed": "773 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/30957/-1"
+    },
+    {
+      "id": "2024-05-16T06:48:00-CME-001",
+      "type": "CME",
+      "date": "2024-05-16",
+      "classOrSpeed": "1110 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/30959/-1"
+    },
+    {
+      "id": "2024-05-16T18:00:00-CME-001",
+      "type": "CME",
+      "date": "2024-05-16",
+      "classOrSpeed": "767 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/31002/-1"
+    },
+    {
+      "id": "2024-05-15T08:36:00-CME-001",
+      "type": "CME",
+      "date": "2024-05-15",
+      "classOrSpeed": "1766 km/s",
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/30891/-1"
+    },
+    {
+      "id": "2024-05-15T10:00:00-CME-001",
+      "type": "CME",
+      "date": "2024-05-15",
+      "classOrSpeed": "1205 km/s",
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/30913/-1"
+    },
+    {
+      "id": "2024-05-15T14:53:00-CME-001",
+      "type": "CME",
+      "date": "2024-05-15",
+      "classOrSpeed": "1570 km/s",
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/30948/-1"
+    },
+    {
+      "id": "2024-05-15T21:12:00-CME-001",
+      "type": "CME",
+      "date": "2024-05-15",
+      "classOrSpeed": "1269 km/s",
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/30923/-1"
+    },
+    {
+      "id": "2024-05-15T08:48:00-CME-001",
+      "type": "CME",
+      "date": "2024-05-15",
+      "classOrSpeed": "1082 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/30894/-1"
+    },
+    {
+      "id": "2024-05-15T10:36:00-CME-001",
+      "type": "CME",
+      "date": "2024-05-15",
+      "classOrSpeed": "805 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/30940/-1"
+    },
+    {
+      "id": "2024-05-15T10:48:00-CME-001",
+      "type": "CME",
+      "date": "2024-05-15",
+      "classOrSpeed": "1162 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/30920/-1"
+    },
+    {
+      "id": "2024-05-15T17:36:00-CME-001",
+      "type": "CME",
+      "date": "2024-05-15",
+      "classOrSpeed": "732 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/30968/-1"
+    },
+    {
+      "id": "2024-05-14T17:00:00-CME-001",
+      "type": "CME",
+      "date": "2024-05-14",
+      "classOrSpeed": "2225 km/s",
+      "level": 4,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/30867/-1"
+    },
+    {
+      "id": "2024-05-14T17:48:00-CME-001",
+      "type": "CME",
+      "date": "2024-05-14",
+      "classOrSpeed": "1292 km/s",
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/30883/-1"
+    },
+    {
+      "id": "2024-05-14T10:09:00-CME-001",
+      "type": "CME",
+      "date": "2024-05-14",
+      "classOrSpeed": "744 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/30856/-1"
+    },
+    {
+      "id": "2024-05-14T10:36:00-CME-001",
+      "type": "CME",
+      "date": "2024-05-14",
+      "classOrSpeed": "763 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/30915/-1"
+    },
+    {
+      "id": "2024-05-14T17:30:00-CME-001",
+      "type": "CME",
+      "date": "2024-05-14",
+      "classOrSpeed": "1199 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/30873/-1"
+    },
+    {
+      "id": "2024-05-13T09:12:00-CME-001",
+      "type": "CME",
+      "date": "2024-05-13",
+      "classOrSpeed": "1935 km/s",
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/30814/-1"
+    },
+    {
+      "id": "2024-05-13T12:44:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-05-13",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/30811/-1"
+    },
+    {
+      "id": "2024-05-13T13:10:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-05-13",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/30807/-1"
+    },
+    {
+      "id": "2024-05-13T14:00:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-05-13",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/30817/-1"
+    },
+    {
+      "id": "2024-05-13T16:19:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-05-13",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/30820/-1"
+    },
+    {
+      "id": "2024-05-13T18:07:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-05-13",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/30824/-1"
+    },
+    {
+      "id": "2024-05-13T18:07:00-SEP-002",
+      "type": "SEP",
+      "date": "2024-05-13",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/30825/-1"
+    },
+    {
+      "id": "2024-05-11T01:36:00-CME-001",
+      "type": "CME",
+      "date": "2024-05-11",
+      "classOrSpeed": "1820 km/s",
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/30719/-1"
+    },
+    {
+      "id": "2024-05-11T02:10:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-05-11",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/30714/-1"
+    },
+    {
+      "id": "2024-05-11T04:07:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-05-11",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/30717/-1"
+    },
+    {
+      "id": "2024-05-11T03:12:00-CME-002",
+      "type": "CME",
+      "date": "2024-05-11",
+      "classOrSpeed": "1032 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/30793/-1"
+    },
+    {
+      "id": "2024-05-11T16:24:00-CME-001",
+      "type": "CME",
+      "date": "2024-05-11",
+      "classOrSpeed": "946 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/30742/-1"
+    },
+    {
+      "id": "2024-05-10T07:12:00-CME-001",
+      "type": "CME",
+      "date": "2024-05-10",
+      "classOrSpeed": "1332 km/s",
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/30670/-1"
+    },
+    {
+      "id": "2024-05-10T12:59:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-05-10",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/30675/-1"
+    },
+    {
+      "id": "2024-05-10T13:02:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-05-10",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/30676/-1"
+    },
+    {
+      "id": "2024-05-10T13:35:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-05-10",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/30677/-1"
+    },
+    {
+      "id": "2024-05-10T14:50:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-05-10",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/30684/-1"
+    },
+    {
+      "id": "2024-05-10T21:28:00-CME-001",
+      "type": "CME",
+      "date": "2024-05-10",
+      "classOrSpeed": "717 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/30753/-1"
+    },
+    {
+      "id": "2024-05-09T09:24:00-CME-001",
+      "type": "CME",
+      "date": "2024-05-09",
+      "classOrSpeed": "1561 km/s",
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/30619/-1"
+    },
+    {
+      "id": "2024-05-09T18:23:00-CME-001",
+      "type": "CME",
+      "date": "2024-05-09",
+      "classOrSpeed": "1236 km/s",
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/30655/-1"
+    },
+    {
+      "id": "2024-05-09T13:59:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-05-09",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/30609/-1"
+    },
+    {
+      "id": "2024-05-09T14:25:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-05-09",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/30610/-1"
+    },
+    {
+      "id": "2024-05-08T22:24:00-CME-001",
+      "type": "CME",
+      "date": "2024-05-08",
+      "classOrSpeed": "1257 km/s",
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/30640/-1"
+    },
+    {
+      "id": "2024-05-08T05:36:00-CME-001",
+      "type": "CME",
+      "date": "2024-05-08",
+      "classOrSpeed": "870 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/30589/-1"
+    },
+    {
+      "id": "2024-05-08T12:24:00-CME-001",
+      "type": "CME",
+      "date": "2024-05-08",
+      "classOrSpeed": "1156 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/30564/-1"
+    },
+    {
+      "id": "2024-05-08T19:12:00-CME-001",
+      "type": "CME",
+      "date": "2024-05-08",
+      "classOrSpeed": "828 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/30612/-1"
+    },
+    {
+      "id": "2024-05-05T17:00:00-CME-001",
+      "type": "CME",
+      "date": "2024-05-05",
+      "classOrSpeed": "756 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/30496/-1"
+    },
+    {
+      "id": "2024-05-04T06:53:00-CME-001",
+      "type": "CME",
+      "date": "2024-05-04",
+      "classOrSpeed": "804 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/30437/-1"
+    },
+    {
+      "id": "2024-05-03T02:48:00-CME-001",
+      "type": "CME",
+      "date": "2024-05-03",
+      "classOrSpeed": "972 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/30409/-1"
+    },
+    {
+      "id": "2024-05-02T03:12:00-CME-001",
+      "type": "CME",
+      "date": "2024-05-02",
+      "classOrSpeed": "716 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/30391/-1"
+    },
+    {
+      "id": "2024-05-01T06:36:00-CME-001",
+      "type": "CME",
+      "date": "2024-05-01",
+      "classOrSpeed": "861 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/30362/-1"
+    },
+    {
+      "id": "2024-04-28T03:48:00-CME-001",
+      "type": "CME",
+      "date": "2024-04-28",
+      "classOrSpeed": "738 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/30321/-1"
+    },
+    {
+      "id": "2024-04-25T10:48:00-CME-001",
+      "type": "CME",
+      "date": "2024-04-25",
+      "classOrSpeed": "1098 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/30280/-1"
+    },
+    {
+      "id": "2024-04-24T06:48:00-CME-001",
+      "type": "CME",
+      "date": "2024-04-24",
+      "classOrSpeed": "801 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/30270/-1"
+    },
+    {
+      "id": "2024-04-23T04:00:00-CME-001",
+      "type": "CME",
+      "date": "2024-04-23",
+      "classOrSpeed": "931 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/30210/-1"
+    },
+    {
+      "id": "2024-04-22T16:12:00-CME-001",
+      "type": "CME",
+      "date": "2024-04-22",
+      "classOrSpeed": "885 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/30213/-1"
+    },
+    {
+      "id": "2024-04-21T12:48:00-CME-001",
+      "type": "CME",
+      "date": "2024-04-21",
+      "classOrSpeed": "761 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/30192/-1"
+    },
+    {
+      "id": "2024-04-21T22:12:00-CME-001",
+      "type": "CME",
+      "date": "2024-04-21",
+      "classOrSpeed": "925 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/30200/-1"
+    },
+    {
+      "id": "2024-04-20T09:24:00-CME-001",
+      "type": "CME",
+      "date": "2024-04-20",
+      "classOrSpeed": "836 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/30158/-1"
+    },
+    {
+      "id": "2024-04-16T03:24:00-CME-001",
+      "type": "CME",
+      "date": "2024-04-16",
+      "classOrSpeed": "837 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/30088/-1"
+    },
+    {
+      "id": "2024-04-16T07:48:00-CME-001",
+      "type": "CME",
+      "date": "2024-04-16",
+      "classOrSpeed": "867 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/30090/-1"
+    },
+    {
+      "id": "2024-04-15T06:48:00-CME-001",
+      "type": "CME",
+      "date": "2024-04-15",
+      "classOrSpeed": "724 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/30075/-1"
+    },
+    {
+      "id": "2024-04-14T11:12:00-CME-001",
+      "type": "CME",
+      "date": "2024-04-14",
+      "classOrSpeed": "859 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/30073/-1"
+    },
+    {
+      "id": "2024-04-13T05:12:00-CME-001",
+      "type": "CME",
+      "date": "2024-04-13",
+      "classOrSpeed": "884 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/30031/-1"
+    },
+    {
+      "id": "2024-04-13T10:00:00-CME-001",
+      "type": "CME",
+      "date": "2024-04-13",
+      "classOrSpeed": "761 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/30033/-1"
+    },
+    {
+      "id": "2024-04-13T16:09:00-CME-001",
+      "type": "CME",
+      "date": "2024-04-13",
+      "classOrSpeed": "797 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/30056/-1"
+    },
+    {
+      "id": "2024-04-12T02:00:00-CME-001",
+      "type": "CME",
+      "date": "2024-04-12",
+      "classOrSpeed": "743 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/30004/-1"
+    },
+    {
+      "id": "2024-04-12T18:12:00-CME-001",
+      "type": "CME",
+      "date": "2024-04-12",
+      "classOrSpeed": "848 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/30035/-1"
+    },
+    {
+      "id": "2024-04-11T06:48:00-CME-001",
+      "type": "CME",
+      "date": "2024-04-11",
+      "classOrSpeed": "1688 km/s",
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/29993/-1"
+    },
+    {
+      "id": "2024-04-11T10:09:00-CME-001",
+      "type": "CME",
+      "date": "2024-04-11",
+      "classOrSpeed": "1372 km/s",
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/29991/-1"
+    },
+    {
+      "id": "2024-04-11T17:12:00-CME-001",
+      "type": "CME",
+      "date": "2024-04-11",
+      "classOrSpeed": "1434 km/s",
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/30017/-1"
+    },
+    {
+      "id": "2024-04-11T05:09:00-CME-001",
+      "type": "CME",
+      "date": "2024-04-11",
+      "classOrSpeed": "1124 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/29999/-1"
+    },
+    {
+      "id": "2024-04-11T07:00:00-CME-001",
+      "type": "CME",
+      "date": "2024-04-11",
+      "classOrSpeed": "911 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/30007/-1"
+    },
+    {
+      "id": "2024-04-11T14:48:00-CME-001",
+      "type": "CME",
+      "date": "2024-04-11",
+      "classOrSpeed": "828 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/30013/-1"
+    },
+    {
+      "id": "2024-04-11T18:00:00-CME-001",
+      "type": "CME",
+      "date": "2024-04-11",
+      "classOrSpeed": "839 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/30015/-1"
+    },
+    {
+      "id": "2024-04-10T00:12:00-CME-001",
+      "type": "CME",
+      "date": "2024-04-10",
+      "classOrSpeed": "1105 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/29976/-1"
+    },
+    {
+      "id": "2024-04-10T04:24:00-CME-001",
+      "type": "CME",
+      "date": "2024-04-10",
+      "classOrSpeed": "895 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/29978/-1"
+    },
+    {
+      "id": "2024-04-10T06:36:00-CME-001",
+      "type": "CME",
+      "date": "2024-04-10",
+      "classOrSpeed": "1087 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/29979/-1"
+    },
+    {
+      "id": "2024-04-10T16:00:00-CME-001",
+      "type": "CME",
+      "date": "2024-04-10",
+      "classOrSpeed": "740 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/29995/-1"
+    },
+    {
+      "id": "2024-04-09T11:00:00-CME-001",
+      "type": "CME",
+      "date": "2024-04-09",
+      "classOrSpeed": "861 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/29967/-1"
+    },
+    {
+      "id": "2024-04-09T18:00:00-CME-001",
+      "type": "CME",
+      "date": "2024-04-09",
+      "classOrSpeed": "772 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/29970/-1"
+    },
+    {
+      "id": "2024-04-09T20:36:00-CME-001",
+      "type": "CME",
+      "date": "2024-04-09",
+      "classOrSpeed": "728 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/29972/-1"
+    },
+    {
+      "id": "2024-04-09T22:00:00-CME-001",
+      "type": "CME",
+      "date": "2024-04-09",
+      "classOrSpeed": "997 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/29974/-1"
+    },
+    {
+      "id": "2024-04-08T10:00:00-CME-001",
+      "type": "CME",
+      "date": "2024-04-08",
+      "classOrSpeed": "953 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/29956/-1"
+    },
+    {
+      "id": "2024-04-08T12:36:00-CME-001",
+      "type": "CME",
+      "date": "2024-04-08",
+      "classOrSpeed": "1021 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/29958/-1"
+    },
+    {
+      "id": "2024-04-05T02:26:00-CME-001",
+      "type": "CME",
+      "date": "2024-04-05",
+      "classOrSpeed": "1036 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/29931/-1"
+    },
+    {
+      "id": "2024-04-05T13:48:00-CME-001",
+      "type": "CME",
+      "date": "2024-04-05",
+      "classOrSpeed": "869 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/29933/-1"
+    },
+    {
+      "id": "2024-04-05T17:00:00-CME-001",
+      "type": "CME",
+      "date": "2024-04-05",
+      "classOrSpeed": "777 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/29940/-1"
+    },
+    {
+      "id": "2024-04-04T08:12:00-CME-001",
+      "type": "CME",
+      "date": "2024-04-04",
+      "classOrSpeed": "730 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/29914/-1"
+    },
+    {
+      "id": "2024-04-04T15:23:00-CME-001",
+      "type": "CME",
+      "date": "2024-04-04",
+      "classOrSpeed": "875 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/29922/-1"
+    },
+    {
+      "id": "2024-04-04T17:48:00-CME-001",
+      "type": "CME",
+      "date": "2024-04-04",
+      "classOrSpeed": "888 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/29926/-1"
+    },
+    {
+      "id": "2024-03-23T01:25:00-CME-001",
+      "type": "CME",
+      "date": "2024-03-23",
+      "classOrSpeed": "1613 km/s",
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/29715/-1"
+    },
+    {
+      "id": "2024-03-23T01:48:00-CME-001",
+      "type": "CME",
+      "date": "2024-03-23",
+      "classOrSpeed": "1572 km/s",
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/29736/-1"
+    },
+    {
+      "id": "2024-03-23T05:57:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-03-23",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/29721/-1"
+    },
+    {
+      "id": "2024-03-23T06:49:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-03-23",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/29722/-1"
+    },
+    {
+      "id": "2024-03-23T08:15:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-03-23",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/29711/-1"
+    },
+    {
+      "id": "2024-03-23T09:55:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-03-23",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/29713/-1"
+    },
+    {
+      "id": "2024-03-21T18:48:00-CME-001",
+      "type": "CME",
+      "date": "2024-03-21",
+      "classOrSpeed": "777 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/29690/-1"
+    },
+    {
+      "id": "2024-03-20T17:36:00-CME-001",
+      "type": "CME",
+      "date": "2024-03-20",
+      "classOrSpeed": "893 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/29687/-1"
+    },
+    {
+      "id": "2024-03-16T02:57:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-03-16",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/29614/-1"
+    },
+    {
+      "id": "2024-03-15T02:10:00-CME-001",
+      "type": "CME",
+      "date": "2024-03-15",
+      "classOrSpeed": "1201 km/s",
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/29596/-1"
+    },
+    {
+      "id": "2024-03-15T05:29:00-CME-001",
+      "type": "CME",
+      "date": "2024-03-15",
+      "classOrSpeed": "1208 km/s",
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/29672/-1"
+    },
+    {
+      "id": "2024-03-15T20:29:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-03-15",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/29606/-1"
+    },
+    {
+      "id": "2024-03-15T20:50:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-03-15",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/29608/-1"
+    },
+    {
+      "id": "2024-03-15T22:14:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-03-15",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/29612/-1"
+    },
+    {
+      "id": "2024-03-15T23:39:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-03-15",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/29611/-1"
+    },
+    {
+      "id": "2024-03-14T05:08:00-CME-001",
+      "type": "CME",
+      "date": "2024-03-14",
+      "classOrSpeed": "827 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/29580/-1"
+    },
+    {
+      "id": "2024-03-14T09:23:00-CME-001",
+      "type": "CME",
+      "date": "2024-03-14",
+      "classOrSpeed": "848 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/29585/-1"
+    },
+    {
+      "id": "2024-03-10T23:24:00-CME-001",
+      "type": "CME",
+      "date": "2024-03-10",
+      "classOrSpeed": "1010 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/29542/-1"
+    },
+    {
+      "id": "2024-03-09T22:36:00-CME-001",
+      "type": "CME",
+      "date": "2024-03-09",
+      "classOrSpeed": "1277 km/s",
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/29528/-1"
+    },
+    {
+      "id": "2024-03-05T21:24:00-CME-001",
+      "type": "CME",
+      "date": "2024-03-05",
+      "classOrSpeed": "848 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/29475/-1"
+    },
+    {
+      "id": "2024-03-03T06:36:00-CME-001",
+      "type": "CME",
+      "date": "2024-03-03",
+      "classOrSpeed": "767 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/29435/-1"
+    },
+    {
+      "id": "2024-02-28T09:24:00-CME-001",
+      "type": "CME",
+      "date": "2024-02-28",
+      "classOrSpeed": "867 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/29393/-1"
+    },
+    {
+      "id": "2024-02-28T17:48:00-CME-001",
+      "type": "CME",
+      "date": "2024-02-28",
+      "classOrSpeed": "730 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/29410/-1"
+    },
+    {
+      "id": "2024-02-28T23:12:00-CME-001",
+      "type": "CME",
+      "date": "2024-02-28",
+      "classOrSpeed": "779 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/29415/-1"
+    },
+    {
+      "id": "2024-02-22T00:24:00-CME-001",
+      "type": "CME",
+      "date": "2024-02-22",
+      "classOrSpeed": "1151 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/29341/-1"
+    },
+    {
+      "id": "2024-02-21T02:12:00-CME-001",
+      "type": "CME",
+      "date": "2024-02-21",
+      "classOrSpeed": "1116 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/29320/-1"
+    },
+    {
+      "id": "2024-02-21T02:24:00-CME-001",
+      "type": "CME",
+      "date": "2024-02-21",
+      "classOrSpeed": "906 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/29322/-1"
+    },
+    {
+      "id": "2024-02-21T16:12:00-CME-001",
+      "type": "CME",
+      "date": "2024-02-21",
+      "classOrSpeed": "947 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/29325/-1"
+    },
+    {
+      "id": "2024-02-20T14:24:00-CME-001",
+      "type": "CME",
+      "date": "2024-02-20",
+      "classOrSpeed": "734 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/29318/-1"
+    },
+    {
+      "id": "2024-02-19T23:24:00-CME-001",
+      "type": "CME",
+      "date": "2024-02-19",
+      "classOrSpeed": "761 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/29306/-1"
+    },
+    {
+      "id": "2024-02-18T10:00:00-CME-001",
+      "type": "CME",
+      "date": "2024-02-18",
+      "classOrSpeed": "1193 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/29293/-1"
+    },
+    {
+      "id": "2024-02-18T12:12:00-CME-001",
+      "type": "CME",
+      "date": "2024-02-18",
+      "classOrSpeed": "725 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/29300/-1"
+    },
+    {
+      "id": "2024-02-17T13:16:00-CME-001",
+      "type": "CME",
+      "date": "2024-02-17",
+      "classOrSpeed": "1646 km/s",
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/29281/-1"
+    },
+    {
+      "id": "2024-02-16T01:36:00-CME-001",
+      "type": "CME",
+      "date": "2024-02-16",
+      "classOrSpeed": "1613 km/s",
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/29266/-1"
+    },
+    {
+      "id": "2024-02-16T03:12:00-CME-001",
+      "type": "CME",
+      "date": "2024-02-16",
+      "classOrSpeed": "726 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/29261/-1"
+    },
+    {
+      "id": "2024-02-15T09:24:00-CME-001",
+      "type": "CME",
+      "date": "2024-02-15",
+      "classOrSpeed": "1953 km/s",
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/29244/-1"
+    },
+    {
+      "id": "2024-02-14T04:09:00-CME-001",
+      "type": "CME",
+      "date": "2024-02-14",
+      "classOrSpeed": "2544 km/s",
+      "level": 4,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/29223/-1"
+    },
+    {
+      "id": "2024-02-13T08:09:00-CME-001",
+      "type": "CME",
+      "date": "2024-02-13",
+      "classOrSpeed": "791 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/29209/-1"
+    },
+    {
+      "id": "2024-02-12T06:36:00-CME-001",
+      "type": "CME",
+      "date": "2024-02-12",
+      "classOrSpeed": "3529 km/s",
+      "level": 4,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/29166/-1"
+    },
+    {
+      "id": "2024-02-12T07:41:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-02-12",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/29154/-1"
+    },
+    {
+      "id": "2024-02-12T07:41:00-SEP-002",
+      "type": "SEP",
+      "date": "2024-02-12",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/29208/-1"
+    },
+    {
+      "id": "2024-02-12T08:05:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-02-12",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/29156/-1"
+    },
+    {
+      "id": "2024-02-12T10:15:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-02-12",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/29158/-1"
+    },
+    {
+      "id": "2024-02-12T14:12:00-CME-001",
+      "type": "CME",
+      "date": "2024-02-12",
+      "classOrSpeed": "750 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/29179/-1"
+    },
+    {
+      "id": "2024-02-12T22:18:00-CME-001",
+      "type": "CME",
+      "date": "2024-02-12",
+      "classOrSpeed": "1121 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/29205/-1"
+    },
+    {
+      "id": "2024-02-11T07:48:00-CME-001",
+      "type": "CME",
+      "date": "2024-02-11",
+      "classOrSpeed": "870 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/29164/-1"
+    },
+    {
+      "id": "2024-02-10T03:48:00-CME-001",
+      "type": "CME",
+      "date": "2024-02-10",
+      "classOrSpeed": "1462 km/s",
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/29107/-1"
+    },
+    {
+      "id": "2024-02-10T07:00:00-CME-001",
+      "type": "CME",
+      "date": "2024-02-10",
+      "classOrSpeed": "967 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/29112/-1"
+    },
+    {
+      "id": "2024-02-10T23:36:00-CME-001",
+      "type": "CME",
+      "date": "2024-02-10",
+      "classOrSpeed": "989 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/29134/-1"
+    },
+    {
+      "id": "2024-02-09T13:23:00-CME-001",
+      "type": "CME",
+      "date": "2024-02-09",
+      "classOrSpeed": "2534 km/s",
+      "level": 4,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/29066/-1"
+    },
+    {
+      "id": "2024-02-09T15:09:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-02-09",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/29076/-1"
+    },
+    {
+      "id": "2024-02-09T15:30:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-02-09",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/29079/-1"
+    },
+    {
+      "id": "2024-02-09T15:34:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-02-09",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/29071/-1"
+    },
+    {
+      "id": "2024-02-09T15:37:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-02-09",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/29073/-1"
+    },
+    {
+      "id": "2024-02-09T15:52:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-02-09",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/29083/-1"
+    },
+    {
+      "id": "2024-02-09T15:59:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-02-09",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/29084/-1"
+    },
+    {
+      "id": "2024-02-09T16:44:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-02-09",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/29094/-1"
+    },
+    {
+      "id": "2024-02-09T16:45:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-02-09",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/29095/-1"
+    },
+    {
+      "id": "2024-02-08T01:25:00-CME-001",
+      "type": "CME",
+      "date": "2024-02-08",
+      "classOrSpeed": "916 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/29046/-1"
+    },
+    {
+      "id": "2024-02-08T16:48:00-CME-001",
+      "type": "CME",
+      "date": "2024-02-08",
+      "classOrSpeed": "762 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/29054/-1"
+    },
+    {
+      "id": "2024-02-08T23:48:00-CME-001",
+      "type": "CME",
+      "date": "2024-02-08",
+      "classOrSpeed": "957 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/29065/-1"
+    },
+    {
+      "id": "2024-02-07T03:36:00-CME-001",
+      "type": "CME",
+      "date": "2024-02-07",
+      "classOrSpeed": "1188 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/29031/-1"
+    },
+    {
+      "id": "2024-02-06T12:00:00-CME-001",
+      "type": "CME",
+      "date": "2024-02-06",
+      "classOrSpeed": "1479 km/s",
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/29009/-1"
+    },
+    {
+      "id": "2024-02-06T05:25:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-02-06",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/28999/-1"
+    },
+    {
+      "id": "2024-02-06T07:28:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-02-06",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/29013/-1"
+    },
+    {
+      "id": "2024-02-06T02:53:00-CME-001",
+      "type": "CME",
+      "date": "2024-02-06",
+      "classOrSpeed": "857 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/29000/-1"
+    },
+    {
+      "id": "2024-02-06T19:12:00-CME-001",
+      "type": "CME",
+      "date": "2024-02-06",
+      "classOrSpeed": "886 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/29021/-1"
+    },
+    {
+      "id": "2024-02-05T07:48:00-CME-001",
+      "type": "CME",
+      "date": "2024-02-05",
+      "classOrSpeed": "782 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/28988/-1"
+    },
+    {
+      "id": "2024-02-03T01:25:00-CME-001",
+      "type": "CME",
+      "date": "2024-02-03",
+      "classOrSpeed": "1316 km/s",
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/28972/-1"
+    },
+    {
+      "id": "2024-02-02T13:36:00-CME-001",
+      "type": "CME",
+      "date": "2024-02-02",
+      "classOrSpeed": "1815 km/s",
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/28951/-1"
+    },
+    {
+      "id": "2024-02-02T13:23:00-CME-001",
+      "type": "CME",
+      "date": "2024-02-02",
+      "classOrSpeed": "818 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/28959/-1"
+    },
+    {
+      "id": "2024-02-01T08:00:00-CME-001",
+      "type": "CME",
+      "date": "2024-02-01",
+      "classOrSpeed": "920 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/28924/-1"
+    },
+    {
+      "id": "2024-02-01T21:36:00-CME-001",
+      "type": "CME",
+      "date": "2024-02-01",
+      "classOrSpeed": "732 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/28943/-1"
+    },
+    {
+      "id": "2024-01-31T11:24:00-CME-001",
+      "type": "CME",
+      "date": "2024-01-31",
+      "classOrSpeed": "902 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/28912/-1"
+    },
+    {
+      "id": "2024-01-31T12:48:00-CME-001",
+      "type": "CME",
+      "date": "2024-01-31",
+      "classOrSpeed": "851 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/28921/-1"
+    },
+    {
+      "id": "2024-01-31T23:12:00-CME-001",
+      "type": "CME",
+      "date": "2024-01-31",
+      "classOrSpeed": "819 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/28933/-1"
+    },
+    {
+      "id": "2024-01-30T21:12:00-CME-001",
+      "type": "CME",
+      "date": "2024-01-30",
+      "classOrSpeed": "1306 km/s",
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/28899/-1"
+    },
+    {
+      "id": "2024-01-29T04:38:00-CME-001",
+      "type": "CME",
+      "date": "2024-01-29",
+      "classOrSpeed": "1481 km/s",
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/28848/-1"
+    },
+    {
+      "id": "2024-01-29T05:11:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-01-29",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/28836/-1"
+    },
+    {
+      "id": "2024-01-29T05:50:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-01-29",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/28840/-1"
+    },
+    {
+      "id": "2024-01-29T06:06:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-01-29",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/28844/-1"
+    },
+    {
+      "id": "2024-01-29T06:08:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-01-29",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/28845/-1"
+    },
+    {
+      "id": "2024-01-29T06:15:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-01-29",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/28842/-1"
+    },
+    {
+      "id": "2024-01-29T02:00:00-CME-001",
+      "type": "CME",
+      "date": "2024-01-29",
+      "classOrSpeed": "936 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/28855/-1"
+    },
+    {
+      "id": "2024-01-29T20:00:00-CME-001",
+      "type": "CME",
+      "date": "2024-01-29",
+      "classOrSpeed": "826 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/28886/-1"
+    },
+    {
+      "id": "2024-01-28T16:24:00-CME-001",
+      "type": "CME",
+      "date": "2024-01-28",
+      "classOrSpeed": "1197 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/28828/-1"
+    },
+    {
+      "id": "2024-01-23T03:48:00-CME-001",
+      "type": "CME",
+      "date": "2024-01-23",
+      "classOrSpeed": "1137 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/28748/-1"
+    },
+    {
+      "id": "2024-01-22T13:00:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-01-22",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/28683/-1"
+    },
+    {
+      "id": "2024-01-22T13:42:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-01-22",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/28685/-1"
+    },
+    {
+      "id": "2024-01-22T16:48:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-01-22",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/28703/-1"
+    },
+    {
+      "id": "2024-01-22T10:48:00-CME-001",
+      "type": "CME",
+      "date": "2024-01-22",
+      "classOrSpeed": "746 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/28689/-1"
+    },
+    {
+      "id": "2024-01-21T00:36:00-CME-001",
+      "type": "CME",
+      "date": "2024-01-21",
+      "classOrSpeed": "1068 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/28663/-1"
+    },
+    {
+      "id": "2024-01-21T03:48:00-CME-001",
+      "type": "CME",
+      "date": "2024-01-21",
+      "classOrSpeed": "1180 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/28679/-1"
+    },
+    {
+      "id": "2024-01-20T09:24:00-CME-001",
+      "type": "CME",
+      "date": "2024-01-20",
+      "classOrSpeed": "1088 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/28649/-1"
+    },
+    {
+      "id": "2024-01-18T13:25:00-CME-001",
+      "type": "CME",
+      "date": "2024-01-18",
+      "classOrSpeed": "772 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/28645/-1"
+    },
+    {
+      "id": "2024-01-14T12:00:00-CME-001",
+      "type": "CME",
+      "date": "2024-01-14",
+      "classOrSpeed": "948 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/28611/-1"
+    },
+    {
+      "id": "2024-01-12T22:24:00-CME-001",
+      "type": "CME",
+      "date": "2024-01-12",
+      "classOrSpeed": "900 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/28597/-1"
+    },
+    {
+      "id": "2024-01-10T21:09:00-CME-001",
+      "type": "CME",
+      "date": "2024-01-10",
+      "classOrSpeed": "981 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/28572/-1"
+    },
+    {
+      "id": "2024-01-06T08:12:00-CME-001",
+      "type": "CME",
+      "date": "2024-01-06",
+      "classOrSpeed": "706 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/28508/-1"
+    },
+    {
+      "id": "2024-01-06T16:12:00-CME-001",
+      "type": "CME",
+      "date": "2024-01-06",
+      "classOrSpeed": "729 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/28517/-1"
+    },
+    {
+      "id": "2024-01-04T00:00:00-CME-001",
+      "type": "CME",
+      "date": "2024-01-04",
+      "classOrSpeed": "732 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/28475/-1"
+    },
+    {
+      "id": "2024-01-04T01:36:00-CME-001",
+      "type": "CME",
+      "date": "2024-01-04",
+      "classOrSpeed": "893 km/s",
+      "level": 2,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/28477/-1"
+    },
+    {
+      "id": "2024-01-03T00:15:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-01-03",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/28446/-1"
+    },
+    {
+      "id": "2024-01-03T19:10:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-01-03",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/28467/-1"
+    },
+    {
+      "id": "2024-01-03T20:05:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-01-03",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/28464/-1"
+    },
+    {
+      "id": "2024-01-02T23:22:00-SEP-002",
+      "type": "SEP",
+      "date": "2024-01-02",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/28445/-1"
+    },
+    {
+      "id": "2024-01-02T23:22:00-SEP-001",
+      "type": "SEP",
+      "date": "2024-01-02",
+      "classOrSpeed": null,
+      "level": 3,
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/28444/-1"
+    }
+  ],
+  "min_level": 2,
+  "counts_by_level": {
+    "1": 1139,
+    "2": 298,
+    "3": 185,
+    "4": 9
+  }
+}

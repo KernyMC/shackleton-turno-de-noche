@@ -6,10 +6,11 @@ tormentas solares. Público: 10–15 años, ES/EN.
 
 ## Antes de tocar nada, lee
 
-1. `docs/GDD.md` — qué juego es y qué entra en el MVP.
-2. `docs/ARTE.md` — dirección de arte. **Obligatorio antes de cualquier trabajo visual o de sonido.**
-3. `docs/tasks/TABLERO.md` — qué hay que hacer y quién lo tiene.
-4. La spec de tu área en `docs/specs/`.
+1. `docs/NORTE.md` — prioridades del proyecto. **Manda sobre todo lo demás.**
+2. `docs/GDD.md` — qué juego es y qué entra en el MVP.
+3. `docs/ARTE.md` — dirección de arte. **Obligatorio antes de cualquier trabajo visual o de sonido.**
+4. `docs/tasks/TABLERO.md` — qué hay que hacer y quién lo tiene.
+5. La spec de tu área en `docs/specs/`.
 
 ## Comandos
 
@@ -20,7 +21,8 @@ npm test           # tests del motor (Vitest)
 npm run check      # tipos TypeScript
 npm run build      # build estático en dist/
 npm run simulate   # 1000 partidas automáticas: mide el balance
-npm run fetch:nasa # descarga datos reales a public/data (ver docs/specs/04-datos-nasa.md)
+npm run data:donki  # descarga tormentas reales de un año (NASA DONKI) a public/data/storms_real.json
+npm run check:nasa  # prueba el proxy /api/spaceweather: API ok, caída y sin internet
 ```
 
 ## Reglas que no se rompen
@@ -30,7 +32,7 @@ npm run fetch:nasa # descarga datos reales a public/data (ver docs/specs/04-dato
 3. **La escena solo refleja estado; la UI solo lee estado y llama acciones** de `src/state/store.ts`. Las reglas del juego viven en el motor.
 4. **Ningún texto visible en componentes.** Todo en `src/i18n/es.json` y `en.json`.
 5. **Toda acción física tiene su equivalente en la tablet** (teclado, celular, sin WebGL).
-6. **El juego no llama a ninguna API.** Los datos NASA se descargan con un script y se guardan como JSON con `status` honesto (`verified` / `simulated` / `game_balance`).
+6. **El juego funciona sin red.** Datos NASA históricos en JSON del repo (`status` honesto: `verified` / `simulated` / `game_balance`). La única llamada en vivo es `/api/spaceweather` (proxy propio, opcional, con respaldo). **La clave `NASA_API_KEY` nunca va al navegador ni al repo**: vive en `.env` (local) y en las variables de Cloudflare Pages (producción).
 7. **Nada de logos de NASA. Nada de muerte:** la derrota es "misión abortada".
 8. **Arte:** paleta, luz y lista anti-slop de `docs/ARTE.md`. Movimiento con matemáticas (amortiguación, senos), no saltos de valor.
 
@@ -44,6 +46,20 @@ npm run fetch:nasa # descarga datos reales a public/data (ver docs/specs/04-dato
 6. Marca `hecha` en el tablero. Decisiones no previstas → una línea en `DECISIONES.md`. Uso de IA → una línea en `AI_USAGE.md`.
 
 Para una capa visual: constrúyela, mírala en el navegador y compárala con `docs/ARTE.md` antes de pasar a la siguiente.
+
+## Modo director (Fable planifica, Sonnet implementa)
+
+Subagentes en `.claude/agents/`: **builder** (Sonnet, implementa una tarea) y **verificador** (Sonnet,
+revisa sin tocar código). El modelo principal es el director:
+
+1. Elige la tarea en `docs/tasks/TABLERO.md` y la marca `en curso`.
+2. Si es grande, la parte en trozos independientes con archivos distintos.
+3. Delega cada trozo al `builder` con un encargo autocontenido: ID de tarea, archivos, criterio de "hecho" y lo que no debe tocar.
+4. Pasa el resultado al `verificador`; corrige con el `builder` lo que salga.
+5. El director revisa el diff, mira el resultado en el navegador si es visual, marca la tarea `hecha`, hace commit y push.
+
+Ejemplo de encargo: "Usa el subagente builder para la tarea C-02 (visor de casco) de docs/tasks/C-interfaz.md.
+Solo src/components/Visor.tsx, icons.tsx, i18n y estilos. Después pasa el diff al verificador."
 
 ## Si eres un agente que retoma el trabajo
 

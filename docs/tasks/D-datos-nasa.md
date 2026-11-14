@@ -8,7 +8,14 @@ una URL**; un agente de IA que no pueda abrir la página debe dejarlo como pendi
 
 ---
 
-## D-01 · Tormentas reales → `storms.json` (P1)
+## D-01 · Tormentas reales — **HECHA (14-11-2026)**
+
+- `npm run data:donki [año]` (`scripts/fetch-donki.mjs`) descargó 2024: 1631 eventos CME y SEP; se guardan los 492 de nivel ≥ 2 en `public/data/storms_real.json` (subido al repo).
+- Proxy en vivo `/api/spaceweather` (`functions/api/spaceweather.ts` + `src/server/spaceweather.ts`), caché 1 h, tiempo máximo 5 s y respaldo. El menú muestra "Hoy el Sol está activo" y la primera tormenta usa el evento real.
+- **FLR (fulguraciones) da 404 en api.nasa.gov**; el código ya lo soporta y entrará solo si NASA lo arregla.
+- Mapeo de niveles: `src/data/donki.ts` y `DECISIONES.md`.
+
+### Texto original de la tarea (referencia)
 
 **Situación:** `scripts/fetch-nasa.ts` está escrito. El 14-11-2026 `https://api.nasa.gov/DONKI/FLR?startDate=…&endDate=…&api_key=DEMO_KEY` respondió **404**; no se determinó la causa. `public/data/storms.json` contiene hoy 8 tormentas **simuladas**.
 
@@ -59,7 +66,19 @@ de `sources.json` se escribe "El valor real es X (fuente); el juego usa una esca
 que sea fácil de leer". Solo entonces `status` pasa a `verified` **para la explicación**, y el valor
 del juego sigue siendo `game_balance`. No cambiar números de `balance.json` (rompería el balance probado).
 
-## D-04 · Elevación real del polo sur (P2)
+## D-04 · Terreno real (P2) — código listo
+
+Solo falta seguir `scripts/README-textures.md` (descargar del CGI Moon Kit, correr `scripts/crop-moon.mjs`, subir `public/textures/`). `src/scene/terrain.ts` ya los carga si existen.
+
+## D-05 · Modelos 3D (P2) — código listo
+
+Seguir `scripts/README-models.md` y poner `public/models/lander.glb` y `rover.glb` (< 2 MB cada uno). `src/scene/base.ts` ya los carga si existen.
+
+## D-06 · BVAD (P1)
+
+Rellenar la tabla "Valores del BVAD por completar" de `DECISIONES.md` con valor y página. Después: `balance.json` con `status: "verified"` en esos campos, `npm run simulate`, y ajustar solo factores de escala hasta cumplir los objetivos de balance. No inventar valores.
+
+### Texto original de D-04
 
 **Depende de B-01.** Recorte de elevación del cráter Shackleton (LRO LOLA o CGI Moon Kit de NASA
 SVS), convertido a PNG en escala de grises de 512 × 512 (≤ 1 MB) en `public/terrain/shackleton.png`,

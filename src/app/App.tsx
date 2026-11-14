@@ -3,10 +3,15 @@ import { lang, t } from '../i18n';
 import { Scene } from '../scene/Scene';
 import { getEnergyBudget } from '../sim/engine';
 import { defaultConfig } from '../sim/config';
+import { useEffect } from 'preact/hooks';
+import { SunStatus } from '../components/SunStatus';
 import { Tablet } from '../components/Tablet';
+import { loadSpaceWeather } from '../state/spaceWeather';
 import { exitToMenu, game, restart, screen, startGame } from '../state/store';
 
 function Menu() {
+  // Consulta el Sol de hoy sin bloquear el menú.
+  useEffect(() => void loadSpaceWeather(), []);
   return (
     <main class="menu">
       <h1>{t('app.title')}</h1>
@@ -22,6 +27,7 @@ function Menu() {
           {lang.value === 'es' ? 'English' : 'Español'}
         </button>
       </div>
+      <SunStatus />
       <footer class="menu__footer">{t('app.disclaimer')}</footer>
     </main>
   );

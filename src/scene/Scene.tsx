@@ -3,7 +3,7 @@ import { effect } from '@preact/signals';
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { t } from '../i18n';
 import { getLight } from '../sim/engine';
-import { game, interact, nearTarget, tabletOpen, toggleTablet } from '../state/store';
+import { game, interact, nearTarget, realAssets, tabletOpen, toggleTablet } from '../state/store';
 import type { World } from './world';
 
 export function Scene() {
@@ -21,6 +21,7 @@ export function Scene() {
         onNearModule: (id) => (nearTarget.value = id),
         onInteract: (id) => interact(id),
         onLockChange: setLocked,
+        onAssets: (assets) => (realAssets.value = { ...realAssets.value, ...assets }),
       });
       world.current = w;
       stopSun = effect(() => {

@@ -44,8 +44,13 @@ export interface StormData {
   level: StormLevel;
   /** Fecha real del evento (AAAA-MM-DD) o null si es simulado. */
   date: string | null;
+  /** Clase de la fulguración o velocidad de la CME, tal como la da DONKI. */
   classType: string | null;
   link?: string | null;
+  /** Tipo de evento DONKI (solo datos reales). */
+  type?: 'FLR' | 'CME' | 'SEP';
+  /** De dónde salió: histórico de DONKI, consulta en vivo de hoy o ejemplo simulado. */
+  origin?: 'real' | 'live' | 'sample';
 }
 
 export interface StormsFile {

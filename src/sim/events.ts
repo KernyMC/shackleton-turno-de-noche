@@ -3,7 +3,7 @@
 
 import { defaultConfig } from './config';
 import { createRng } from './rng';
-import type { Difficulty, GameConfig, ModuleId, ScheduledEvent } from './types';
+import type { Difficulty, GameConfig, ModuleId, ScheduledEvent, StormData } from './types';
 
 /**
  * Módulos que pueden averiarse.
@@ -20,10 +20,16 @@ function daysIn([from, to]: [number, number]): number[] {
   return days;
 }
 
+export interface ScheduleOptions {
+  /** Si se da, la primera tormenta de la partida es este evento (p. ej. la tormenta real de hoy). */
+  firstStorm?: StormData;
+}
+
 export function scheduleEvents(
   seed: number,
   difficulty: Difficulty,
   cfg: GameConfig = defaultConfig,
+  options: ScheduleOptions = {},
 ): ScheduledEvent[] {
   const rng = createRng(seed);
   const ev = cfg.balance.events;
@@ -46,10 +52,12 @@ export function scheduleEvents(
   place('night_warning', [ev.nightWarningDay, ev.nightWarningDay]);
   place('ice', ev.iceWindow);
   const stormCount = cfg.balance.difficulty[difficulty].stormCount;
-  for (const window of ev.stormWindows.slice(0, stormCount)) {
-    const storm = rng.pick(cfg.storms);
+  ev.stormWindows.slice(0, stormCount).forEach((window, i) => {
+    // Se sortea siempre, aunque luego se sustituya, para no alterar el resto de la secuencia.
+    const picked = rng.pick(cfg.storms);
+    const storm = i === 0 && options.firstStorm ? options.firstStorm : picked;
     place('storm', window, { ...storm });
-  }
+  });
   place('breakdown', ev.breakdownWindow, { module: rng.pick(breakableModules(difficulty)) });
 
   return events.sort((a, b) => a.day - b.day);

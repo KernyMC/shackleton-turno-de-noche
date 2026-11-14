@@ -19,3 +19,35 @@ Una línea por decisión que no estaba en los documentos. Formato: fecha · deci
 - 2026-11-14 · Reparar y enviar el rover requieren que el plan del día dé ≥ 10 al taller; si no, la acción falla y queda en la bitácora. · Así la decisión tiene coste de energía real.
 - 2026-11-14 · El margen para las estrellas no cuenta la batería. · Vaciar la batería en la noche lunar es jugar bien.
 - 2026-11-14 · Eventos menores aleatorios e insignias quedan sin implementar (tarea A-06, P2). · Prioridad.
+
+## Datos reales de NASA (14-11-2026)
+
+- 2026-11-14 · **Proxy en Cloudflare Pages Functions** (`functions/api/spaceweather.ts`); la lógica vive en `src/server/spaceweather.ts` y en local la sirve `astro.config.mjs` con la clave de `.env`. · El proyecto aún no tenía plataforma de deploy; Cloudflare era la opción pedida.
+- 2026-11-14 · **Mapeo DONKI → nivel de juego** (`src/data/donki.ts`, `game_balance`): fulguración C=1, M=2, X<5=3, X5+=4 (A y B se ignoran); CME por velocidad <700 km/s=1, 700–1200=2, 1200–2000=3, >2000=4 (se usa la velocidad del análisis marcado como más preciso; si no hay, la mayor); SEP=3. Nivel n → tormenta Sn del juego (dosis de `balance.json`). "Sol activo" = algún evento de nivel ≥ 2 en los últimos 7 días. · Pedido del equipo; no es una escala científica y la ficha lo dice.
+- 2026-11-14 · **FLR (fulguraciones) da 404 en api.nasa.gov** con cualquier fecha (también GST); CME y SEP funcionan. El proxy usa los tipos que respondan y lista los fallidos en `failed`; solo es `fallback` si fallan todos. · El código ya soporta FLR: cuando NASA lo arregle, entra solo.
+- 2026-11-14 · `storms_real.json` guarda solo eventos de **nivel ≥ 2** (492 de 1631 en 2024) y el conteo por nivel. · Las de nivel 1 no asustan y el JSON pasaba de 250 KB a 110 KB dentro del juego.
+- 2026-11-14 · Caché del proxy: 1 h si hay datos, 5 min si es respaldo. · No gastar la cuota de la API y recuperarse rápido si DONKI vuelve.
+- 2026-11-14 · Tiempo máximo: 5 s el proxy (las tres consultas en paralelo comparten el límite), 4 s el cliente. · Pedido del equipo.
+- 2026-11-14 · Tormenta "en vivo": sustituye solo la primera tormenta de la partida; el resto de la partida es igual que sin ella (misma semilla). · Determinismo y balance.
+- 2026-11-14 · Con tormentas reales el balance no cambió (prudente 71,3 % Comandante, 100 % Cadete; reciclador y aleatoria 0 %). · Comprobado con `npm run simulate`.
+- 2026-11-14 · Terreno real: reproyección azimutal del casquete polar sur (6°, ~180 km de radio) a 2048 px; escala horizontal comprimida y altura exagerada; disco de la base aplanado. · El juego mide 200 m; la ficha de fuente lo explica.
+- 2026-11-14 · Modelos: Apollo Lunar Module (lander) y Space Exploration Vehicle (rover) de NASA 3D Resources. · No hay un rover lunar tipo LRV en GLB en ese repo.
+
+## Valores del BVAD por completar (tarea 6)
+
+El juego usa una escala de 0 a 100 % para soporte vital y comida. Para que sea `verified`, hace falta el
+valor real del **NASA Life Support Baseline Values and Assumptions Document (BVAD)** y su página. Pega el
+valor y la página en las columnas vacías; después se actualiza `balance.json` (`status: "verified"`), se
+corre `npm run simulate` y se ajustan **solo** los factores de escala del juego para mantener el balance.
+
+| Concepto | Dónde está en `balance.json` hoy | Valor en el juego hoy | Valor BVAD (por persona y día) | Edición y página del BVAD |
+|---|---|---|---|---|
+| Consumo de oxígeno | `crewConsumption.lifeSupportPerPerson` (aire + agua juntos) | 2,5 % del tanque por persona y día | | |
+| Consumo de agua potable | `crewConsumption.lifeSupportPerPerson` (aire + agua juntos) | (incluido arriba) | | |
+| Agua de higiene (si se usa) | (no existe todavía) | — | | |
+| Comida (masa o energía) | `crewConsumption.foodPerPerson` | 1,5 % de la despensa por persona y día | | |
+| Eficiencia de recuperación de agua del reciclador | `effects.recyclerLifeSupport` (indirecto) | +14 por día al 100 % | | |
+| Agua que consume el invernadero | `effects.greenhouseWaterCost` | 2 por día al 100 % | | |
+
+Cuando haya valores, la idea es: tamaño del "100 %" del tanque = N días de consumo real de 4 personas
+(factor de escala, `game_balance`), y el consumo diario sale del BVAD (`verified`).

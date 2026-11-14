@@ -4,6 +4,7 @@
 
 import { defaultConfig } from './config';
 import { scheduleEvents } from './events';
+import type { ScheduleOptions } from './events';
 import { createRng } from './rng';
 import { computeResult, lossCauses } from './scoring';
 import { MODULE_IDS } from './types';
@@ -33,6 +34,7 @@ export function createGame(
   seed: number,
   difficulty: Difficulty,
   cfg: GameConfig = defaultConfig,
+  options: ScheduleOptions = {},
 ): GameState {
   const d = cfg.balance.difficulty[difficulty];
   return {
@@ -58,7 +60,7 @@ export function createGame(
     roverSendToday: false,
     pendingEffects: [],
     pendingEvent: null,
-    scheduledEvents: scheduleEvents(seed, difficulty, cfg),
+    scheduledEvents: scheduleEvents(seed, difficulty, cfg, options),
     history: [],
     log: [],
     lastPlan: null,

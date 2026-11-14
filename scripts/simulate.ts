@@ -2,10 +2,16 @@
 // Objetivos (docs/tasks/A-motor.md, A-05): prudente ≥ 70 % en Comandante y ≥ 90 % en Cadete;
 // todo-al-reciclador ≤ 10 % en Comandante; aleatoria ≤ 25 %.
 
+import { existsSync, readFileSync } from 'node:fs';
+import { buildConfig } from '../src/sim/config';
 import { allRecycler, playGame, prudent, randomPlayer } from '../src/sim/strategies';
 import type { Difficulty } from '../src/sim/types';
 
 const games = Number(process.argv[2] ?? 1000);
+// Fuera de Vite no hay import.meta.glob: se lee storms_real.json a mano, igual que lo usa el juego.
+const realPath = 'public/data/storms_real.json';
+const cfg = buildConfig(existsSync(realPath) ? JSON.parse(readFileSync(realPath, 'utf8')) : null);
+console.log(`Tormentas: ${cfg.stormSource.file} (${cfg.storms.length})`);
 const rows: Record<string, string | number>[] = [];
 
 for (const difficulty of ['cadete', 'comandante'] as Difficulty[]) {
@@ -15,7 +21,7 @@ for (const difficulty of ['cadete', 'comandante'] as Difficulty[]) {
     const stars = [0, 0, 0, 0];
     const causes: Record<string, number> = {};
     for (let seed = 1; seed <= games; seed++) {
-      const result = playGame(seed, difficulty, strategy).result!;
+      const result = playGame(seed, difficulty, strategy, cfg).result!;
       stars[result.stars]!++;
       if (result.outcome === 'win') wins++;
       else {

@@ -1,4 +1,11 @@
-# Spec 04 — Datos de NASA (`scripts`, `public/data`)
+# Spec 04 — Datos de NASA (`scripts`, `public/data`, `functions`)
+
+> **Estado al 14-11-2026 (manda sobre el resto de este documento):**
+> - Tormentas: `public/data/storms_real.json` (DONKI 2024, `verified`) → si falta o no es válido, `storms_sample.json` (`simulated`). Lo elige `src/sim/config.ts`.
+> - En vivo: `GET /api/spaceweather` → `{ fetchedAt, active, events[], fallback?, failed?, cached? }`. Código: `src/server/spaceweather.ts` (lógica), `functions/api/spaceweather.ts` (Cloudflare), `astro.config.mjs` (dev). Cliente: `src/state/spaceWeather.ts`, `src/components/SunStatus.tsx`.
+> - Cada tormenta lleva `origin`: `real` (histórica), `live` (de hoy) o `sample` (simulada); la interfaz lo usa para el texto de fuente (claves `storm.origin.*`).
+> - Fichas de fuente: `public/data/sources.json`. Terreno y modelos solo son `verified` si `realAssets` (store) indica que se cargaron.
+> - Las secciones "Estado de la descarga DONKI" y `fetch-nasa.ts` de abajo quedaron obsoletas (sustituidas por `npm run data:donki`).
 
 ## Principio
 

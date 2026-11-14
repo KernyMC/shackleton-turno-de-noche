@@ -52,7 +52,8 @@ solo y le da las reglas, la dirección de arte y el flujo de trabajo.
 | `npm run check` | Tipos TypeScript |
 | `npm run build` | Build estático en `dist/` |
 | `npm run simulate` | Juega 1000 partidas automáticas y muestra el balance |
-| `npm run fetch:nasa` | Descarga datos reales de NASA a `public/data/` |
+| `npm run data:donki` | Descarga tormentas reales de un año (NASA DONKI) a `public/data/storms_real.json` |
+| `npm run check:nasa` | Prueba el proxy de clima espacial: API ok, caída y sin internet |
 
 ## Estado actual
 
@@ -74,13 +75,18 @@ docs/            GDD, arte, specs y tareas
 
 ## Datos de NASA
 
-El juego no llama a ninguna API: un script descarga los datos y los guarda en `public/data/`. Cada
+Tormentas reales de NASA DONKI (2024) en `public/data/storms_real.json` y, si hoy el Sol está activo, el evento real de esta semana vía el proxy `/api/spaceweather`. Terreno (CGI Moon Kit) y modelos 3D (NASA 3D Resources) opcionales: ver `scripts/README-textures.md` y `scripts/README-models.md`. Cada
 número indica si es **verificado**, **simulado** o **decisión de diseño**. Detalle y fuentes en
 [docs/specs/04-datos-nasa.md](docs/specs/04-datos-nasa.md).
 
-## Deploy
+## Deploy (Cloudflare Pages)
 
-Sitio estático. En Vercel o Cloudflare Pages: framework Astro, comando `npm run build`, carpeta `dist`.
+1. Cloudflare → Workers & Pages → Create → Pages → conectar este repo de GitHub.
+2. Framework preset **Astro** · Build command `npm run build` · Output directory `dist` · variable `NODE_VERSION` = `24`.
+3. Settings → **Variables and Secrets** → añadir `NASA_API_KEY` (tipo *Secret*) en **Production** y **Preview**, con tu clave de https://api.nasa.gov.
+4. La carpeta `functions/` se publica sola como `/api/spaceweather`. Si la variable falta o NASA falla, el juego usa las tormentas históricas sin mostrar errores.
+
+En local, `npm run dev` sirve la misma ruta leyendo la clave de `.env` (copia `.env.example`).
 
 ## Más
 

@@ -102,7 +102,7 @@ Contenedor: `role="dialog"`, `aria-modal`, foco al título al abrir, foco atrapa
 - Opción con `disabledReason`: botón deshabilitado y la razón visible debajo (`t(disabledReason)`).
 - Teclas `1` y `2` eligen; al elegir, todos los botones se deshabilitan y aparece una línea de resultado (la última entrada de `game.log`); a los 1200 ms vuelve al planificador.
 - No se cierra con Esc ni con clic fuera.
-- Tormentas: etiqueta de fuente según `stormsStatus` de `src/sim/config.ts`: `simulated` → "Tormenta de ejemplo (simulada)"; `verified` → "Basada en un evento real del {fecha}" con `payload.date`.
+- Tormentas: etiqueta de fuente según `payload.origin`: `sample` → "Tormenta de ejemplo (simulada)"; `real` o `live` → "Basada en un evento real del {fecha}, registrado por NASA DONKI" (claves `storm.origin.*` ya existen; el panel provisional ya lo muestra).
 
 **Hecho cuando:** los 4 tipos de evento se resuelven con mouse y con teclado; doble clic aplica la opción una sola vez.
 

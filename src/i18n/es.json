@@ -78,5 +78,18 @@
   "tablet.preview.battery": "Batería → {valor}",
   "tablet.preset.repeat": "Repetir plan de ayer",
   "tablet.preset.saving": "Modo ahorro",
-  "tablet.preset.zero": "Todo a cero"
+  "tablet.preset.zero": "Todo a cero",
+  "sun.loading": "Consultando el Sol…",
+  "sun.active": "Hoy el Sol está activo",
+  "sun.event": "{tipo} del {fecha} · nivel {nivel} de 4{detalle}",
+  "sun.event_note": "Tu primera tormenta será este evento real.",
+  "sun.source": "Fuente: NASA DONKI",
+  "sun.type.FLR": "Fulguración solar",
+  "sun.type.CME": "Eyección de masa coronal",
+  "sun.type.SEP": "Lluvia de partículas solares",
+  "storm.origin.live": "Basada en un evento real del {fecha}, registrado por NASA DONKI.",
+  "storm.origin.real": "Basada en un evento real del {fecha}, registrado por NASA DONKI.",
+  "storm.origin.sample": "Tormenta de ejemplo (simulada).",
+  "debug.weather": "Clima espacial (debug)",
+  "debug.origin": "Origen: {origen}"
 }

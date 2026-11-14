@@ -55,10 +55,12 @@ Estados: `libre` · `en curso` · `hecha` · `bloqueada`. Prioridades: P0 impres
 | C-09 | Debrief completo: gráfica SVG y tarjetas | P1 | C-05, D-02 | | libre |
 | C-10 | Guardado, ajustes, pausa, inglés completo | P1 | C-03 | | libre |
 | C-11 | Tutorial, bitácora, créditos, modo debug | P2 | C-03 | | libre |
-| D-01 | Tormentas reales DONKI → `storms.json` | P1 | — | | libre |
+| D-01 | Tormentas reales DONKI → `storms_real.json` + proxy en vivo | P1 | — | Claude | hecha |
 | D-02 | `sources.json` y `facts.json` con citas | P1 | — | | libre |
-| D-03 | Contrastar consumos y dosis con fuentes NASA | P1 | D-02 | | libre |
-| D-04 | Elevación real del polo sur (LOLA) | P2 | B-01 | | libre |
+| D-03 | Contrastar consumos y dosis con fuentes NASA (ver D-06) | P1 | D-02 | | libre |
+| D-04 | Terreno real CGI Moon Kit: código y script listos, faltan los archivos | P2 | — | | libre |
+| D-05 | Modelos GLB de NASA 3D Resources: código listo, faltan los archivos | P2 | — | | libre |
+| D-06 | Pegar valores del BVAD en DECISIONES.md y verificar balance | P1 | — | | libre |
 | E-01 | Repo en GitHub (hecho) y deploy automático | P0 | — | | libre |
 | E-02 | Prueba de juego con checklist | P1 | hito hora 14 | | libre |
 | E-03 | Video de demo y página del proyecto en Space Apps | P0 | hito hora 24 | | libre |

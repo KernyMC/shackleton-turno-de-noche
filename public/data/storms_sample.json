@@ -1,0 +1,57 @@
+{
+  "simulated": true,
+  "version": 1,
+  "status": "simulated",
+  "source_id": "storms_sample",
+  "_nota": "Tormentas de EJEMPLO, no son eventos reales. Solo se usan si public/data/storms_real.json no existe o no es válido (npm run data:donki lo genera).",
+  "storms": [
+    {
+      "id": "sample-1",
+      "level": "S1",
+      "date": null,
+      "classType": null
+    },
+    {
+      "id": "sample-2",
+      "level": "S1",
+      "date": null,
+      "classType": null
+    },
+    {
+      "id": "sample-3",
+      "level": "S2",
+      "date": null,
+      "classType": null
+    },
+    {
+      "id": "sample-4",
+      "level": "S2",
+      "date": null,
+      "classType": null
+    },
+    {
+      "id": "sample-5",
+      "level": "S2",
+      "date": null,
+      "classType": null
+    },
+    {
+      "id": "sample-6",
+      "level": "S3",
+      "date": null,
+      "classType": null
+    },
+    {
+      "id": "sample-7",
+      "level": "S3",
+      "date": null,
+      "classType": null
+    },
+    {
+      "id": "sample-8",
+      "level": "S4",
+      "date": null,
+      "classType": null
+    }
+  ]
+}

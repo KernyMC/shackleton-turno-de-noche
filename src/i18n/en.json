@@ -78,5 +78,18 @@
   "tablet.preview.battery": "Battery → {valor}",
   "tablet.preset.repeat": "Repeat yesterday's plan",
   "tablet.preset.saving": "Saving mode",
-  "tablet.preset.zero": "All to zero"
+  "tablet.preset.zero": "All to zero",
+  "sun.loading": "Checking the Sun…",
+  "sun.active": "The Sun is active today",
+  "sun.event": "{tipo} on {fecha} · level {nivel} of 4{detalle}",
+  "sun.event_note": "Your first storm will be this real event.",
+  "sun.source": "Source: NASA DONKI",
+  "sun.type.FLR": "Solar flare",
+  "sun.type.CME": "Coronal mass ejection",
+  "sun.type.SEP": "Solar energetic particle event",
+  "storm.origin.live": "Based on a real event from {fecha}, recorded by NASA DONKI.",
+  "storm.origin.real": "Based on a real event from {fecha}, recorded by NASA DONKI.",
+  "storm.origin.sample": "Example storm (simulated).",
+  "debug.weather": "Space weather (debug)",
+  "debug.origin": "Origin: {origen}"
 }

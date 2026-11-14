@@ -16,6 +16,7 @@ import {
 } from '../sim/engine';
 import { MODULE_IDS } from '../sim/types';
 import type { DayPreview, Difficulty, GameState, ModuleId, Plan } from '../sim/types';
+import { liveStorm } from './spaceWeather';
 
 export type Screen = 'menu' | 'game' | 'debrief';
 /** Cosas del mundo con las que se puede interactuar. */
@@ -37,6 +38,8 @@ export const lastOutcome = signal<{ day: number; preview: DayPreview } | null>(n
 export const nearTarget = signal<TargetId | null>(null);
 /** La tablet de muñeca está abierta. */
 export const tabletOpen = signal(false);
+/** Recursos reales de NASA que la escena logró cargar (para las fichas de fuente). */
+export const realAssets = signal<{ terrain: 'real' | 'procedural' | null; models: string[] }>({ terrain: null, models: [] });
 
 export const budget = computed(() => (game.value ? getEnergyBudget(game.value) : null));
 export const preview = computed(() => {
@@ -93,7 +96,9 @@ function reserveWorkshop(g: GameState): void {
 
 export function startGame(difficulty: Difficulty, seed?: number): void {
   cancelResolve();
-  game.value = createGame(seed ?? seedFromUrl() ?? Date.now() >>> 0, difficulty);
+  // Si hoy el Sol está activo (NASA DONKI en vivo), la primera tormenta es ese evento real.
+  const firstStorm = liveStorm();
+  game.value = createGame(seed ?? seedFromUrl() ?? Date.now() >>> 0, difficulty, undefined, firstStorm ? { firstStorm } : {});
   plan.value = EMPTY_PLAN;
   lastOutcome.value = null;
   tabletOpen.value = false;
@@ -212,7 +217,7 @@ export function interact(_target: TargetId): void {
 // Solo en desarrollo: acceso desde la consola del navegador para probar sin interfaz.
 if (typeof window !== 'undefined' && import.meta.env?.DEV) {
   (window as unknown as Record<string, unknown>).__store = {
-    screen, game, plan, resolving, lastOutcome, nearTarget, tabletOpen, budget, preview,
+    screen, game, plan, resolving, lastOutcome, nearTarget, tabletOpen, budget, preview, realAssets,
     startGame, restart, exitToMenu, toggleTablet, setPlanValue, applyPreset, executeDay,
     chooseEventOption, requestRepair, interact,
   };

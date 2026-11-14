@@ -13,6 +13,11 @@ export function EventPanel({ game }: { game: GameState }) {
       <p class="event__kind">
         {event.kind} {detail}
       </p>
+      {event.kind === 'storm' && (
+        <p class="event__source">
+          {t(`storm.origin.${String(event.payload?.origin ?? 'sample')}`, { fecha: String(event.payload?.date ?? '') })}
+        </p>
+      )}
       <div class="event__options">
         {event.options.map((o) => (
           <div key={o.id} class="event__option">
