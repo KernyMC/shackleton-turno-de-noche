@@ -149,8 +149,13 @@ export function createWorld(container: HTMLElement, cb: WorldCallbacks): World {
   Object.assign(sun.shadow.camera, { left: -45, right: 45, top: 45, bottom: -45, near: 1, far: 260 });
   sun.shadow.bias = -0.0005;
   scene.add(sun, sun.target);
-  const fill = new THREE.HemisphereLight(0x101826, 0x3b3a38, 0.5);
+  // Relleno: brillo azul tenue de la Tierra arriba y regolito abajo (docs/ARTE.md §4).
+  const fill = new THREE.HemisphereLight(0x1c2a40, 0x5a5751, 0.5);
   scene.add(fill);
+  // Rebote del regolito: el suelo iluminado devuelve algo de luz al lado en sombra.
+  // Sin sombras propias, desde el lado opuesto al Sol: los módulos se leen sin aplanar la escena.
+  const bounce = new THREE.DirectionalLight(0xcfc8bb, 0);
+  scene.add(bounce);
   // Brillo del horizonte durante una tormenta solar.
   const stormGlow = new THREE.HemisphereLight(STORM_TINT, 0x000000, 0);
   scene.add(stormGlow);
@@ -550,15 +555,19 @@ export function createWorld(container: HTMLElement, cb: WorldCallbacks): World {
     sunShown = damp(sunShown, sunTarget, 1.6, dt);
     azimuthShown = damp(azimuthShown, azimuthTarget, 1.2, dt);
     stormShown = damp(stormShown, stormTarget, 2.5, dt);
-    const sunElevation = 0.05 + sunShown * 0.11; // 3°–9° sobre el horizonte
+    // Sol rasante, pero algo más alto que la realidad (≈5°–13°) para que el suelo se lea bien.
+    const sunElevation = 0.09 + sunShown * 0.14;
     sun.position.set(Math.sin(azimuthShown) * 120, Math.sin(sunElevation) * 120, Math.cos(azimuthShown) * 120);
-    sun.intensity = sunShown * 4.4;
-    fill.intensity = 0.35 + sunShown * 0.55;
+    sun.intensity = sunShown * 5.4;
+    bounce.position.set(-Math.sin(azimuthShown) * 100, 40, -Math.cos(azimuthShown) * 100);
+    bounce.intensity = sunShown * 0.7;
+    // De noche queda el brillo de la Tierra: poco, pero la maqueta se sigue viendo.
+    fill.intensity = 0.75 + sunShown * 0.65;
     // Tormenta: un resplandor violeta suave desde arriba y el cielo deja de ser negro puro.
     stormGlow.intensity = stormShown * (reducedMotion ? 0.14 : 0.12 + 0.05 * Math.sin(time * 2.2));
     sky.update(sunShown, stormShown);
     // De noche se sube la exposición para que la base ilumine su entorno.
-    renderer.toneMappingExposure = 1.55 - sunShown * 0.5;
+    renderer.toneMappingExposure = 1.75 - sunShown * 0.45;
 
     const previousShift = shiftShown + shiftXShown;
     shiftShown = reducedMotion ? shiftTarget : damp(shiftShown, shiftTarget, 8, dt);
