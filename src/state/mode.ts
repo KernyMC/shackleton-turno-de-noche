@@ -4,7 +4,7 @@
 // esta se eligió porque en ella una jugada razonable llega al día 6 con aire y comida sobre 60.
 import { signal } from '@preact/signals';
 import type { Difficulty } from '../sim/types';
-import { startGame } from './store';
+import { challengesEnabled, startGame } from './store';
 
 export type GameMode = 'tutorial' | 'normal';
 /** Opciones de la pantalla de tripulación. */
@@ -51,11 +51,13 @@ export function clearTutorialDone(): void {
 /** Empieza el tutorial: Cadete con la semilla fija. */
 export function startTutorial(): void {
   gameMode.value = 'tutorial';
+  challengesEnabled.value = false;
   startGame('cadete', TUTORIAL_SEED);
 }
 
 /** Empieza una partida normal. */
 export function startNormal(difficulty: Difficulty): void {
   gameMode.value = 'normal';
+  challengesEnabled.value = true;
   startGame(difficulty);
 }

@@ -17,13 +17,14 @@ import type { MenuMode } from '../state/mode';
 import { sourcesOpen } from '../state/sources';
 import { helpOpen } from '../state/tutorial';
 import { CrewPortrait } from './CrewPortrait';
+import { IntroComic } from './IntroComic';
 import { SunStatus } from './SunStatus';
 import '../styles/tutorial.css';
 
 /** Duración de la secuencia de entrada (caminar + vuelo de cámara). */
 const ENTER_MS = 3600;
 const NAME_MAX = 20;
-type Step = 'title' | 'crew';
+type Step = 'title' | 'comic' | 'crew';
 
 function LanguageButton() {
   return (
@@ -113,6 +114,10 @@ export function Menu() {
     world.current?.setIntroView('crew');
     world.current?.setSunlight(0.7);
   };
+  const toComic = (): void => {
+    stepRef.current = 'comic';
+    setStep('comic');
+  };
   const toTitle = (): void => {
     stepRef.current = 'title';
     placeRef.current();
@@ -142,7 +147,9 @@ export function Menu() {
     <div class={classes.join(' ')}>
       <div class="crewscreen__scene" ref={host} aria-hidden="true" />
 
-      {step === 'title' ? (
+      {step === 'comic' ? (
+        <IntroComic onDone={toCrew} onBack={toTitle} />
+      ) : step === 'title' ? (
         <main class="title">
           {!has3d && (
             <div class="title__crew" aria-hidden="true">
@@ -154,7 +161,7 @@ export function Menu() {
             <h1 class="title__name">SHACKLETON</h1>
             <p class="title__bar">{t('title.subtitle')}</p>
             <p class="title__pitch">{t('title.pitch')}</p>
-            <button ref={startButton} type="button" class="btn btn--primary title__start" onClick={toCrew}>
+            <button ref={startButton} type="button" class="btn btn--primary title__start" onClick={toComic}>
               {t('title.start')}
             </button>
             <nav class="title__links" aria-label={t('crew.more')}>

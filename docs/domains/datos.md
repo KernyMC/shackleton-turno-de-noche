@@ -21,6 +21,7 @@ Referencia profunda extraída del código y los JSON el 2026-11-14; ante la duda
 | Modelos NASA 3D Resources | `models/lander.glb`, `rover.glb` | ver §9 (hoy los genera Blender) | escena | ver §9 | `https://github.com/nasa/NASA-3D-Resources` |
 | Consumos de soporte vital (BVAD) | `balance.json` (`crewConsumption`) | a mano | motor | `simulated` (BVAD pendiente de citar) | sin URL |
 | Dosis base y de tormenta (mSv de juego) | `balance.json` (`doseBaseDaily`, `stormDose`) | a mano | motor | `simulated` (`source_id: radiacion_pendiente`) | sin URL |
+| Retos diarios (parámetros y premios de cada minijuego) | `challenges.json` | a mano | motor | `game_balance` (cada reto cita una ficha de `sources.json`) | sin URL |
 | Balance, energía y secuencia de luz de 30 días | `balance.json`, `light_sequence.json` | a mano | motor | `game_balance` | sin URL |
 `sources.json` (version 1) es el catálogo del panel: 12 fichas (`nasa_donki`, `storm_levels`, `storms_sample`, `cgi_moon_kit`, `nasa_3d_resources`, `bvad`, `design`, `radlab_iss`, `osdr_facts`, `csa_food`, `blue_marble`, `energy_unit`). `sfx_lines.json` no es dato científico: son prompts de efectos de sonido con IA (ElevenLabs) para `npm run sfx`.
 

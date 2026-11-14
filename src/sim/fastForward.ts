@@ -1,13 +1,14 @@
 // Avance rápido: repite el plan de hoy varios días y se detiene cuando algo requiere atención. Puro.
 
 import { actOf } from './acts';
+import { challengeDue } from './challenges';
 import { defaultConfig } from './config';
 import { fitPlan, runDay, validatePlan } from './engine';
 import { resourceEnteredLow } from './thresholds';
 import { MODULE_IDS } from './types';
 import type { GameConfig, GameState, ModuleId, Plan } from './types';
 
-export type StopReason = 'event' | 'low' | 'night_soon' | 'act' | 'invalid_plan' | 'end' | 'max';
+export type StopReason = 'event' | 'challenge' | 'low' | 'night_soon' | 'act' | 'invalid_plan' | 'end' | 'max';
 
 /** Prioridad de reparto al ajustar el plan a la energía de cada día (igual que el preset "repetir"). */
 export const REPEAT_ORDER: readonly ModuleId[] = ['recycler', 'shield', 'greenhouse', 'workshop'];
@@ -25,9 +26,15 @@ export function nightSoon(state: Pick<GameState, 'day'>, cfg: GameConfig = defau
  * Motivo por el que hay que parar después de pasar de `prev` a `next`, o null si se puede seguir.
  * Prioridad: fin de partida, evento con decisión, cambio de acto, recurso en Bajo/Crítico, noche cerca.
  */
-export function stepReason(prev: GameState, next: GameState, cfg: GameConfig = defaultConfig): StopReason | null {
+export function stepReason(
+  prev: GameState,
+  next: GameState,
+  cfg: GameConfig = defaultConfig,
+  challenges = true,
+): StopReason | null {
   if (next.phase === 'ended') return 'end';
   if (next.phase === 'event') return 'event';
+  if (challenges && challengeDue(next, cfg)) return 'challenge';
   if (actOf(next.day, cfg).id !== actOf(prev.day, cfg).id) return 'act';
   if (resourceEnteredLow(prev, next, cfg)) return 'low';
   if (nightSoon(next, cfg)) return 'night_soon';
@@ -49,9 +56,16 @@ export interface FastForwardStep {
  * quedan en 0) y lo ejecuta. Si la falta de energía obliga a recortar el plan, NO se ejecuta
  * y se devuelve 'invalid_plan': la comandante debe decidir.
  */
-export function fastForwardStep(state: GameState, desired: Plan, cfg: GameConfig = defaultConfig): FastForwardStep {
+export function fastForwardStep(
+  state: GameState,
+  desired: Plan,
+  cfg: GameConfig = defaultConfig,
+  /** false = ignorar los retos diarios (tutorial). */
+  challenges = true,
+): FastForwardStep {
   if (state.phase === 'ended') return { state, plan: null, ran: false, reason: 'end' };
   if (state.phase === 'event') return { state, plan: null, ran: false, reason: 'event' };
+  if (challenges && challengeDue(state, cfg)) return { state, plan: null, ran: false, reason: 'challenge' };
 
   // Lo que se podría pedir hoy sin contar la falta de energía: sin averiados ni bloqueados.
   const wanted: Plan = { ...desired };
@@ -64,7 +78,7 @@ export function fastForwardStep(state: GameState, desired: Plan, cfg: GameConfig
     return { state, plan: null, ran: false, reason: 'invalid_plan' };
   }
   const next = runDay(state, fitted, cfg);
-  return { state: next, plan: fitted, ran: true, reason: stepReason(state, next, cfg) };
+  return { state: next, plan: fitted, ran: true, reason: stepReason(state, next, cfg, challenges) };
 }
 
 export interface FastForwardResult {
@@ -75,12 +89,17 @@ export interface FastForwardResult {
 }
 
 /** Ejecuta el mismo plan día tras día hasta `fastForward.maxDays` o hasta que algo pida atención. */
-export function fastForward(state: GameState, plan: Plan, cfg: GameConfig = defaultConfig): FastForwardResult {
+export function fastForward(
+  state: GameState,
+  plan: Plan,
+  cfg: GameConfig = defaultConfig,
+  challenges = true,
+): FastForwardResult {
   const max = cfg.balance.fastForward.maxDays;
   let current = state;
   let days = 0;
   for (;;) {
-    const step = fastForwardStep(current, plan, cfg);
+    const step = fastForwardStep(current, plan, cfg, challenges);
     if (!step.ran) return { state: current, days, reason: step.reason ?? 'invalid_plan' };
     current = step.state;
     days++;

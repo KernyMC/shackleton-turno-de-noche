@@ -9,6 +9,8 @@
 /** Bloques de la interfaz que NO deben pisarse entre sí. */
 const BLOCKS = [
   '.topbar',
+  '.chl-card',
+  '.comic-page',
   '.topbar__dose',
   '.topbar__day',
   '.topbar__right',
@@ -75,12 +77,18 @@ export function hudCheck(): {
     });
   }
 
+  // Un modal a pantalla completa (reto diario, cómic de intro) cubre el resto POR DISEÑO: no cuenta como solape
+  // ni como botón tapado lo que queda fuera de él; sí se revisa todo lo de dentro.
+  const modal = document.querySelector('.chl-overlay, .comic-page');
+  const insideModal = (el: Element): boolean => !!modal && (modal === el || modal.contains(el));
+
   const overlaps: string[] = [];
   for (let i = 0; i < boxes.length; i++) {
     for (let j = i + 1; j < boxes.length; j++) {
       const a = boxes[i]!;
       const b = boxes[j]!;
       if (a.el === b.el || a.el.contains(b.el) || b.el.contains(a.el)) continue;
+      if (modal && insideModal(a.el) !== insideModal(b.el)) continue;
       if (NESTED.some(([p, c]) => (a.sel === p && b.sel === c) || (b.sel === p && a.sel === c))) continue;
       const px = area(a.r, b.r);
       if (px > 24) overlaps.push(`${a.sel} ✕ ${b.sel} (${px} px²)`);
@@ -100,6 +108,7 @@ export function hudCheck(): {
   const buttons: string[] = [];
   document.querySelectorAll<HTMLElement>('button, [role="button"], a[href], [role="slider"]').forEach((el) => {
     if (!visible(el) || (el as HTMLButtonElement).disabled || el.getAttribute('aria-hidden') === 'true') return;
+    if (modal && !insideModal(el)) return; // detrás del modal: no se puede pulsar por diseño
     const r = el.getBoundingClientRect();
     if (r.right < 0 || r.bottom < 0 || r.left > W || r.top > H) return; // fuera de vista por scroll interno
     const label = nameOf(el) || `<${el.tagName.toLowerCase()} class="${el.className}">`;

@@ -234,6 +234,6 @@ describe('polvo y cosecha', () => {
   });
 
   it('GameState nace en versión 2', () => {
-    expect(createGame(1, 'cadete').version).toBe(2);
+    expect(createGame(1, 'cadete').version).toBe(3);
   });
 });

@@ -111,8 +111,8 @@ export interface GameResult {
 }
 
 export interface GameState {
-  /** Versión del formato de partida. 2 = actos, desbloqueos y polvo (mejoras v4). */
-  version: 2;
+  /** Versión del formato de partida. 3 = retos diarios y modificadores (H-02). */
+  version: 3;
   seed: number;
   difficulty: Difficulty;
   /** 1..30: día que se está planificando. */
@@ -145,6 +145,10 @@ export interface GameState {
   history: DaySnapshot[];
   log: LogEntry[];
   lastPlan: Plan | null;
+  /** Resultado de cada reto diario ya resuelto. */
+  challenges: Partial<Record<ChallengeId, ChallengeOutcome>>;
+  /** Modificadores que dejan los retos. */
+  mods: ChallengeMods;
   result: GameResult | null;
 }
 
@@ -263,6 +267,7 @@ export interface GameConfig {
   balance: Balance;
   light: LightSequence;
   storms: StormData[];
+  challenges: ChallengesFile;
 }
 
 export interface EnergyBudget {
@@ -273,3 +278,27 @@ export interface EnergyBudget {
   /** true si el valor sin limitar era negativo (apagón parcial). */
   blackout: boolean;
 }
+
+export type ChallengeId = 'day02_rover_ice' | 'day04_solar_radar' | 'day06_hull_seals' | 'day08_comm_cables' | 'day12_robotic_arm' | 'day14_biomed_check' | 'day16_regolith_trench' | 'day18_micrometeorites' | 'day24_super_storm' | 'day30_relay_docking';
+export type ChallengeOutcome = 'perfect' | 'partial' | 'failed' | 'skipped';
+export type ChallengeEffect =
+  | { type: 'resource'; key: 'lifeSupport' | 'food' | 'dose' | 'battery'; amount: number }
+  | { type: 'break'; module: ModuleId }
+  | { type: 'daily'; key: 'lifeSupport'; amount: number; days: number }
+  | { type: 'doseFactor'; factor: number }
+  | { type: 'noWarnings'; untilDay: number };
+export type ChallengeParams = Record<string, number | number[] | number[][] | string | string[]>;
+export interface ChallengeDef {
+  id: ChallengeId; day: number; skippable: boolean;
+  assistFrom: 'workshop' | 'shield' | 'both' | null;
+  /** id de public/data/sources.json para la etiqueta de datos. */
+  source: string;
+  params: Record<Difficulty, ChallengeParams>;
+  /** Pesos con que la jugadora automática prudente saca cada resultado. */
+  simWeights: { perfect: number; partial: number; failed: number };
+  outcomes: Record<ChallengeOutcome, ChallengeEffect[]>;
+  /** Efectos extra de una elección hecha dentro del minijuego (id de opción -> efectos). */
+  options?: Record<string, ChallengeEffect[]>;
+}
+export interface ChallengesFile { simulated: boolean; version: number; status: DataStatus; thresholds: { perfect: number; partial: number }; scores: { perfect: number; partial: number; failed: number }; list: ChallengeDef[] }
+export interface ChallengeMods { daily: { key: 'lifeSupport'; amount: number; untilDay: number }[]; doseFactor: number; warningsOffUntil: number }

@@ -34,7 +34,7 @@ Referencia profunda extraída del código el 2026-11-14 (16 archivos de test, 18
 | `src/state/{crewPanel,loading,sources}.ts` | Señales de UI (panel tripulación, pantalla de carga, panel de fuentes) |
 | `scripts/simulate.ts` | `npm run simulate [-- N]`: N partidas por estrategia y dificultad |
 
-## 3. Modelo de estado (`GameState`, `version: 2`)
+## 3. Modelo de estado (`GameState`, `version: 3`; retos en §13)
 `seed`, `difficulty`, `day` (1..30, el que se planifica), `battery`, `lifeSupport`, `food` (0..100), `dose` (mSv acumulados, sin tope), `modules[id] = {broken, brokenSinceDay?}`, `roverAvailable` (se escribe pero nadie lo lee), `result`.
 - `phase`: `planning` (se puede planificar y `runDay`) → `event` (hay `pendingEvent`; `runDay` lanza error) → `planning` tras `resolveEvent` → … → `ended` (con `result`). `outcome` está en el tipo pero ningún código lo asigna.
 - `pendingEvent`: `ScheduledEvent` + `options[]` (`{id, disabledReason?}`); se rellena al empezar el día del evento.
@@ -156,3 +156,13 @@ Test de balance (1000 partidas, tormentas reales): `todo-al-reciclador` pierde S
 | `GameState` (campo nuevo) | `createGame`, `version` y `types.ts`, `store.ts` (`dayStates`/rebobinar), tests; no hay migración (sin persistencia) |
 | Acción nueva del store | Respetar los bloqueos de §8, `reserveWorkshop`, `store.test.ts`, equivalente en la tablet (regla 5 de CLAUDE.md) |
 | `light_sequence.json` | Debe tener `days` valores en 0..1 (`assertConfig`), `nightDays` (antena, FF `night_soon`, estrategia prudente), `simulate` |
+
+## 13. Retos diarios (añadido el 2026-11-14)
+Capa aparte de los eventos: NO pasan por `scheduleEvents` ni consumen tiradas. Datos en `public/data/challenges.json` (`thresholds`, `scores`, `list`), cargados por `config.ts` (`assertConfig`: días 1..days, ids únicos, un reto por día, `scores` coherentes con los cortes).
+- Estado: `challenges: {id → outcome}` y `mods: { daily[{key, amount, untilDay}], doseFactor, warningsOffUntil }`. Con mods neutros el motor da los mismos números que antes.
+- `src/sim/challenges.ts`: `challengeDue(state)` (reto de hoy sin resolver), `challengeAssist(state, plan, def)` (0..1 según energía de Taller/Blindaje; 0 si roto o bloqueado), `scoreToOutcome(score)`, `applyChallenge(state, id, outcome, cfg, optionId?)` (exige fase `planning`, el reto de hoy, `skipped` solo si `skippable`; aplica `outcomes[outcome]` + `options[optionId]`; log `log.challenge.<outcome>` con `vars.challenge`).
+- Efectos: `resource` (aire/comida 0..100, batería 0..capacidad, dosis ≥ 0), `break` (nunca el Taller), `daily` (aire por N días), `doseFactor` (multiplica la dosis ENTRANTE del día), `noWarnings` (`comms.stormWarning` calla hasta ese día).
+- `computeDay` suma los `daily` vigentes y aplica `doseFactor`; `previewDay`/`planVerdict` lo reflejan. `fastForward*`/`stepReason` llevan un parámetro opcional `challenges` (por defecto true): parada `challenge` justo después de `event`, y no se ejecuta un día con reto pendiente.
+- Store: `challengesEnabled` (false en Tutorial, lo fija `mode.ts`), `activeChallenge {def, assist}`, `completeChallenge(outcome, optionId?)`. `executeDay` abre el reto en vez de correr el día; al completarlo aplica efectos, reajusta el plan si quedó inválido y corre el día. Con el reto abierto no se puede planificar, reparar ni avanzar rápido; `startGame`/`rewindTo`/`exitToMenu` lo cierran.
+- Estrategias: `Strategy.challenge` (prudente: sorteo con `simWeights`; reciclador: salta o falla; aleatoria: al azar) y `repairs` (la prudente pide reparar lo averiado). `playGame` resuelve el reto antes de `runDay`; `simulate` muestra la columna `retos`.
+- Si cambias: un efecto nuevo → `types.ts`, `applyChallenge`, `shared.tsx` (`effectLine`), textos `challenge.effect.*`, test · números de `challenges.json` → `npm run simulate` y `npm test` · un reto nuevo → entrada en el JSON + componente en `registry.ts` + textos (`i18n.test.ts` los exige).

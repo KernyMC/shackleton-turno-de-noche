@@ -139,3 +139,14 @@ Orden: `index.astro` importa fuentes `@fontsource` (B612 400/700, B612 Mono 400/
 | Nuevo sonido | `sfx.ts` + `watch.ts`, respeta `muted`/pestaña oculta, `public/audio/sfx/index.json` |
 | Nueva animación CSS | Bloque `prefers-reduced-motion` de su hoja |
 | Nuevo evento/log del motor | Textos ES/EN + `i18n.test.ts` + infografía/`EventPanel` (regla 11: nunca motor sin interfaz) |
+
+## 13. Intro en cómic y retos diarios (añadido el 2026-11-14)
+- **Cómic**: `IntroComic.tsx` + `comic.css` (prefijo `comic-`). `Menu.tsx` tiene `Step = title | comic | crew`; «Comenzar» abre el cómic, terminar o Saltar (Esc) lleva a la tripulación; siempre se muestra. 5 viñetas SVG en código; textos `comic.*`.
+- **Retos**: `src/components/challenges/` + `challenge.css` (prefijo `chl-`). `ChallengeModal.tsx` (montado en `App.tsx` tras `ActLayer`; `.chl-overlay` z 35, `role=dialog`, foco atrapado y en el botón principal, Esc no cierra) lee `activeChallenge` y pasa por Misión → Juego → Resultado → `completeChallenge`. El panel de fuentes (z 60) se abre por encima.
+- `registry.ts`: un componente por `ChallengeId` con el contrato `{ params, assist, difficulty, options?, onDone(score 0..1, optionId?) }`; si falta, el modal salta o da parcial sin colgar. `shared.tsx`: `numParam`, `useCountdown`, `TimeBar`, `effectLine`, `EffectList`.
+- Minijuegos: `RoverIce` (2), `SolarRadar` (4), `HullSeals` (6), `CommCables` (8), `RoboticArm` (12), `BiomedCheck` (14), `RegolithTrench` (16), `Micrometeorites` y `SuperStorm` sobre `SectorDefense` (18, 24), `RelayDocking` (30; con movimiento reducido usa botones Subir/Bajar).
+- Ningún número de balance en los componentes: tiempos, tamaños y tolerancias vienen de `def.params[dificultad]`; las puntuaciones fijas de `defaultConfig.challenges.scores`.
+- Textos por reto: `challenge.<id>.title|text|how|science|learn` (+ `.assist` si tiene ayuda), comunes `challenge.*`, internos `challenge.<corto>.*`. `logText` de `Hud.tsx` y `Debrief.tsx` traduce `vars.challenge` al título.
+- Con el reto abierto, `acts.ts` no muestra tarjetas ni avisos. `__hudCheck()` ignora el HUD de detrás si hay `.chl-overlay` o `.comic-page`.
+- Deudas: revisión `hud` pendiente tras los arreglos de móvil (días 16, 18, 24, 30) y de colores del día 8; clases sin estilo propio `chl-sector-fx*` y `chl-relay-nudge/up/down`; `skin.css` pisa fondos de `chl-*` si no llevan prefijo `html`.
+- Si cambias: clases `chl-*` → `challenge.css` y `hudCheck` · el contrato de `registry.ts` → los 10 minijuegos y el modal · un reto nuevo → ver `docs/domains/motor.md` §13.

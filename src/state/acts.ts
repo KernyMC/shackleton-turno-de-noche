@@ -8,7 +8,7 @@ import type { StopReason } from '../sim/fastForward';
 import type { ModuleId } from '../sim/types';
 import { readyScreen } from './loading';
 import { dayDone, entrySig, freshEntries, milestone, reacting } from './rewards';
-import { ffStop, fastForwarding, game, gameId, resolving, screen } from './store';
+import { activeChallenge, ffStop, fastForwarding, game, gameId, resolving, screen } from './store';
 import { gameMode } from './mode';
 import { onboardingOpen, tutorialEnd, tutorialStep } from './tutorial';
 
@@ -197,6 +197,7 @@ export function startActsWatcher(): () => void {
       !settled.value ||
       resolving.value ||
       fastForwarding.value ||
+      activeChallenge.value !== null ||
       reacting.value ||
       dayDone.value !== null ||
       milestone.value !== null ||

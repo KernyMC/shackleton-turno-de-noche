@@ -23,7 +23,7 @@ export function antennaOn(state: GameState, cfg: GameConfig = defaultConfig): bo
 
 /** Próxima tormenta anunciada por la Tierra, o null si no hay antena o no hay tormenta a la vista. */
 export function stormWarning(state: GameState, cfg: GameConfig = defaultConfig): StormWarning | null {
-  if (state.phase === 'ended' || !antennaOn(state, cfg)) return null;
+  if (state.phase === 'ended' || state.day <= state.mods.warningsOffUntil || !antennaOn(state, cfg)) return null;
   const limit = state.day + cfg.balance.events.warningDays;
   const next = state.scheduledEvents
     .filter((e) => e.kind === 'storm' && e.day > state.day && e.day <= limit)

@@ -2,16 +2,21 @@
 
 import { defaultConfig } from './config';
 import { maxEnergyFor } from './acts';
-import { createGame, EMPTY_PLAN, getEnergyBudget, getLight, resolveEvent, runDay } from './engine';
+import { applyChallenge, challengeDue } from './challenges';
+import { createGame, EMPTY_PLAN, getEnergyBudget, getLight, resolveEvent, runDay, setRepairToday } from './engine';
 import { createRng } from './rng';
 import { MODULE_IDS } from './types';
-import type { Difficulty, GameConfig, GameState, ModuleId, Plan } from './types';
+import type { ChallengeDef, ChallengeOutcome, Difficulty, GameConfig, GameState, ModuleId, Plan } from './types';
 
 export interface Strategy {
   name: string;
   plan(state: GameState, cfg: GameConfig): Plan;
   /** Devuelve el id de una opción habilitada del evento pendiente. */
   choose(state: GameState, cfg: GameConfig): string;
+  /** Resultado con que esta jugadora resuelve el reto de hoy. */
+  challenge(state: GameState, def: ChallengeDef, cfg: GameConfig): ChallengeOutcome;
+  /** Pide reparar (desde el panel) un módulo averiado que no tenga reparación en marcha. */
+  repairs?: boolean;
 }
 
 /** Reparte `energy` entre módulos en el orden dado, respetando máximos, bloqueos y averías. */
@@ -49,6 +54,7 @@ export const allRecycler: Strategy = {
   name: 'todo-al-reciclador',
   plan: (state, cfg) => allocate(state, getEnergyBudget(state, cfg).available, ['recycler'], cfg),
   choose: (state) => firstEnabled(state, ['work', 'later', 'skip', 'tilt', 'ok']),
+  challenge: (_state, def) => (def.skippable ? 'skipped' : 'failed'),
 };
 
 /** Reparte al azar y elige al azar. */
@@ -64,6 +70,13 @@ export const randomPlayer: Strategy = {
     const rng = createRng((state.seed ^ Math.imul(state.day, 0xc2b2ae35)) >>> 0);
     const enabled = (state.pendingEvent?.options ?? []).filter((o) => !o.disabledReason);
     return rng.pick(enabled).id;
+  },
+  challenge(state, def) {
+    const rng = createRng((state.seed ^ Math.imul(state.day, 0x27d4eb2f)) >>> 0);
+    const valid: ChallengeOutcome[] = def.skippable
+      ? ['perfect', 'partial', 'failed', 'skipped']
+      : ['perfect', 'partial', 'failed'];
+    return rng.pick(valid);
   },
 };
 
@@ -107,6 +120,13 @@ export const prudent: Strategy = {
     return allocate(state, Math.max(spend, base.workshop), order, cfg, base);
   },
   choose: (state) => firstEnabled(state, ['shelter', 'repair', 'send', 'clean', 'ok']),
+  repairs: true,
+  challenge(state, def) {
+    const w = def.simWeights;
+    const roll = createRng((state.seed ^ Math.imul(state.day, 0x165667b1)) >>> 0).next() * (w.perfect + w.partial + w.failed);
+    if (roll < w.perfect) return 'perfect';
+    return roll < w.perfect + w.partial ? 'partial' : 'failed';
+  },
 };
 
 /** Juega una partida completa con una estrategia y devuelve el estado final. */
@@ -118,10 +138,17 @@ export function playGame(
 ): GameState {
   let state = createGame(seed, difficulty, cfg);
   for (let guard = 0; guard < 500 && state.phase !== 'ended'; guard++) {
-    state =
-      state.phase === 'event'
-        ? resolveEvent(state, strategy.choose(state, cfg), cfg)
-        : runDay(state, strategy.plan(state, cfg), cfg);
+    if (state.phase === 'event') {
+      state = resolveEvent(state, strategy.choose(state, cfg), cfg);
+      continue;
+    }
+    const due = challengeDue(state, cfg);
+    if (due) state = applyChallenge(state, due.id, strategy.challenge(state, due, cfg), cfg);
+    if (strategy.repairs && state.repairToday === null && state.unlocked.includes('workshop')) {
+      const broken = MODULE_IDS.find((id) => state.modules[id].broken);
+      if (broken) state = setRepairToday(state, broken);
+    }
+    state = runDay(state, strategy.plan(state, cfg), cfg);
   }
   if (state.phase !== 'ended') throw new Error('La partida no terminó');
   return state;

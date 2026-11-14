@@ -3,6 +3,7 @@ import { Scene } from '../scene/Scene';
 import { useEffect } from 'preact/hooks';
 import { ActLayer } from '../components/ActHud';
 import { Alerts } from '../components/Alerts';
+import { ChallengeModal } from '../components/challenges/ChallengeModal';
 import { Coach } from '../components/Coach';
 import { Debrief } from '../components/Debrief';
 import { CrewPanel } from '../components/CrewPanel';
@@ -49,6 +50,7 @@ function CurrentScreen() {
       <Tablet />
       <Coach />
       <ActLayer />
+      <ChallengeModal />
       <SourcesPanel />
     </div>
   );

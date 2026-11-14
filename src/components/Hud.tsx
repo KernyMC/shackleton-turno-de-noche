@@ -262,6 +262,7 @@ function Tools() {
 function logText(entry: LogEntry): string {
   const vars = { ...entry.vars };
   if (typeof vars.module === 'string') vars.module = t(`module.${vars.module}`);
+  if (typeof vars.challenge === 'string') vars.challenge = t(`challenge.${vars.challenge}.title`);
   return t(entry.key, vars);
 }
 

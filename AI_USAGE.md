@@ -32,5 +32,6 @@ Registro honesto de qué se hizo con ayuda de IA. Añade una línea por sesión 
 | 2026-11-14 | Claude Code (Anthropic) | Modo Tutorial (partida guiada con semilla fija), arreglo de la guía y menú con tres modos: Tutorial, Cadete y Comandante | Pendiente de revisión del equipo |
 | 2026-11-14 | Claude Code (Anthropic) | Piel de juego «Consola de misión Apolo» (skin.css, fuentes B612 y Barlow Condensed auto-alojadas) y arreglos de solapes del HUD en escritorio y móvil | Pendiente de revisión del equipo |
 | 2026-11-14 | Claude Code (Anthropic) | Documentación y proceso: README en español e inglés, CREDITS, LICENSE, corrección de estados en sources.json, rúbrica, memoria del proyecto (STATUS, dominios, reglas, skills) y test guardián de textos | Pendiente de revisión del equipo |
+| 2026-11-14 | Claude Code (Anthropic) | Intro en cómic (5 viñetas SVG en código, textos ES/EN) y retos diarios: motor (`challenges.ts`, `challenges.json`), 10 minijuegos, sus textos y pruebas; planificación, implementación con subagentes y revisión automática de interfaz | Pendiente de revisión del equipo |
 
 Si se usan modelos 3D o audio generados (por ejemplo Tripo o Suno), anotarlos aquí y en `CREDITS.md`.

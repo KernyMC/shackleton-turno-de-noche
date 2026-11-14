@@ -7,16 +7,31 @@
 
 import { isSpaceEvent } from '../data/donki.ts';
 import balanceJson from '../../public/data/balance.json';
+import challengesJson from '../../public/data/challenges.json';
 import lightJson from '../../public/data/light_sequence.json';
 import sampleJson from '../../public/data/storms_sample.json';
-import type { Balance, DataStatus, GameConfig, LightSequence, StormData, StormsFile } from './types';
+import type { Balance, ChallengesFile, DataStatus, GameConfig, LightSequence, StormData, StormsFile } from './types';
 
-function assertConfig(balance: Balance, light: LightSequence): void {
+function assertConfig(balance: Balance, light: LightSequence, challenges: ChallengesFile): void {
   if (light.light.length !== balance.days) {
     throw new Error(`light_sequence.json debe tener ${balance.days} valores`);
   }
   if (light.light.some((v) => v < 0 || v > 1)) {
     throw new Error('light_sequence.json: valores fuera de 0..1');
+  }
+  const th = challenges.thresholds;
+  const sc = challenges.scores;
+  if (!sc || !(sc.perfect >= th.perfect && sc.partial >= th.partial && sc.partial < th.perfect && sc.failed < th.partial)) {
+    throw new Error('challenges.json: scores incoherentes con thresholds');
+  }
+  const ids = new Set<string>();
+  const days = new Set<number>();
+  for (const c of challenges.list) {
+    if (c.day < 1 || c.day > balance.days) throw new Error(`challenges.json: día fuera de 1..${balance.days} en ${c.id}`);
+    if (ids.has(c.id)) throw new Error(`challenges.json: id repetido ${c.id}`);
+    if (days.has(c.day)) throw new Error(`challenges.json: dos retos el día ${c.day}`);
+    ids.add(c.id);
+    days.add(c.day);
   }
 }
 
@@ -70,9 +85,10 @@ function findRealStorms(): unknown {
 export function buildConfig(realStorms: unknown = findRealStorms()): GameConfig & { stormSource: StormSource } {
   const balance = balanceJson as unknown as Balance;
   const light = lightJson as unknown as LightSequence;
-  assertConfig(balance, light);
+  const challenges = challengesJson as unknown as ChallengesFile;
+  assertConfig(balance, light, challenges);
   const stormSource = parseRealStorms(realStorms) ?? parseSampleStorms(sampleJson as unknown as StormsFile);
-  return { balance, light, storms: stormSource.storms, stormSource };
+  return { balance, light, storms: stormSource.storms, challenges, stormSource };
 }
 
 export const defaultConfig = buildConfig();

@@ -39,7 +39,7 @@ export function createGame(
 ): GameState {
   const d = cfg.balance.difficulty[difficulty];
   return {
-    version: 2,
+    version: 3,
     seed,
     difficulty,
     day: 1,
@@ -69,6 +69,8 @@ export function createGame(
     history: [],
     log: [],
     lastPlan: null,
+    challenges: {},
+    mods: { daily: [], doseFactor: 1, warningsOffUntil: 0 },
     result: null,
   };
 }
@@ -189,12 +191,14 @@ function computeDay(state: GameState, plan: Plan, cfg: GameConfig): DayMath {
     fx.greenhouseWaterCost * eGreenhouse -
     cfg.balance.crewConsumption.lifeSupportPerPerson * d.crew -
     (budget.blackout ? fx.blackoutLifeSupportPenalty : 0);
+  for (const m of state.mods.daily) if (m.untilDay >= state.day) lifeSupport += m.amount;
   const food =
     state.food + fx.greenhouseFood * eGreenhouse - cfg.balance.crewConsumption.foodPerPerson * d.crew;
   const dose =
     state.dose +
-    d.doseBaseDaily * (1 - fx.shieldReduction * eShield) +
-    (state.stormToday ? getStormDose(state.stormToday, state.shelterToday, cfg) : 0);
+    (d.doseBaseDaily * (1 - fx.shieldReduction * eShield) +
+      (state.stormToday ? getStormDose(state.stormToday, state.shelterToday, cfg) : 0)) *
+      state.mods.doseFactor;
 
   for (const effect of state.pendingEffects) {
     if (effect.day === state.day && effect.kind === 'rover_water') lifeSupport += effect.amount;

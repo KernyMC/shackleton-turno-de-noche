@@ -31,6 +31,12 @@ describe('antena y aviso de tormenta', () => {
     expect(stormWarning(at(d - warn, min))!.inDays).toBe(warn);
   });
 
+  it('con warningsOffUntil no avisa hasta que pasa ese día', () => {
+    const off = (until: number): GameState['mods'] => ({ daily: [], doseFactor: 1, warningsOffUntil: until });
+    expect(stormWarning(at(d - 1, min, { mods: off(d - 1) }))).toBeNull();
+    expect(stormWarning(at(d - 1, min, { mods: off(d - 2) }))).not.toBeNull();
+  });
+
   it('sin antena no avisa', () => {
     expect(stormWarning(at(d - 1, min - 1))).toBeNull();
     expect(stormWarning(at(d - 1, 0, { lastPlan: null }))).toBeNull();

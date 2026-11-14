@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { defaultConfig } from '../sim/config';
 import { validatePlan } from '../sim/engine';
 import type { GameState } from '../sim/types';
+import { activeChallenge, challengesEnabled, completeChallenge } from './store';
 import {
   applyPreset,
   budget,
@@ -41,6 +42,7 @@ const day = (): void => {
 
 beforeEach(() => {
   vi.useFakeTimers();
+  challengesEnabled.value = false; // los retos tienen su propio bloque de pruebas
   startGame('comandante', 1);
 });
 afterEach(() => vi.useRealTimers());
@@ -217,8 +219,8 @@ describe('partida completa', () => {
 });
 
 describe('versión de partida', () => {
-  it('startGame crea una partida de versión 2', () => {
-    expect(g().version).toBe(2);
+  it('startGame crea una partida de versión 3', () => {
+    expect(g().version).toBe(3);
     expect(g().unlocked).toEqual(['recycler', 'greenhouse']);
   });
 });
@@ -313,5 +315,80 @@ describe('limpiar paneles', () => {
     expect(plan.value.workshop).toBe(defaultConfig.balance.effects.workshopMinEnergy);
     expect(requestClean(false)).toBe(true);
     expect(g().cleanToday).toBe(false);
+  });
+});
+
+describe('retos diarios', () => {
+  const first = defaultConfig.challenges.list[0]!;
+  const decide = (): void => {
+    if (g().phase === 'event') chooseEventOption(g().pendingEvent!.options.find((o) => !o.disabledReason)!.id);
+  };
+  /** Juega los días anteriores al reto de `target` (resolviendo retos y eventos con el mejor resultado). */
+  const reach = (target: number): void => {
+    while (g().day < target) {
+      decide();
+      if (executeDay() && activeChallenge.value) completeChallenge('perfect');
+      vi.advanceTimersByTime(RESOLVE_MS);
+    }
+    decide();
+  };
+  beforeEach(() => {
+    challengesEnabled.value = true;
+    startGame('comandante', 1);
+  });
+
+  it('al ejecutar el día del reto lo abre y no corre el día', () => {
+    reach(first.day);
+    tabletOpen.value = true;
+    expect(executeDay()).toBe(true);
+    expect(activeChallenge.value?.def.id).toBe(first.id);
+    expect(g().day).toBe(first.day);
+    expect(resolving.value).toBe(false);
+    expect(tabletOpen.value).toBe(false);
+    // Mientras está abierto, las acciones no hacen nada.
+    expect(setPlanValue('recycler', 5)).toBe(false);
+    expect(applyPreset('zero')).toBe(false);
+    expect(executeDay()).toBe(false);
+    expect(startFastForward()).toBe(false);
+  });
+
+  it('completarlo aplica los efectos y avanza el día', () => {
+    reach(first.day);
+    executeDay();
+    expect(completeChallenge('perfect')).toBe(true);
+    vi.advanceTimersByTime(RESOLVE_MS);
+    expect(activeChallenge.value).toBeNull();
+    expect(g().challenges[first.id]).toBe('perfect');
+    expect(g().day).toBe(first.day + 1);
+    expect(completeChallenge('perfect')).toBe(false);
+  });
+
+  it('un reto saltable se puede saltar', () => {
+    const skippable = defaultConfig.challenges.list.find((c) => c.skippable)!;
+    reach(skippable.day);
+    executeDay();
+    expect(completeChallenge('skipped')).toBe(true);
+    vi.advanceTimersByTime(RESOLVE_MS);
+    expect(g().challenges[skippable.id]).toBe('skipped');
+    expect(g().day).toBe(skippable.day + 1);
+  });
+
+  it('rebobinar cierra el reto y permite repetirlo', () => {
+    reach(first.day);
+    executeDay();
+    expect(activeChallenge.value).not.toBeNull();
+    expect(rewindTo(first.day - 1)).toBe(true);
+    expect(activeChallenge.value).toBeNull();
+    reach(first.day);
+    expect(g().challenges).toEqual({});
+    executeDay();
+    expect(activeChallenge.value?.def.id).toBe(first.id);
+  });
+
+  it('con los retos apagados (tutorial) el día corre normal', () => {
+    challengesEnabled.value = false;
+    reach(first.day + 1);
+    expect(activeChallenge.value).toBeNull();
+    expect(g().challenges).toEqual({});
   });
 });

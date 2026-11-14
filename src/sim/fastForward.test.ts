@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { defaultConfig } from './config';
 import { createGame, EMPTY_PLAN, runDay } from './engine';
-import { fastForward, fastForwardStep, nightSoon, stepReason } from './fastForward';
+import { fastForward as ffRaw, fastForwardStep as stepRaw, nightSoon, stepReason as reasonRaw } from './fastForward';
 import type { GameState, Plan, ScheduledEvent } from './types';
 import { MODULE_IDS } from './types';
 
@@ -16,6 +16,23 @@ const game = (patch: Partial<GameState> = {}, events: ScheduledEvent[] = []): Ga
   ...patch,
 });
 const PLAN: Plan = { recycler: 20, greenhouse: 10, shield: 0, workshop: 0 };
+// Las pruebas de las demás paradas corren sin retos; el bloque «avance rápido y retos» los activa.
+const fastForward = (s: GameState, p: Plan, challenges = false) => ffRaw(s, p, defaultConfig, challenges);
+const fastForwardStep = (s: GameState, p: Plan, challenges = false) => stepRaw(s, p, defaultConfig, challenges);
+const stepReason = (a: GameState, b: GameState) => reasonRaw(a, b, defaultConfig, false);
+
+describe('avance rápido y retos', () => {
+  it("no ejecuta un día con reto pendiente y para por 'challenge' al llegar a él", () => {
+    const day = defaultConfig.challenges.list[0]!.day;
+    const step = fastForwardStep(game({ day }), PLAN, true);
+    expect(step).toMatchObject({ ran: false, reason: 'challenge' });
+    const r = fastForward(game({ day: day - 1 }), PLAN, true);
+    expect(r.reason).toBe('challenge');
+    expect(r.state.day).toBe(day);
+    // Con los retos apagados (tutorial) el día corre normal.
+    expect(fastForwardStep(game({ day }), PLAN, false).ran).toBe(true);
+  });
+});
 
 describe('avance rápido', () => {
   it('maxDays viene de balance.json', () => {

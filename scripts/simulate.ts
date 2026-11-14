@@ -24,10 +24,12 @@ for (const difficulty of ['cadete', 'comandante'] as Difficulty[]) {
     const causes: Record<string, number> = {};
     let actsMet = 0;
     let earlyLosses = 0;
+    const challengeCount: Record<string, number> = {};
     for (let seed = 1; seed <= games; seed++) {
       const final = playGame(seed, difficulty, strategy, cfg);
       const result = final.result!;
       actsMet += final.actsMet.length;
+      for (const o of Object.values(final.challenges)) challengeCount[o] = (challengeCount[o] ?? 0) + 1;
       if (result.outcome === 'loss' && result.day < 6) earlyLosses++;
       stars[result.stars]!++;
       if (result.outcome === 'win') wins++;
@@ -47,6 +49,7 @@ for (const difficulty of ['cadete', 'comandante'] as Difficulty[]) {
       'derrotas antes del día 6': earlyLosses,
       'estrellas 1/2/3': `${stars[1]}/${stars[2]}/${stars[3]}`,
       causas: Object.entries(causes).map(([k, v]) => `${k}:${v}`).join(' ') || '-',
+      retos: Object.entries(challengeCount).map(([k, v]) => `${k}:${v}`).join(' ') || '-',
     });
   }
 }

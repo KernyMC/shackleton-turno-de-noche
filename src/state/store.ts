@@ -4,6 +4,7 @@
 
 import { computed, signal } from '@preact/signals';
 import { maxEnergyFor } from '../sim/acts';
+import { applyChallenge, challengeAssist, challengeDue } from '../sim/challenges';
 import { defaultConfig } from '../sim/config';
 import {
   createGame,
@@ -21,7 +22,7 @@ import { fastForwardStep, REPEAT_ORDER } from '../sim/fastForward';
 import type { StopReason } from '../sim/fastForward';
 import { anyResourceLow } from '../sim/thresholds';
 import { MODULE_IDS } from '../sim/types';
-import type { DayPreview, Difficulty, GameState, ModuleId, Plan } from '../sim/types';
+import type { ChallengeDef, ChallengeOutcome, DayPreview, Difficulty, GameState, ModuleId, Plan } from '../sim/types';
 import { liveStorm } from './spaceWeather';
 
 export type Screen = 'menu' | 'game' | 'debrief';
@@ -98,6 +99,11 @@ export const tabletOpen = signal(false);
 /** Recursos reales de NASA que la escena logró cargar (para las fichas de fuente). */
 export const realAssets = signal<{ terrain: 'real' | 'procedural' | null; models: string[] }>({ terrain: null, models: [] });
 
+/** Los retos diarios se juegan (false en el tutorial). */
+export const challengesEnabled = signal(true);
+/** Reto abierto ahora: la interfaz muestra su minijuego y llama a completeChallenge. */
+export const activeChallenge = signal<{ def: ChallengeDef; assist: number } | null>(null);
+
 export const budget = computed(() => (game.value ? getEnergyBudget(game.value) : null));
 export const preview = computed(() => {
   const g = game.value;
@@ -143,6 +149,7 @@ function reserveWorkshop(g: GameState): void {
 
 export function startGame(difficulty: Difficulty, seed?: number): void {
   cancelResolve();
+  activeChallenge.value = null;
   ffStop.value = null;
   ffDays.value = 0;
   // Si hoy el Sol está activo (NASA DONKI en vivo), la primera tormenta es ese evento real.
@@ -164,6 +171,7 @@ export function rewindTo(day: number): boolean {
   const target = dayStates.value.find((s) => s.day === day);
   if (!target) return false;
   cancelResolve();
+  activeChallenge.value = null;
   dayStates.value = dayStates.value.filter((s) => s.day <= day);
   game.value = target;
   plan.value = EMPTY_PLAN;
@@ -182,6 +190,7 @@ export function restart(): void {
 
 export function exitToMenu(): void {
   cancelResolve();
+  activeChallenge.value = null;
   screen.value = 'menu';
   tabletOpen.value = false;
 }
@@ -198,7 +207,7 @@ export function toggleTablet(): void {
  */
 export function setPlanValue(id: ModuleId, value: number): boolean {
   const g = game.value;
-  if (!g || g.phase !== 'planning' || resolving.value || fastForwarding.value || g.modules[id].broken) return false;
+  if (!g || g.phase !== 'planning' || resolving.value || fastForwarding.value || activeChallenge.value || g.modules[id].broken) return false;
   const wanted = Math.max(0, Math.min(Math.round(value), maxEnergyFor(g, id, defaultConfig)));
   const others = planTotal(plan.value) - plan.value[id];
   const room = Math.max(0, Math.floor(getEnergyBudget(g).available - others + 1e-9));
@@ -210,7 +219,7 @@ export function setPlanValue(id: ModuleId, value: number): boolean {
 /** Aplica un plan rápido. Devuelve true si hubo que ajustarlo a la energía de hoy. */
 export function applyPreset(preset: Preset): boolean {
   const g = game.value;
-  if (!g || g.phase !== 'planning' || resolving.value || fastForwarding.value) return false;
+  if (!g || g.phase !== 'planning' || resolving.value || fastForwarding.value || activeChallenge.value) return false;
   let desired: Plan = EMPTY_PLAN;
   if (preset === 'saving') {
     desired = { ...EMPTY_PLAN, recycler: defaultConfig.balance.modules.recycler.maxEnergy };
@@ -230,9 +239,17 @@ export function applyPreset(preset: Preset): boolean {
  */
 export function executeDay(): boolean {
   const g = game.value;
-  if (!g || resolving.value || fastForwarding.value || g.phase !== 'planning') return false;
+  if (!g || resolving.value || fastForwarding.value || activeChallenge.value || g.phase !== 'planning') return false;
   const current = plan.value;
   if (!validatePlan(g, current).ok) return false;
+
+  // Un reto pendiente se juega antes de que corra el día.
+  const due = challengesEnabled.value ? challengeDue(g) : null;
+  if (due) {
+    activeChallenge.value = { def: due, assist: challengeAssist(g, current, due) };
+    tabletOpen.value = false;
+    return true;
+  }
 
   const next = runDay(g, current);
   lastOutcome.value = { day: g.day, preview: previewDay(g, current) };
@@ -256,6 +273,22 @@ export function executeDay(): boolean {
   return true;
 }
 
+/**
+ * Cierra el reto abierto con su resultado, aplica sus efectos, reajusta el plan si hace falta
+ * y corre el día. Devuelve true si había un reto abierto.
+ */
+export function completeChallenge(outcome: ChallengeOutcome, optionId?: string): boolean {
+  const g = game.value;
+  const active = activeChallenge.value;
+  if (!g || !active) return false;
+  const next = applyChallenge(g, active.def.id, outcome, defaultConfig, optionId);
+  game.value = next;
+  activeChallenge.value = null;
+  if (!validatePlan(next, plan.value).ok) plan.value = fitPlan(next, plan.value, REPEAT_ORDER);
+  executeDay();
+  return true;
+}
+
 /** Decide el evento pendiente. Se aplica una sola vez. Devuelve true si se aplicó. */
 export function chooseEventOption(optionId: string): boolean {
   const g = game.value;
@@ -271,7 +304,7 @@ export function chooseEventOption(optionId: string): boolean {
 /** Pide reparar hoy un módulo averiado (o cancela con null). */
 export function requestRepair(id: ModuleId | null): boolean {
   const g = game.value;
-  if (!g || g.phase !== 'planning' || resolving.value || fastForwarding.value) return false;
+  if (!g || g.phase !== 'planning' || resolving.value || fastForwarding.value || activeChallenge.value) return false;
   if (id !== null && !g.modules[id].broken) return false;
   const next = setRepairToday(g, id);
   game.value = next;
@@ -282,7 +315,7 @@ export function requestRepair(id: ModuleId | null): boolean {
 /** Pide limpiar hoy el polvo de los paneles con el rover (o cancela con false). Devuelve true si se aplicó. */
 export function requestClean(on: boolean): boolean {
   const g = game.value;
-  if (!g || g.phase !== 'planning' || resolving.value || fastForwarding.value) return false;
+  if (!g || g.phase !== 'planning' || resolving.value || fastForwarding.value || activeChallenge.value) return false;
   if (on && (!g.dust || !g.unlocked.includes('workshop'))) return false;
   const next = setCleanToday(g, on);
   game.value = next;
@@ -312,7 +345,7 @@ function endFastForward(reason: StopReason): void {
 function ffStepOnce(): StopReason | null {
   const g = game.value;
   if (!g) return 'end';
-  const step = fastForwardStep(g, ffPlan, defaultConfig);
+  const step = fastForwardStep(g, ffPlan, defaultConfig, challengesEnabled.value);
   if (!step.ran) return step.reason ?? 'invalid_plan';
   lastOutcome.value = { day: g.day, preview: previewDay(g, step.plan!) };
   game.value = step.state;
@@ -336,7 +369,7 @@ function ffTick(): void {
  */
 export function startFastForward(): boolean {
   const g = game.value;
-  if (!g || g.phase !== 'planning' || g.pendingEvent || resolving.value || fastForwarding.value) return false;
+  if (!g || g.phase !== 'planning' || g.pendingEvent || resolving.value || fastForwarding.value || activeChallenge.value) return false;
   if (!validatePlan(g, plan.value).ok) return false;
   ffPlan = { ...plan.value };
   ffDays.value = 0;
@@ -370,7 +403,7 @@ export function interact(target: TargetId): void {
 // Solo en desarrollo: acceso desde la consola del navegador para probar sin interfaz.
 if (typeof window !== 'undefined' && import.meta.env?.DEV) {
   (window as unknown as Record<string, unknown>).__store = {
-    screen, game, plan, resolving, lastOutcome, dayStates, rewindTo, nearTarget, tabletOpen, focusModule, budget, preview, realAssets,
+    screen, game, plan, activeChallenge, completeChallenge, challengesEnabled, resolving, lastOutcome, dayStates, rewindTo, nearTarget, tabletOpen, focusModule, budget, preview, realAssets,
     startGame, restart, exitToMenu, toggleTablet, setPlanValue, applyPreset, executeDay,
     chooseEventOption, requestRepair, requestClean, interact,
     fastForwarding, ffDays, ffStop, startFastForward, cancelFastForward,

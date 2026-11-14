@@ -101,12 +101,21 @@ describe('textos (i18n)', () => {
     expect(logs.size).toBeGreaterThan(8);
   });
 
+  // Los textos challenge.<id>.* los pone la interfaz de retos (H-02); si falla, faltan esos textos.
+  it('cada reto diario y sus resultados tienen sus textos', () => {
+    const needed = [
+      ...defaultConfig.challenges.list.flatMap((c) => ['title', 'text', 'how', 'science'].map((k) => `challenge.${c.id}.${k}`)),
+      ...['perfect', 'partial', 'failed', 'skipped'].flatMap((o) => [`challenge.outcome.${o}`, `log.challenge.${o}`]),
+    ];
+    expect(needed.filter((key) => !(key in ES) || !(key in EN))).toEqual([]);
+  });
+
   it('módulos, tripulación y actos tienen sus textos', () => {
     const needed = [
       ...MODULE_IDS.flatMap((id) => [`module.${id}`, `module.${id}.what`]),
       ...['valeria', 'mateo', 'amaru', 'lucia'].flatMap((id) => [`crew.${id}.role`, `crew.${id}.good`, `crew.${id}.worried`, `crew.act.${id}`]),
       ...defaultConfig.balance.acts.list.flatMap((act) => [`act.${act.id}.name`, `act.${act.id}.goal`, `act.${act.id}.pill`]),
-      ...['event', 'low', 'night_soon', 'invalid_plan', 'max'].map((r) => `ff.stopped.${r}`),
+      ...['event', 'challenge', 'low', 'night_soon', 'invalid_plan', 'max'].map((r) => `ff.stopped.${r}`),
     ];
     expect(needed.filter((key) => !(key in ES) || !(key in EN))).toEqual([]);
   });
