@@ -382,3 +382,8 @@ html .chl-card .chl-relay-nudge .btn, html .chl-card .chl-relay-btn { min-width:
 }
 html .chl-sector-opt .chl-sector-fx { display: block; width: 100%; margin-top: 0.1rem; font-size: 0.9rem; font-weight: 400; }
 html .chl-sector-opt .chl-fx__item { display: flex; align-items: center; gap: 0.4rem; font-size: 0.9rem; font-weight: 400; }
+
+/* Móvil: las casillas alcanzables de la pista son botones táctiles (mínimo 40 px). */
+@media (max-width: 899px) {
+  html .chl-trench-grid { grid-auto-rows: 40px; }
+}
