@@ -290,5 +290,20 @@
   "crew.lucia.worried": "Something is failing or the battery is very low. I am on it.",
   "hud.sound_on": "Turn sound on",
   "hud.sound_off": "Mute",
-  "debrief.cinematic.replay": "Replay animation"
+  "debrief.cinematic.replay": "Replay animation",
+  "debrief.voice.life_support": "We ran out of air and water, commander!",
+  "debrief.voice.food": "The pantry is empty, commander!",
+  "debrief.voice.radiation": "We took too much radiation, commander!",
+  "debrief.voice.win": "We did it, commander! Thirty days on the Moon.",
+  "debrief.tip_label": "Tip:",
+  "debrief.tip.life_support": "give the Recycler more energy every day, and save battery before the night.",
+  "debrief.tip.food": "don't leave the Greenhouse without energy: plants need it almost every day.",
+  "debrief.tip.radiation": "during storms, everyone to the shelter; and power the Shielding.",
+  "debrief.reached": "You reached day {dia} of {total}",
+  "debrief.rewind_short": "Retry from day {dia}",
+  "debrief.chip.days": "days on the Moon",
+  "debrief.chip.storms": "storms survived",
+  "debrief.chip.wasted": "energy wasted",
+  "debrief.more": "See my mission in detail",
+  "debrief.stat.blackouts_line": "Days with a blackout: {n}."
 }

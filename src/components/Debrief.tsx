@@ -1,16 +1,23 @@
-// Pantalla final: por qué ganaste o perdiste, en lenguaje simple, y cómo intentarlo de nuevo.
-// Es donde se cierra el aprendizaje: causa en una frase, el día decisivo, la gráfica de la misión
-// y un botón para volver atrás. Solo lee el store y el análisis puro de src/sim/debrief.ts.
+// Pantalla final, corta y amigable para quien empieza: la escena de lo que pasó, un tripulante que
+// lo explica en una frase con un consejo, hasta qué día llegaste y un botón grande para reintentar.
+// La gráfica y las decisiones quedan plegadas para quien quiera analizar.
+// Solo lee el store y el análisis puro de src/sim/debrief.ts.
 import { useState } from 'preact/hooks';
 import { t } from '../i18n';
 import { defaultConfig } from '../sim/config';
 import { reviewMission } from '../sim/debrief';
 import type { GameState, LogEntry } from '../sim/types';
 import { exitToMenu, game, restart, rewindTo, startGame } from '../state/store';
+import { crewById } from '../data/crew';
+import type { CrewId } from '../data/crew';
+import { CrewPortrait } from './CrewPortrait';
 import { DebriefCinematic } from './DebriefCinematic';
 import { num } from './format';
 import { Icon } from './icons';
 import type { IconName } from './icons';
+
+/** Quién explica la derrota: el tripulante que cuida el recurso que falló. */
+const SPEAKER: Record<string, CrewId> = { life_support: 'valeria', food: 'mateo', radiation: 'amaru' };
 
 function Stars({ count }: { count: number }) {
   return (
@@ -157,77 +164,115 @@ export function Debrief() {
     }
   };
 
+  // Habla quien cuida el recurso que falló; si se ganó, Valeria felicita a la comandancia.
+  const speakerId = won ? 'valeria' : SPEAKER[cause ?? 'life_support'];
+  const speaker = crewById(speakerId);
+  const reached = won ? total : result.day;
+
   return (
     <main class={`debrief ${won ? 'debrief--win' : 'debrief--loss'}`}>
-      <DebriefCinematic kind={won ? 'win' : (cause ?? 'life_support')} />
-      <header class="debrief__head">
-        <p class="card__kicker">{t('coach.voice')}</p>
-        <h1>{won ? t('debrief.win') : t('debrief.loss', { dia: result.day })}</h1>
-        {won ? <Stars count={result.stars} /> : <p class="debrief__abort">{t('debrief.abort')}</p>}
-      </header>
-
-      <section class="debrief__why">
-        <h2>{t(won ? 'debrief.why_win' : 'debrief.why_loss')}</h2>
-        {won ? (
-          <p>{t(`debrief.win.stars${result.stars}`)}</p>
-        ) : (
-          <>
-            <p class="debrief__cause">
-              <Icon name={cause === 'radiation' ? 'dose' : cause === 'food' ? 'food' : 'life_support'} size={24} />
-              {t(`debrief.cause.${cause}`)}
-            </p>
-            {review.duringNight && cause !== 'radiation' && <p>{t('debrief.night_long')}</p>}
-            {result.causes.length > 1 && (
-              <p class="debrief__also">
-                {t('debrief.also')} {result.causes.slice(1).map((c) => t(`debrief.cause_short.${c}`)).join(', ')}.
-              </p>
-            )}
-            {review.decisiveDay !== null && (
-              <p class="debrief__decisive">{t(`debrief.decisive.${cause}`, { dia: review.decisiveDay })}</p>
-            )}
-          </>
-        )}
+      {/* 1. La escena de lo que pasó, con el título encima */}
+      <section class="db-hero">
+        <DebriefCinematic kind={won ? 'win' : (cause ?? 'life_support')} />
+        <header class="db-hero__title">
+          <h1>{won ? t('debrief.win') : t('debrief.loss', { dia: result.day })}</h1>
+          {won ? <Stars count={result.stars} /> : <p class="debrief__abort">{t('debrief.abort')}</p>}
+        </header>
       </section>
 
-      <div class="debrief__actions">
+      {/* 2. Un tripulante lo explica en una frase y da un consejo */}
+      <section class="db-voice" style={{ '--crew': speaker.css }} aria-labelledby="db-voice-title">
+        <span class="db-voice__portrait" aria-hidden="true">
+          <CrewPortrait color={speaker.css} size={84} mood={won ? 'happy' : 'worried'} />
+        </span>
+        <div class="db-voice__bubble">
+          <p class="db-voice__who">{t(`crew.${speakerId}.short`)}</p>
+          <p class="db-voice__line" id="db-voice-title">
+            {won ? t('debrief.voice.win') : t(`debrief.voice.${cause}`)}
+          </p>
+          <p class="db-voice__tip">
+            <Icon name="sun" size={18} />
+            <span>
+              <strong>{t('debrief.tip_label')}</strong>{' '}
+              {won ? t(`debrief.win.stars${result.stars}`) : t(`debrief.tip.${cause}`)}
+            </span>
+          </p>
+          {!won && review.decisiveDay !== null && (
+            <p class="db-voice__clue">{t(`debrief.decisive.${cause}`, { dia: review.decisiveDay })}</p>
+          )}
+        </div>
+      </section>
+
+      {/* 3. Hasta dónde llegaste: el cohete en el viaje de 30 días */}
+      <section class="db-journey" aria-label={t('debrief.reached', { dia: reached, total })}>
+        <p class="db-journey__label">{t('debrief.reached', { dia: reached, total })}</p>
+        <div class="db-journey__track" aria-hidden="true">
+          <span class="db-journey__fill" style={{ width: `${(reached / total) * 100}%` }} />
+          <span class="db-journey__rocket" style={{ left: `${(reached / total) * 100}%` }}>
+            <svg viewBox="0 0 20 20" width="22" height="22"><path d="M10 2c2.5 2 3.6 5 3.6 8.4l1.9 2.4-2.6.6-.9 2.6h-4l-.9-2.6-2.6-.6 1.9-2.4C6.4 7 7.5 4 10 2Z" fill="currentColor" /></svg>
+          </span>
+          <span class="db-journey__goal">
+            <svg viewBox="0 0 20 20" width="18" height="18"><circle cx="10" cy="10" r="4" fill="none" stroke="currentColor" stroke-width="1.6" /><path d="M2 10h4M14 10h4" stroke="currentColor" stroke-width="1.6" /></svg>
+          </span>
+        </div>
+      </section>
+
+      {/* 4. Qué hacer ahora: una acción grande */}
+      <div class="db-actions">
         {!won && review.rewindDay !== null && (
-          <button type="button" class="btn btn--primary" onClick={() => rewindTo(review.rewindDay!)}>
-            {t('debrief.rewind', { dia: review.rewindDay })}
+          <button type="button" class="btn btn--primary db-actions__main" onClick={() => rewindTo(review.rewindDay!)}>
+            <Icon name="recycler" size={22} />
+            {t('debrief.rewind_short', { dia: review.rewindDay })}
           </button>
         )}
-        <button type="button" class={won ? 'btn btn--primary' : 'btn'} onClick={restart}>{t('debrief.again')}</button>
         {won && g.difficulty === 'cadete' && (
-          <button type="button" class="btn" onClick={() => startGame('comandante')}>{t('debrief.try_commander')}</button>
+          <button type="button" class="btn btn--primary db-actions__main" onClick={() => startGame('comandante')}>
+            {t('debrief.try_commander')}
+          </button>
         )}
+        <button type="button" class={!won && review.rewindDay === null ? 'btn btn--primary db-actions__main' : 'btn'} onClick={restart}>
+          {t('debrief.again')}
+        </button>
         <button type="button" class="btn btn--ghost" onClick={exitToMenu}>{t('menu.back')}</button>
       </div>
 
-      <ul class="debrief__stats">
-        <li><b>{g.history.length}</b>{t('debrief.stat.days', { total })}</li>
-        <li><b>{review.stormsSheltered} / {review.stormsTotal}</b>{t('debrief.stat.storms')}</li>
-        <li><b>{num(review.wasted, 0)}</b>{t('debrief.stat.wasted')}</li>
-        <li><b>{review.blackouts}</b>{t('debrief.stat.blackouts')}</li>
+      {/* 5. Tres datos con ícono, sin tabla */}
+      <ul class="db-chips">
+        <li><Icon name="moon" size={20} /><b>{g.history.length}</b><span>{t('debrief.chip.days')}</span></li>
+        <li><Icon name="shield" size={20} /><b>{review.stormsSheltered}/{review.stormsTotal}</b><span>{t('debrief.chip.storms')}</span></li>
+        <li><Icon name="battery" size={20} /><b>{num(review.wasted, 0)}</b><span>{t('debrief.chip.wasted')}</span></li>
       </ul>
 
-      <MissionChart g={g} />
-
-      {decisions.length > 0 && (
-        <section class="debrief__decisions">
-          <h2>{t('debrief.decisions')}</h2>
-          <ol>
-            {decisions.map((entry, i) => (
-              <li key={`${entry.day}-${i}`}>
-                <span class="hud__dim">{t('hud.feed_day', { dia: entry.day })}</span> {logText(entry)}
-              </li>
-            ))}
-          </ol>
-        </section>
-      )}
-
-      <p class="debrief__share">
-        <button type="button" class="btn btn--ghost btn--small" onClick={copy}>{t('debrief.copy')}</button>
-        <span role="status">{copied ? t('debrief.copied') : ''}</span>
-      </p>
+      {/* 6. Para quien quiera analizar: gráfica, decisiones y compartir, plegado */}
+      <details class="db-more">
+        <summary>{t('debrief.more')}</summary>
+        <div class="db-more__body">
+          {!won && review.duringNight && cause !== 'radiation' && <p>{t('debrief.night_long')}</p>}
+          {!won && result.causes.length > 1 && (
+            <p class="debrief__also">
+              {t('debrief.also')} {result.causes.slice(1).map((c) => t(`debrief.cause_short.${c}`)).join(', ')}.
+            </p>
+          )}
+          <p class="debrief__also">{t('debrief.stat.blackouts_line', { n: review.blackouts })}</p>
+          <MissionChart g={g} />
+          {decisions.length > 0 && (
+            <section class="debrief__decisions">
+              <h2>{t('debrief.decisions')}</h2>
+              <ol>
+                {decisions.map((entry, i) => (
+                  <li key={`${entry.day}-${i}`}>
+                    <span class="hud__dim">{t('hud.feed_day', { dia: entry.day })}</span> {logText(entry)}
+                  </li>
+                ))}
+              </ol>
+            </section>
+          )}
+          <p class="debrief__share">
+            <button type="button" class="btn btn--ghost btn--small" onClick={copy}>{t('debrief.copy')}</button>
+            <span role="status">{copied ? t('debrief.copied') : ''}</span>
+          </p>
+        </div>
+      </details>
     </main>
   );
 }

@@ -290,5 +290,20 @@
   "crew.lucia.worried": "Algo está fallando o la batería está muy baja. Estoy en ello.",
   "hud.sound_on": "Activar el sonido",
   "hud.sound_off": "Silenciar",
-  "debrief.cinematic.replay": "Repetir animación"
+  "debrief.cinematic.replay": "Repetir animación",
+  "debrief.voice.life_support": "¡Nos quedamos sin aire y sin agua, comandante!",
+  "debrief.voice.food": "¡La despensa quedó vacía, comandante!",
+  "debrief.voice.radiation": "¡Recibimos demasiada radiación, comandante!",
+  "debrief.voice.win": "¡Lo logramos, comandante! Treinta días en la Luna.",
+  "debrief.tip_label": "Consejo:",
+  "debrief.tip.life_support": "dale más energía al Reciclador cada día, y guarda batería antes de la noche.",
+  "debrief.tip.food": "no dejes al Invernadero sin energía: las plantas la necesitan casi todos los días.",
+  "debrief.tip.radiation": "en las tormentas, todos al refugio; y dale energía al Blindaje.",
+  "debrief.reached": "Llegaste al día {dia} de {total}",
+  "debrief.rewind_short": "Reintentar desde el día {dia}",
+  "debrief.chip.days": "días en la Luna",
+  "debrief.chip.storms": "tormentas a salvo",
+  "debrief.chip.wasted": "energía perdida",
+  "debrief.more": "Ver mi misión en detalle",
+  "debrief.stat.blackouts_line": "Días con apagón: {n}."
 }
