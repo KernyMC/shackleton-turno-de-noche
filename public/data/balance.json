@@ -1,0 +1,60 @@
+{
+  "simulated": true,
+  "version": 1,
+  "days": 30,
+  "difficulty": {
+    "cadete": {
+      "crew": 4,
+      "batteryCapacity": 120,
+      "batteryStart": 90,
+      "lifeSupportStart": 85,
+      "foodStart": 70,
+      "solarMax": 70,
+      "baseConsumption": 8,
+      "doseLimit": 120,
+      "doseBaseDaily": 1.2,
+      "minorEventChance": 0.2,
+      "nightLightBonus": 0.05,
+      "stormCount": 2
+    },
+    "comandante": {
+      "crew": 4,
+      "batteryCapacity": 100,
+      "batteryStart": 70,
+      "lifeSupportStart": 75,
+      "foodStart": 60,
+      "solarMax": 60,
+      "baseConsumption": 10,
+      "doseLimit": 100,
+      "doseBaseDaily": 1.4,
+      "minorEventChance": 0.3,
+      "nightLightBonus": 0,
+      "stormCount": 3
+    }
+  },
+  "modules": {
+    "recycler": { "maxEnergy": 30 },
+    "greenhouse": { "maxEnergy": 25 },
+    "shield": { "maxEnergy": 20 },
+    "workshop": { "maxEnergy": 15 }
+  },
+  "effects": {
+    "recyclerLifeSupport": 14,
+    "greenhouseFood": 9,
+    "greenhouseWaterCost": 2,
+    "shieldReduction": 0.6,
+    "workshopMinEnergy": 10,
+    "blackoutLifeSupportPenalty": 3,
+    "shelterDoseFactor": 0.15,
+    "roverLifeSupport": 25
+  },
+  "crewConsumption": { "lifeSupportPerPerson": 2.5, "foodPerPerson": 1.5 },
+  "stormDose": { "S1": 8, "S2": 15, "S3": 25, "S4": 35 },
+  "sources": {
+    "_nota": "Todos los valores son 'game_balance' o 'simulated' hasta que la tarea D-03 los contraste con el BVAD de NASA.",
+    "default": { "source_id": "design", "status": "game_balance" },
+    "crewConsumption": { "source_id": "bvad_pendiente", "status": "simulated" },
+    "doseBaseDaily": { "source_id": "radiacion_pendiente", "status": "simulated" },
+    "stormDose": { "source_id": "radiacion_pendiente", "status": "simulated" }
+  }
+}
