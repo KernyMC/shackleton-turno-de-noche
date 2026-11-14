@@ -14,6 +14,8 @@ import {
   resolving,
   RESOLVE_MS,
   restart,
+  rewindTo,
+  dayStates,
   screen,
   setPlanValue,
   startGame,
@@ -151,6 +153,41 @@ describe('eventos', () => {
     expect(plan.value.workshop).toBe(10);
     day();
     expect(g().modules[module].broken).toBe(false);
+  });
+});
+
+describe('volver a un día', () => {
+  it('restaura el estado del inicio de ese día y permite jugarlo distinto', () => {
+    setPlanValue('recycler', 30);
+    day();
+    const day2 = g();
+    day();
+    day();
+    expect(g().day).toBe(4);
+    expect(dayStates.value.map((s) => s.day)).toEqual([1, 2, 3, 4]);
+
+    expect(rewindTo(2)).toBe(true);
+    expect(g()).toEqual(day2);
+    expect(dayStates.value.map((s) => s.day)).toEqual([1, 2]);
+    expect(plan.value.recycler).toBe(0);
+
+    setPlanValue('greenhouse', 25);
+    day();
+    expect(g().day).toBe(3);
+    expect(g().history[1]!.plan.greenhouse).toBe(25);
+  });
+
+  it('desde el debrief vuelve al juego; un día no jugado no existe', () => {
+    for (let i = 0; i < 80 && screen.value === 'game'; i++) {
+      if (g().phase === 'event') chooseEventOption(g().pendingEvent!.options.at(-1)!.id);
+      else day();
+    }
+    expect(screen.value).toBe('debrief');
+    const lostOn = g().result!.day;
+    expect(rewindTo(lostOn + 1)).toBe(false);
+    expect(rewindTo(Math.max(1, lostOn - 2))).toBe(true);
+    expect(screen.value).toBe('game');
+    expect(g().result).toBeNull();
   });
 });
 

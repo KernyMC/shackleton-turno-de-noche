@@ -64,7 +64,11 @@ Hecho en `EventPanel.tsx`: título, fuerza de la tormenta, texto con el dato rea
 
 **Hecho cuando:** los 4 eventos se resuelven con mouse, teclado y toque; la barra nunca castiga; doble toque aplica una vez.
 
-## F-05 · Debrief de una frase y "volver al día N" (3 h)
+## F-05 · Debrief y "volver al día N" — HECHA
+
+`src/components/Debrief.tsx`, `src/sim/debrief.ts` (`reviewMission`, con tests) y en el store `dayStates` + `rewindTo(day)`. Incluye causa en una frase, día decisivo, estadísticas, gráfica SVG con tabla alternativa, decisiones y copiar resultado. **Falta:** la tarjeta "Así lo resuelve una misión real" (necesita `facts.json` con fuentes, tarea D-02; no se inventó texto).
+
+### Texto original
 
 1. **Store:** guardar el `GameState` del inicio de cada día (`dayStates: GameState[]`, en memoria). Acción `rewindTo(day)` que restaura ese estado y limpia el plan.
 2. **Debrief** (`src/components/Debrief.tsx`, reemplaza el provisional de `App.tsx`): título, estrellas en SVG, causa principal en una frase amable (`debrief.cause.*`), el día en que "se decidió" (primer día en que el recurso perdedor bajó de 25, calculado desde `history`), y botón primario **"Volver al día N"** (2 días antes de ese día, mínimo 1). Secundarios: "Jugar de nuevo", "Menú".

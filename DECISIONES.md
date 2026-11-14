@@ -64,3 +64,5 @@ Cuando haya valores, la idea es: tamaño del "100 %" del tanque = N días de con
 - 2026-11-14 · Guía de primera partida: bienvenida de 4 frases + 6 pasos en el día 1 que avanzan con las acciones del jugador + aviso de la noche el día 2. · Un jugador nuevo no entendía cómo se juega.
 - 2026-11-14 · El blindaje se explica como "radiación de hoy: X (sin blindaje: Y)" en vez de un número negativo. · "−0,6" se leía como daño.
 - 2026-11-14 · La tormenta ya no tiñe toda la escena de morado: resplandor suave y cielo violeta oscuro. · El tinte fuerte tapaba la base.
+- 2026-11-14 · Debrief: el "día decisivo" es el primer día en que el recurso perdedor bajó de 25 (o la radiación pasó del 70 %), y el botón vuelve 2 días antes. · Da margen real para corregir.
+- 2026-11-14 · Los 4 módulos y el refugio aceptan modelos GLB opcionales; la luz, el aro de energía en el suelo y el rótulo se conservan. · Poder usar modelos generados sin perder la lectura de la energía.

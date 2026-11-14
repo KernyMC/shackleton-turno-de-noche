@@ -7,7 +7,7 @@ import * as THREE from 'three';
 import type { ModuleId } from '../sim/types';
 import { createBase } from './base';
 import { createSky } from './sky';
-import type { ModelId, ModuleVisualState } from './base';
+import type { ModuleVisualState } from './base';
 import { createTerrain, TEXTURE_URLS } from './terrain';
 
 export interface WorldCallbacks {
@@ -16,7 +16,7 @@ export interface WorldCallbacks {
   /** El jugador tocó un módulo. */
   onSelect(id: ModuleId): void;
   /** Qué recursos reales se cargaron (terreno CGI Moon Kit, modelos GLB). */
-  onAssets?(assets: { terrain?: 'real' | 'procedural'; models?: ModelId[] }): void;
+  onAssets?(assets: { terrain?: 'real' | 'procedural'; models?: string[] }): void;
 }
 
 export interface World {

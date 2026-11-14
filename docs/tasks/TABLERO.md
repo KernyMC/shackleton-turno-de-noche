@@ -60,7 +60,7 @@ Estados: `libre` · `en curso` · `hecha` · `bloqueada`. Prioridades: P0 impres
 | F-02 | Veredicto en una línea y un slider con chips | P0 | — | Halo Sur | hecha |
 | F-03 | Predecir antes de ejecutar y causa en una frase | P0 | F-02 | | libre |
 | F-04 | Panel de evento real (hecho); falta la barra de 30 s y la alarma | P1 | — | | libre |
-| F-05 | Debrief de una frase y "volver al día N" | P0 | — | | libre |
+| F-05 | Debrief con causa, día decisivo, gráfica y "volver al día N" | P0 | — | Halo Sur | hecha |
 | F-06 | Módulos que se desbloquean por días | P1 | F-02 | | libre |
 | F-07 | Demo de 3 minutos desde el día 9 | P1 | F-05 | | libre |
 | F-08 | Voz de Control de Misión | P1 | — | | libre |
@@ -70,7 +70,7 @@ Estados: `libre` · `en curso` · `hecha` · `bloqueada`. Prioridades: P0 impres
 | D-02 | `sources.json` y `facts.json` con citas | P1 | — | | libre |
 | D-03 | Contrastar consumos y dosis con fuentes NASA (ver D-06) | P1 | D-02 | | libre |
 | D-04 | Terreno real CGI Moon Kit: código y script listos, faltan los archivos | P2 | — | | libre |
-| D-05 | Modelos GLB de NASA 3D Resources: código listo, faltan los archivos | P2 | — | | libre |
+| D-05 | Modelos GLB (NASA o Meshy, ver docs/ASSETS-MESHY.md): código listo, faltan los archivos | P1 | — | | libre |
 | D-06 | Pegar valores del BVAD en DECISIONES.md y verificar balance | P1 | — | | libre |
 | E-01 | Repo en GitHub (hecho) y deploy automático | P0 | — | | libre |
 | E-02 | Prueba de juego con checklist | P1 | hito hora 14 | | libre |
@@ -82,7 +82,7 @@ Estados: `libre` · `en curso` · `hecha` · `bloqueada`. Prioridades: P0 impres
 Motor, store, tablet, HUD, maqueta 3D y datos NASA están hechos. La partida se juega entera.
 Lo que falta para que sea divertida y enseñe está en el **área F** (`docs/DIVERSION.md` explica el porqué):
 
-1. **F-05** debrief y "volver al día N" (el debrief sigue siendo provisional) · **F-03** predicción y causa en una frase.
+1. **F-03** predicción y causa en una frase · **F-07** demo de 3 minutos para los jueces.
 2. **C-06** menú con más cuidado visual · resto de F-04 (barra de 30 s).
 3. **F-07** demo de 3 minutos (lo que verán los jueces) · **C-06** menú.
 4. **D-02** fuentes y datos curiosos · **C-08** ficha "¿De dónde sale este número?" (función estrella del Norte).

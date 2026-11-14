@@ -14,6 +14,14 @@ import type { ModuleLabel } from './modules';
 
 export const MODEL_URLS = { lander: '/models/lander.glb', rover: '/models/rover.glb' } as const;
 export type ModelId = keyof typeof MODEL_URLS;
+/** Modelos opcionales que sustituyen la forma de cada módulo (p. ej. generados con Meshy). */
+export const MODULE_MODEL_URLS: Record<ModuleId, string> = {
+  recycler: '/models/recycler.glb',
+  greenhouse: '/models/greenhouse.glb',
+  shield: '/models/shield.glb',
+  workshop: '/models/workshop.glb',
+};
+export const SHELTER_MODEL_URL = '/models/shelter.glb';
 
 export interface BasePosition {
   id: ModuleId;
@@ -63,7 +71,7 @@ export interface Base {
   /** Avanza las animaciones. `time` en segundos. */
   update(dt: number, time: number, reducedMotion: boolean): void;
   /** Qué modelos GLB se cargaron (para la ficha de fuente nasa_3d_resources). */
-  ready: Promise<ModelId[]>;
+  ready: Promise<string[]>;
   dispose(): void;
 }
 
@@ -154,6 +162,7 @@ export function createBase(heightAt: (x: number, z: number) => number = () => 0)
   const tubeGeo = new THREE.CylinderGeometry(0.9, 0.9, 1, 12);
   const tubeMat = new THREE.MeshStandardMaterial({ color: HULL, roughness: 0.85 });
   const labels = new Map<ModuleId, ModuleLabel>();
+  const shapes = new Map<ModuleId, THREE.Group>();
 
   for (const m of MODULES) {
     const y = heightAt(m.x, m.z);
@@ -172,7 +181,12 @@ export function createBase(heightAt: (x: number, z: number) => number = () => 0)
     });
     const lamp = new THREE.PointLight(AMBER, 0, 24, 1.6);
     lamp.position.set(m.x, y + 5.2, m.z);
-    group.add(shape, lamp);
+    // Aro de energía en el suelo: se queda aunque un modelo GLB sustituya la forma del módulo.
+    const halo = new THREE.Mesh(new THREE.RingGeometry(4.9, 5.3, 48), band);
+    halo.rotation.x = -Math.PI / 2;
+    halo.position.set(m.x, y + 0.06, m.z);
+    group.add(shape, lamp, halo);
+    shapes.set(m.id, shape);
 
     // Rótulo con ícono y nombre: dice qué es cada módulo sin tener que adivinar.
     if (typeof document !== 'undefined') {
@@ -226,10 +240,10 @@ export function createBase(heightAt: (x: number, z: number) => number = () => 0)
   let roverAwayTarget = 0;
 
   let disposed = false;
-  const loadModels = async (): Promise<ModelId[]> => {
+  const loadModels = async (): Promise<string[]> => {
     if (typeof document === 'undefined') return [];
     const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
-    const loaded: ModelId[] = [];
+    const loaded: string[] = [];
     const declared = (await optionalAssets()).models;
     for (const id of Object.keys(MODEL_URLS) as ModelId[]) {
       const url = MODEL_URLS[id];
@@ -254,6 +268,57 @@ export function createBase(heightAt: (x: number, z: number) => number = () => 0)
         loaded.push(id);
       } catch (error) {
         console.warn(`[base] ${url} no se pudo cargar; se usa la geometría simple.`, error);
+      }
+    }
+    // Módulos: el modelo sustituye la silueta procedural; la luz, el aro y el rótulo se quedan.
+    for (const id of Object.keys(MODULE_MODEL_URLS) as ModuleId[]) {
+      const url = MODULE_MODEL_URLS[id];
+      if (!declared.includes(id) || !(await exists(url))) continue;
+      try {
+        const gltf = await loader.loadAsync(url);
+        if (disposed) {
+          disposeObject(gltf.scene);
+          break;
+        }
+        fitModel(gltf.scene, MODULE_TOP[id]);
+        const shape = shapes.get(id)!;
+        for (const child of [...shape.children]) {
+          const index = pickables.indexOf(child);
+          if (index >= 0) pickables.splice(index, 1);
+          shape.remove(child);
+          disposeObject(child);
+        }
+        gltf.scene.traverse((o) => {
+          o.castShadow = true;
+          o.receiveShadow = true;
+          if (o instanceof THREE.Mesh) {
+            o.userData.moduleId = id;
+            pickables.push(o);
+          }
+        });
+        shape.add(gltf.scene);
+        loaded.push(id);
+      } catch (error) {
+        console.warn(`[base] ${url} no se pudo cargar; se usa la forma procedural.`, error);
+      }
+    }
+    // Refugio.
+    if (declared.includes('shelter') && (await exists(SHELTER_MODEL_URL))) {
+      try {
+        const gltf = await loader.loadAsync(SHELTER_MODEL_URL);
+        if (!disposed) {
+          fitModel(gltf.scene, 3);
+          gltf.scene.traverse((o) => {
+            o.castShadow = true;
+            o.receiveShadow = true;
+          });
+          gltf.scene.position.y += heightAt(0, 0);
+          shelter.visible = false;
+          group.add(gltf.scene);
+          loaded.push('shelter');
+        } else disposeObject(gltf.scene);
+      } catch (error) {
+        console.warn('[base] shelter.glb no se pudo cargar; se usa la forma procedural.', error);
       }
     }
     return loaded;

@@ -34,6 +34,8 @@ export const plan = signal<Plan>(EMPTY_PLAN);
 export const resolving = signal(false);
 /** Resultado del último día ejecutado, para el resumen. */
 export const lastOutcome = signal<{ day: number; preview: DayPreview } | null>(null);
+/** Estado al empezar cada día jugado (en memoria): permite volver atrás desde el debrief. */
+export const dayStates = signal<GameState[]>([]);
 /** Objetivo frente al que está el jugador (lo escribe la escena, lo lee la interfaz). */
 export const nearTarget = signal<TargetId | null>(null);
 /** Módulo que el jugador tocó en la maqueta: la tablet enfoca su slider. */
@@ -101,10 +103,29 @@ export function startGame(difficulty: Difficulty, seed?: number): void {
   // Si hoy el Sol está activo (NASA DONKI en vivo), la primera tormenta es ese evento real.
   const firstStorm = liveStorm();
   game.value = createGame(seed ?? seedFromUrl() ?? Date.now() >>> 0, difficulty, undefined, firstStorm ? { firstStorm } : {});
+  dayStates.value = [game.value];
   plan.value = EMPTY_PLAN;
   lastOutcome.value = null;
   tabletOpen.value = false;
   screen.value = 'game';
+}
+
+/**
+ * Vuelve al inicio de un día ya jugado, con la misma partida (misma semilla y eventos).
+ * Sirve para aprender del error: se llama desde el debrief. Devuelve true si se pudo.
+ */
+export function rewindTo(day: number): boolean {
+  const target = dayStates.value.find((s) => s.day === day);
+  if (!target) return false;
+  cancelResolve();
+  dayStates.value = dayStates.value.filter((s) => s.day <= day);
+  game.value = target;
+  plan.value = EMPTY_PLAN;
+  lastOutcome.value = null;
+  focusModule.value = null;
+  tabletOpen.value = target.phase === 'event';
+  screen.value = 'game';
+  return true;
 }
 
 /** Nueva partida con la misma dificultad y otra semilla. */
@@ -176,6 +197,7 @@ export function executeDay(): boolean {
     game.value = next;
     plan.value = EMPTY_PLAN;
     resolving.value = false;
+    if (next.phase !== 'ended') dayStates.value = [...dayStates.value, next];
     if (next.phase === 'ended') {
       tabletOpen.value = false;
       screen.value = 'debrief';
@@ -220,7 +242,7 @@ export function interact(target: TargetId): void {
 // Solo en desarrollo: acceso desde la consola del navegador para probar sin interfaz.
 if (typeof window !== 'undefined' && import.meta.env?.DEV) {
   (window as unknown as Record<string, unknown>).__store = {
-    screen, game, plan, resolving, lastOutcome, nearTarget, tabletOpen, focusModule, budget, preview, realAssets,
+    screen, game, plan, resolving, lastOutcome, dayStates, rewindTo, nearTarget, tabletOpen, focusModule, budget, preview, realAssets,
     startGame, restart, exitToMenu, toggleTablet, setPlanValue, applyPreset, executeDay,
     chooseEventOption, requestRepair, interact,
   };

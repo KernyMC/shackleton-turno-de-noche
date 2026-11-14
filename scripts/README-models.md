@@ -1,5 +1,8 @@
 # Modelos 3D reales: NASA 3D Resources
 
+> Para generar los módulos de la base con Meshy u otro generador, ver `docs/ASSETS-MESHY.md`.
+> Nombres aceptados en `public/models/`: recycler, greenhouse, shield, workshop, shelter, lander, rover.
+
 El juego funciona sin estos archivos (geometrías simples). Si pones `public/models/lander.glb` y/o
 `public/models/rover.glb`, `src/scene/base.ts` los carga y los escala solo.
 
