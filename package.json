@@ -15,7 +15,9 @@
     "check": "tsc --noEmit",
     "simulate": "tsx scripts/simulate.ts",
     "data:donki": "node scripts/fetch-donki.mjs",
-    "check:nasa": "tsx scripts/check-spaceweather.ts"
+    "check:nasa": "tsx scripts/check-spaceweather.ts",
+    "models:build": "node scripts/blender/run.mjs build",
+    "models:preview": "node scripts/blender/run.mjs preview"
   },
   "dependencies": {
     "@astrojs/preact": "^6.1.6",

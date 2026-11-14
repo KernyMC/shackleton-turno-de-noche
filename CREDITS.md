@@ -24,7 +24,9 @@
 Tipografías: Space Grotesk e IBM Plex Mono (SIL Open Font License), servidas por Google Fonts.
 
 ## Assets externos
-Ninguno por ahora. Todo modelo o audio añadido se registra aquí con origen y licencia.
+- Modelos 3D de los módulos (`public/models/*.glb`): modelados por el equipo con Blender mediante script (`scripts/blender/`). Diseño propio.
+
+Otros: Todo modelo o audio añadido se registra aquí con origen y licencia.
 
 ## IA
 Desarrollado con ayuda de Claude Code (Anthropic). Ver `AI_USAGE.md`.

@@ -293,6 +293,12 @@ export function createBase(heightAt: (x: number, z: number) => number = () => 0)
           o.castShadow = true;
           o.receiveShadow = true;
           if (o instanceof THREE.Mesh) {
+            // Las piezas con el material "glow" se encienden con la energía, como en la forma procedural.
+            const mats = Array.isArray(o.material) ? o.material : [o.material];
+            if (mats.some((mat) => mat.name === 'glow')) {
+              mats.forEach((mat) => mat.dispose());
+              o.material = parts.get(id)!.band;
+            }
             o.userData.moduleId = id;
             pickables.push(o);
           }

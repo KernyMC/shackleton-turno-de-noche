@@ -70,7 +70,7 @@ Estados: `libre` · `en curso` · `hecha` · `bloqueada`. Prioridades: P0 impres
 | D-02 | `sources.json` y `facts.json` con citas | P1 | — | | libre |
 | D-03 | Contrastar consumos y dosis con fuentes NASA (ver D-06) | P1 | D-02 | | libre |
 | D-04 | Terreno real CGI Moon Kit: código y script listos, faltan los archivos | P2 | — | | libre |
-| D-05 | Modelos GLB (NASA o Meshy, ver docs/ASSETS-MESHY.md): código listo, faltan los archivos | P1 | — | | libre |
+| D-05 | Modelos GLB con Blender por script (`npm run models:build`): Reciclador hecho; faltan invernadero, blindaje, taller, refugio y rover | P1 | — | | libre |
 | D-06 | Pegar valores del BVAD en DECISIONES.md y verificar balance | P1 | — | | libre |
 | E-01 | Repo en GitHub (hecho) y deploy automático | P0 | — | | libre |
 | E-02 | Prueba de juego con checklist | P1 | hito hora 14 | | libre |
