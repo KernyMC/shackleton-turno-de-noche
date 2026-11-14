@@ -19,15 +19,19 @@ export interface MissionReview {
   lowest: { lifeSupport: number; food: number; battery: number };
 }
 
-const LOW = 25;
-const DOSE_CAUTION = 0.7;
 /** Días de margen antes del día decisivo para poder corregir el rumbo. */
 const REWIND_MARGIN = 2;
 
-function inDanger(cause: LossCause, h: { lifeSupport: number; food: number; dose: number }, doseLimit: number): boolean {
-  if (cause === 'life_support') return h.lifeSupport <= LOW;
-  if (cause === 'food') return h.food <= LOW;
-  return h.dose / doseLimit >= DOSE_CAUTION;
+function inDanger(
+  cause: LossCause,
+  h: { lifeSupport: number; food: number; dose: number },
+  doseLimit: number,
+  cfg: GameConfig,
+): boolean {
+  const { low, doseCaution } = cfg.balance.thresholds;
+  if (cause === 'life_support') return h.lifeSupport <= low;
+  if (cause === 'food') return h.food <= low;
+  return h.dose / doseLimit >= doseCaution;
 }
 
 export function reviewMission(state: GameState, cfg: GameConfig = defaultConfig): MissionReview {
@@ -37,7 +41,7 @@ export function reviewMission(state: GameState, cfg: GameConfig = defaultConfig)
 
   let decisiveDay: number | null = null;
   if (cause) {
-    decisiveDay = history.find((h) => inDanger(cause, h, doseLimit))?.day ?? history.at(-1)?.day ?? 1;
+    decisiveDay = history.find((h) => inDanger(cause, h, doseLimit, cfg))?.day ?? history.at(-1)?.day ?? 1;
   }
   const storms = state.log.filter((l) => l.key === 'log.storm.shelter' || l.key === 'log.storm.work');
   const lastDay = history.at(-1)?.day ?? state.day;

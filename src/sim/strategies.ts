@@ -1,6 +1,7 @@
 // Jugadores automáticos para probar el balance (tests y `npm run simulate`). Puro.
 
 import { defaultConfig } from './config';
+import { maxEnergyFor } from './acts';
 import { createGame, EMPTY_PLAN, getEnergyBudget, getLight, resolveEvent, runDay } from './engine';
 import { createRng } from './rng';
 import { MODULE_IDS } from './types';
@@ -13,7 +14,7 @@ export interface Strategy {
   choose(state: GameState, cfg: GameConfig): string;
 }
 
-/** Reparte `energy` entre módulos en el orden dado, respetando máximos y averías. */
+/** Reparte `energy` entre módulos en el orden dado, respetando máximos, bloqueos y averías. */
 export function allocate(
   state: GameState,
   energy: number,
@@ -26,7 +27,7 @@ export function allocate(
   for (const id of order) {
     if (left <= 0) break;
     if (state.modules[id].broken) continue;
-    const add = Math.min(cfg.balance.modules[id].maxEnergy - plan[id], left);
+    const add = Math.min(maxEnergyFor(state, id, cfg) - plan[id], left);
     plan[id] += add;
     left -= add;
   }
@@ -47,7 +48,7 @@ const firstEnabled = (state: GameState, preferred: string[]): string => {
 export const allRecycler: Strategy = {
   name: 'todo-al-reciclador',
   plan: (state, cfg) => allocate(state, getEnergyBudget(state, cfg).available, ['recycler'], cfg),
-  choose: (state) => firstEnabled(state, ['work', 'later', 'skip', 'ok']),
+  choose: (state) => firstEnabled(state, ['work', 'later', 'skip', 'tilt', 'ok']),
 };
 
 /** Reparte al azar y elige al azar. */
@@ -94,7 +95,8 @@ export const prudent: Strategy = {
       spend = state.day > lastNight ? available : 0;
     }
 
-    const needsWorkshop = state.repairToday !== null || state.roverSendToday;
+    const needsWorkshop =
+      state.unlocked.includes('workshop') && (state.repairToday !== null || state.roverSendToday || state.cleanToday);
     const base: Plan = needsWorkshop
       ? { ...EMPTY_PLAN, workshop: Math.min(cfg.balance.effects.workshopMinEnergy, Math.floor(available)) }
       : EMPTY_PLAN;
@@ -104,7 +106,7 @@ export const prudent: Strategy = {
         : ['recycler', 'greenhouse', 'shield'];
     return allocate(state, Math.max(spend, base.workshop), order, cfg, base);
   },
-  choose: (state) => firstEnabled(state, ['shelter', 'repair', 'send', 'ok']),
+  choose: (state) => firstEnabled(state, ['shelter', 'repair', 'send', 'clean', 'ok']),
 };
 
 /** Juega una partida completa con una estrategia y devuelve el estado final. */

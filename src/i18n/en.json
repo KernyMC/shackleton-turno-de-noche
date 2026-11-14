@@ -437,5 +437,14 @@
   "crew.act.valeria": "Checking the Recycler",
   "crew.act.mateo": "Watering the lettuce",
   "crew.act.amaru": "Watching the radiation",
-  "crew.act.lucia": "Tidying the Workshop"
+  "crew.act.lucia": "Tidying the Workshop",
+  "log.act.met": "Act {act} complete! Goal reached.",
+  "log.act.missed": "Act {act} is over. The goal was not reached, but the mission goes on.",
+  "log.unlock": "New module available: {module}.",
+  "log.dust": "Moon dust on the solar panels: they make less power.",
+  "log.dust.clean": "Decision: clean the panels with the rover.",
+  "log.dust.tilt": "Decision: tilt the panels. The dust stays until it is cleaned.",
+  "log.dust.cleaned": "Panels clean: they make full power again.",
+  "log.dust.failed": "The panels could not be cleaned: the Workshop had no energy.",
+  "log.harvest": "Extra harvest in the greenhouse: +{amount} food."
 }

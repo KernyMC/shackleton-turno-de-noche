@@ -6,8 +6,17 @@ import {
   applyPreset,
   budget,
   chooseEventOption,
+  cancelFastForward,
   executeDay,
+  ffDays,
+  ffStop,
+  FF_MS,
+  fastForwarding,
   game,
+  QUIET_RESOLVE_MS,
+  requestClean,
+  resolveMs,
+  startFastForward,
   plan,
   preview,
   requestRepair,
@@ -162,6 +171,7 @@ describe('volver a un día', () => {
     day();
     const day2 = g();
     day();
+    chooseEventOption('ok'); // día 3: cosecha extra
     day();
     expect(g().day).toBe(4);
     expect(dayStates.value.map((s) => s.day)).toEqual([1, 2, 3, 4]);
@@ -203,5 +213,105 @@ describe('partida completa', () => {
     restart();
     expect(screen.value).toBe('game');
     expect(g()).toMatchObject({ day: 1, difficulty: 'comandante', seed: 2 });
+  });
+});
+
+describe('versión de partida', () => {
+  it('startGame crea una partida de versión 2', () => {
+    expect(g().version).toBe(2);
+    expect(g().unlocked).toEqual(['recycler', 'greenhouse']);
+  });
+});
+
+describe('ritmo del día', () => {
+  it('un día tranquilo se resuelve en QUIET_RESOLVE_MS y uno con tormenta en RESOLVE_MS', () => {
+    const quiet = { ...g(), battery: 100, lifeSupport: 90, food: 90 };
+    expect(resolveMs(quiet)).toBe(QUIET_RESOLVE_MS);
+    expect(QUIET_RESOLVE_MS).toBeLessThan(RESOLVE_MS);
+    expect(resolveMs({ ...quiet, stormToday: 'S2' })).toBe(RESOLVE_MS);
+    expect(resolveMs({ ...quiet, repairToday: 'greenhouse' })).toBe(RESOLVE_MS);
+    expect(resolveMs({ ...quiet, food: 20 })).toBe(RESOLVE_MS);
+  });
+
+  it('executeDay publica el estado tras la duración del ritmo', () => {
+    game.value = { ...g(), battery: 100, lifeSupport: 90, food: 90 };
+    setPlanValue('recycler', 20);
+    executeDay();
+    vi.advanceTimersByTime(QUIET_RESOLVE_MS - 1);
+    expect(g().day).toBe(1);
+    vi.advanceTimersByTime(1);
+    expect(g().day).toBe(2);
+  });
+});
+
+describe('avance rápido', () => {
+  const safe = (): void => {
+    game.value = { ...g(), battery: 100, lifeSupport: 100, food: 100 };
+    setPlanValue('recycler', 20);
+  };
+
+  it('avanza un día cada FF_MS, publica cada estado y se detiene en el evento', () => {
+    safe();
+    expect(startFastForward()).toBe(true);
+    expect(fastForwarding.value).toBe(true);
+    expect(g().day).toBe(2); // el primer día se resuelve al empezar
+    expect(ffDays.value).toBe(1);
+    vi.advanceTimersByTime(FF_MS);
+    expect(g().day).toBe(3);
+    expect(g().phase).toBe('event'); // cosecha del día 3
+    expect(fastForwarding.value).toBe(false);
+    expect(ffStop.value).toEqual({ reason: 'event', day: 3 });
+    expect(tabletOpen.value).toBe(true);
+    expect(dayStates.value.map((s) => s.day)).toEqual([1, 2, 3]);
+  });
+
+  it('no se puede iniciar con un evento pendiente ni con un plan inválido', () => {
+    safe();
+    startFastForward();
+    vi.advanceTimersByTime(FF_MS);
+    expect(g().phase).toBe('event');
+    expect(startFastForward()).toBe(false);
+    chooseEventOption('ok');
+    plan.value = { recycler: 0, greenhouse: 0, shield: 99, workshop: 0 };
+    expect(startFastForward()).toBe(false);
+  });
+
+  it('cancelFastForward lo detiene y los demás controles se bloquean mientras corre', () => {
+    safe();
+    startFastForward();
+    expect(setPlanValue('recycler', 5)).toBe(false);
+    expect(applyPreset('saving')).toBe(false);
+    expect(executeDay()).toBe(false);
+    cancelFastForward();
+    expect(fastForwarding.value).toBe(false);
+    const day = g().day;
+    vi.advanceTimersByTime(FF_MS * 3);
+    expect(g().day).toBe(day);
+    expect(ffStop.value).toBeNull();
+  });
+
+  it('con reducir movimiento es instantáneo', () => {
+    vi.stubGlobal('window', { matchMedia: () => ({ matches: true }), location: { search: '' } });
+    try {
+      safe();
+      expect(startFastForward()).toBe(true);
+      expect(fastForwarding.value).toBe(false);
+      expect(g().phase).toBe('event');
+      expect(ffStop.value?.reason).toBe('event');
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+});
+
+describe('limpiar paneles', () => {
+  it('requestClean exige polvo y reserva la energía del Taller', () => {
+    expect(requestClean(true)).toBe(false); // sin polvo
+    game.value = { ...g(), day: 5, dust: true, unlocked: ['recycler', 'greenhouse', 'workshop'], battery: 100 };
+    expect(requestClean(true)).toBe(true);
+    expect(g().cleanToday).toBe(true);
+    expect(plan.value.workshop).toBe(defaultConfig.balance.effects.workshopMinEnergy);
+    expect(requestClean(false)).toBe(true);
+    expect(g().cleanToday).toBe(false);
   });
 });

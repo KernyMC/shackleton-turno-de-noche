@@ -14,8 +14,7 @@
       "doseLimit": 120,
       "doseBaseDaily": 1.2,
       "minorEventChance": 0.2,
-      "nightLightBonus": 0.05,
-      "stormCount": 2
+      "nightLightBonus": 0.05
     },
     "comandante": {
       "crew": 4,
@@ -28,8 +27,7 @@
       "doseLimit": 100,
       "doseBaseDaily": 1.4,
       "minorEventChance": 0.3,
-      "nightLightBonus": 0,
-      "stormCount": 3
+      "nightLightBonus": 0
     }
   },
   "modules": {
@@ -54,7 +52,9 @@
     "workshopMinEnergy": 10,
     "blackoutLifeSupportPenalty": 3,
     "shelterDoseFactor": 0.15,
-    "roverLifeSupport": 25
+    "roverLifeSupport": 25,
+    "dustSolarFactor": 0.85,
+    "harvestFood": 8
   },
   "crewConsumption": {
     "lifeSupportPerPerson": 2.5,
@@ -75,31 +75,172 @@
     "three": 30
   },
   "events": {
-    "stormWindows": [
-      [
-        5,
-        8
-      ],
-      [
-        18,
-        21
-      ],
-      [
-        24,
-        27
-      ]
-    ],
-    "breakdownWindow": [
-      7,
-      10
+    "warningDays": 2,
+    "brokenReminderDays": 5,
+    "fixed": [
+      {
+        "kind": "harvest",
+        "day": 3
+      },
+      {
+        "kind": "dust",
+        "day": 4
+      },
+      {
+        "kind": "night_warning",
+        "day": 9
+      }
     ],
     "iceWindow": [
-      20,
-      23
+      14,
+      15
     ],
-    "nightWarningDay": 8,
-    "brokenReminderDays": 5,
-    "warningDays": 2
+    "storms": [
+      {
+        "window": [
+          6,
+          7
+        ],
+        "levels": {
+          "cadete": [
+            1,
+            1
+          ],
+          "comandante": [
+            1,
+            2
+          ]
+        }
+      },
+      {
+        "window": [
+          19,
+          22
+        ],
+        "levels": {
+          "cadete": null,
+          "comandante": [
+            2,
+            3
+          ]
+        }
+      },
+      {
+        "window": [
+          26,
+          27
+        ],
+        "levels": {
+          "cadete": [
+            2,
+            3
+          ],
+          "comandante": [
+            3,
+            4
+          ]
+        }
+      }
+    ],
+    "breakdowns": [
+      {
+        "window": [
+          8,
+          9
+        ],
+        "chance": {
+          "cadete": 1,
+          "comandante": 1
+        }
+      },
+      {
+        "window": [
+          20,
+          23
+        ],
+        "chance": {
+          "cadete": 0,
+          "comandante": 0.5
+        }
+      }
+    ]
+  },
+  "acts": {
+    "list": [
+      {
+        "id": 1,
+        "key": "llegada",
+        "from": 1,
+        "to": 5,
+        "goal": {
+          "type": "air_food",
+          "target": 60
+        }
+      },
+      {
+        "id": 2,
+        "key": "sol_despierta",
+        "from": 6,
+        "to": 10,
+        "goal": {
+          "type": "battery_pct",
+          "target": 80
+        }
+      },
+      {
+        "id": 3,
+        "key": "noche_larga",
+        "from": 11,
+        "to": 17,
+        "goal": {
+          "type": "no_blackout",
+          "target": 0
+        }
+      },
+      {
+        "id": 4,
+        "key": "amanecer",
+        "from": 18,
+        "to": 24,
+        "goal": {
+          "type": "all_min",
+          "target": 50
+        }
+      },
+      {
+        "id": 5,
+        "key": "cuenta_final",
+        "from": 25,
+        "to": 30,
+        "goal": {
+          "type": "reach_day",
+          "target": 30
+        }
+      }
+    ],
+    "unlocks": {
+      "initial": [
+        "recycler",
+        "greenhouse"
+      ],
+      "byDay": {
+        "workshop": 4
+      },
+      "onFirstStorm": [
+        "shield"
+      ]
+    }
+  },
+  "thresholds": {
+    "low": 25,
+    "critical": 10,
+    "doseCaution": 0.7,
+    "doseDanger": 0.9,
+    "batteryLow": 0.15
+  },
+  "fastForward": {
+    "maxDays": 5,
+    "nightLookahead": 2
   },
   "sources": {
     "_nota": "Todos los valores son 'game_balance' o 'simulated' hasta que la tarea D-03 los contraste con el BVAD de NASA.",

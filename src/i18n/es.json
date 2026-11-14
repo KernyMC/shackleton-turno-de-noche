@@ -437,5 +437,14 @@
   "crew.act.valeria": "Revisando el Reciclador",
   "crew.act.mateo": "Regando las lechugas",
   "crew.act.amaru": "Vigilando la radiación",
-  "crew.act.lucia": "Ordenando el Taller"
+  "crew.act.lucia": "Ordenando el Taller",
+  "log.act.met": "¡Acto {act} cumplido! Objetivo logrado.",
+  "log.act.missed": "Acto {act} terminado. No se logró el objetivo, pero la misión sigue.",
+  "log.unlock": "Nuevo módulo disponible: {module}.",
+  "log.dust": "Polvo lunar sobre los paneles solares: producen menos.",
+  "log.dust.clean": "Decisión: limpiar los paneles con el rover.",
+  "log.dust.tilt": "Decisión: inclinar los paneles. El polvo sigue hasta limpiarlo.",
+  "log.dust.cleaned": "Paneles limpios: vuelven a producir con toda su fuerza.",
+  "log.dust.failed": "No se pudo limpiar los paneles: el Taller no tuvo energía.",
+  "log.harvest": "Cosecha extra en el invernadero: +{amount} de comida."
 }

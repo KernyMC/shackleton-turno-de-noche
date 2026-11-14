@@ -13,6 +13,7 @@ import {
   validatePlan,
 } from './engine';
 import { createRng } from './rng';
+import { MODULE_IDS } from './types';
 import type { GameConfig, GameState, Plan, ScheduledEvent } from './types';
 
 const cmd = defaultConfig.balance.difficulty.comandante;
@@ -20,7 +21,7 @@ const FULL: Plan = { recycler: 30, greenhouse: 25, shield: 20, workshop: 15 };
 
 /** Partida de Comandante sin eventos, con los cambios indicados. */
 function game(patch: Partial<GameState> = {}, events: ScheduledEvent[] = []): GameState {
-  return { ...createGame(1, 'comandante'), scheduledEvents: events, ...patch };
+  return { ...createGame(1, 'comandante'), unlocked: [...MODULE_IDS], scheduledEvents: events, ...patch };
 }
 /** Batería necesaria para que el día 1 tenga exactamente `available` de energía. */
 const batteryFor = (available: number): number => available - cmd.solarMax * 0.85 + cmd.baseConsumption;

@@ -2,6 +2,7 @@
 // Todas las funciones devuelven un estado NUEVO; nunca mutan el que reciben.
 // Reglas: docs/specs/01-motor-simulacion.md y 00-documento-original.md §4–6.
 
+import { actGoalMet, actOf, isLastDayOfAct, isUnlocked, maxEnergyFor } from './acts';
 import { defaultConfig } from './config';
 import { scheduleEvents } from './events';
 import type { ScheduleOptions } from './events';
@@ -38,7 +39,7 @@ export function createGame(
 ): GameState {
   const d = cfg.balance.difficulty[difficulty];
   return {
-    version: 1,
+    version: 2,
     seed,
     difficulty,
     day: 1,
@@ -58,6 +59,10 @@ export function createGame(
     stormToday: null,
     repairToday: null,
     roverSendToday: false,
+    dust: false,
+    cleanToday: false,
+    unlocked: [...cfg.balance.acts.unlocks.initial],
+    actsMet: [],
     pendingEffects: [],
     pendingEvent: null,
     scheduledEvents: scheduleEvents(seed, difficulty, cfg, options),
@@ -79,7 +84,8 @@ export function getLight(day: number, difficulty: Difficulty, cfg: GameConfig = 
 
 export function getEnergyBudget(state: GameState, cfg: GameConfig = defaultConfig): EnergyBudget {
   const d = cfg.balance.difficulty[state.difficulty];
-  const solar = r2(d.solarMax * getLight(state.day, state.difficulty, cfg));
+  const dustFactor = state.dust ? cfg.balance.effects.dustSolarFactor : 1;
+  const solar = r2(d.solarMax * getLight(state.day, state.difficulty, cfg) * dustFactor);
   const raw = state.battery + solar - d.baseConsumption;
   return { solar, base: d.baseConsumption, available: r2(Math.max(0, raw)), blackout: raw < 0 };
 }
@@ -100,13 +106,35 @@ export function validatePlan(
   for (const id of MODULE_IDS) {
     const value = plan[id];
     if (!Number.isFinite(value) || value < 0) errors.push(`plan.error.negative.${id}`);
-    if (value > cfg.balance.modules[id].maxEnergy) errors.push(`plan.error.over_max.${id}`);
+    // Un módulo bloqueado tiene máximo 0.
+    if (value > maxEnergyFor(state, id, cfg)) errors.push(`plan.error.over_max.${id}`);
     if (state.modules[id].broken && value > 0) errors.push(`plan.error.broken.${id}`);
     total += value;
   }
   // Tolerancia mínima por decimales de la producción solar.
   if (total > getEnergyBudget(state, cfg).available + 1e-9) errors.push('plan.error.over_budget');
   return { ok: errors.length === 0, errors };
+}
+
+/**
+ * Ajusta un plan deseado a lo que hoy es posible, dando prioridad en el orden indicado.
+ * Respeta máximos, bloqueos, averías y energía disponible; siempre devuelve enteros.
+ */
+export function fitPlan(
+  state: GameState,
+  desired: Plan,
+  order: readonly ModuleId[],
+  cfg: GameConfig = defaultConfig,
+): Plan {
+  const fitted: Plan = { ...EMPTY_PLAN };
+  let left = Math.floor(getEnergyBudget(state, cfg).available + 1e-9);
+  for (const id of order) {
+    if (state.modules[id].broken) continue;
+    const value = Math.max(0, Math.min(Math.round(desired[id]), maxEnergyFor(state, id, cfg), left));
+    fitted[id] = value;
+    left -= value;
+  }
+  return fitted;
 }
 
 /** Dosis extra (mSv) de una tormenta según si la tripulación se refugia. */
@@ -138,6 +166,11 @@ function computeDay(state: GameState, plan: Plan, cfg: GameConfig): DayMath {
   const d = cfg.balance.difficulty[state.difficulty];
   const fx = cfg.balance.effects;
   const budget = getEnergyBudget(state, cfg);
+
+  // Un módulo bloqueado no recibe energía (máximo 0), pida lo que pida el plan.
+  const usable: Plan = { ...plan };
+  for (const id of MODULE_IDS) if (!state.unlocked.includes(id)) usable[id] = 0;
+  plan = usable;
 
   const total = MODULE_IDS.reduce((sum, id) => sum + plan[id], 0);
   const left = budget.available - total;
@@ -198,6 +231,7 @@ export function getEventOptions(
 ): EventOption[] {
   const workshopReason = (): string | undefined => {
     if (state.modules.workshop.broken) return 'event.reason.workshop_broken';
+    if (!isUnlocked(state, 'workshop')) return 'event.reason.workshop_energy';
     if (getEnergyBudget(state, cfg).available < cfg.balance.effects.workshopMinEnergy) {
       return 'event.reason.workshop_energy';
     }
@@ -211,6 +245,8 @@ export function getEventOptions(
       return [option('shelter'), option('work')];
     case 'breakdown':
       return [option('repair', workshopReason()), option('later')];
+    case 'dust':
+      return [option('clean', workshopReason()), option('tilt')];
     case 'ice': {
       const noTime = state.day >= cfg.balance.days ? 'event.reason.no_time' : undefined;
       return [option('send', noTime ?? workshopReason()), option('skip')];
@@ -220,6 +256,29 @@ export function getEventOptions(
   }
 }
 
+/** Desbloquea los módulos indicados que aún estén bloqueados, con una entrada de log cada uno. */
+function unlockModules(state: GameState, ids: readonly ModuleId[]): GameState {
+  const fresh = ids.filter((id) => !state.unlocked.includes(id));
+  if (fresh.length === 0) return state;
+  return {
+    ...state,
+    unlocked: [...state.unlocked, ...fresh],
+    log: pushLog(
+      state.log,
+      ...fresh.map((module): LogEntry => ({ day: state.day, type: 'achievement', key: 'log.unlock', vars: { module } })),
+    ),
+  };
+}
+
+/** Desbloqueos por día (balance.json → acts.unlocks.byDay) al empezar `state.day`. */
+function applyDayUnlocks(state: GameState, cfg: GameConfig): GameState {
+  const due = MODULE_IDS.filter((id) => {
+    const from = cfg.balance.acts.unlocks.byDay[id];
+    return from !== undefined && state.day >= from;
+  });
+  return unlockModules(state, due);
+}
+
 /** Abre el evento programado para el día actual, si lo hay. */
 function openEventForToday(state: GameState, cfg: GameConfig): GameState {
   const scheduled = state.scheduledEvents.find((e) => e.day === state.day);
@@ -227,6 +286,17 @@ function openEventForToday(state: GameState, cfg: GameConfig): GameState {
 
   let next = state;
   let event = scheduled;
+  if (scheduled.kind === 'storm') {
+    // La primera tormenta desbloquea el blindaje; el refugio funciona esté o no desbloqueado.
+    next = unlockModules(state, cfg.balance.acts.unlocks.onFirstStorm);
+  }
+  if (scheduled.kind === 'dust') {
+    next = {
+      ...state,
+      dust: true,
+      log: pushLog(state.log, { day: state.day, type: 'event', key: 'log.dust' }),
+    };
+  }
   if (scheduled.kind === 'breakdown') {
     // Si el módulo previsto ya está roto, se elige otro; si no queda ninguno, no hay avería.
     const wanted = scheduled.payload?.module as ModuleId;
@@ -302,6 +372,22 @@ export function resolveEvent(
         log: pushLog(state.log, decision(optionId === 'send' ? 'log.rover.send' : 'log.rover.skip')),
       };
       break;
+    case 'dust':
+      next = {
+        ...next,
+        cleanToday: optionId === 'clean',
+        log: pushLog(state.log, decision(optionId === 'clean' ? 'log.dust.clean' : 'log.dust.tilt')),
+      };
+      break;
+    case 'harvest': {
+      const amount = cfg.balance.effects.harvestFood;
+      next = {
+        ...next,
+        food: r2(clamp(state.food + amount, 0, 100)),
+        log: pushLog(state.log, { day, type: 'event', key: 'log.harvest', vars: { amount } }),
+      };
+      break;
+    }
     default:
       next = { ...next, log: pushLog(state.log, { day, type: 'event', key: `log.${event.kind}` }) };
   }
@@ -313,6 +399,32 @@ export function setRepairToday(state: GameState, module: ModuleId | null): GameS
   if (state.phase !== 'planning') throw new Error('Solo se puede pedir una reparación al planificar');
   if (module && !state.modules[module].broken) throw new Error(`${module} no está averiado`);
   return { ...state, repairToday: module };
+}
+
+/** Pide (o cancela) limpiar hoy el polvo de los paneles con el rover. Requiere polvo y el Taller desbloqueado. */
+export function setCleanToday(state: GameState, on: boolean): GameState {
+  if (state.phase !== 'planning') throw new Error('Solo se puede pedir la limpieza al planificar');
+  if (on && !state.dust) throw new Error('Los paneles no tienen polvo');
+  if (on && !isUnlocked(state, 'workshop')) throw new Error('El Taller aún está bloqueado');
+  return { ...state, cleanToday: on };
+}
+
+/** Cierra el acto si `day` es su último día: guarda si se cumplió el objetivo y lo anota en el log. */
+function closeActIfDue(state: GameState, day: number, cfg: GameConfig): GameState {
+  if (!isLastDayOfAct(day, cfg)) return state;
+  const act = actOf(day, cfg);
+  const met = actGoalMet(state, act.id, cfg);
+  const entry: LogEntry = {
+    day,
+    type: met ? 'achievement' : 'info',
+    key: met ? 'log.act.met' : 'log.act.missed',
+    vars: { act: act.id, name: act.key },
+  };
+  return {
+    ...state,
+    actsMet: met ? [...state.actsMet, act.id] : state.actsMet,
+    log: pushLog(state.log, entry),
+  };
 }
 
 /** Resuelve el día actual con el plan dado (orden exacto de §4.6). */
@@ -362,18 +474,28 @@ export function runDay(state: GameState, plan: Plan, cfg: GameConfig = defaultCo
       add('warning', 'log.rover.failed');
     }
   }
+  let dust = state.dust;
+  if (state.cleanToday) {
+    if (workshop && dust) {
+      dust = false;
+      add('achievement', 'log.dust.cleaned');
+    } else if (dust) {
+      add('warning', 'log.dust.failed');
+    }
+  }
   for (const id of MODULE_IDS) {
     const since = modules[id].brokenSinceDay;
     if (modules[id].broken && since !== undefined && day - since === cfg.balance.events.brokenReminderDays) {
       add('warning', 'log.broken_reminder', { module: id });
     }
   }
-  if (m.lifeSupport <= 10) add('warning', 'log.critical.life_support');
-  else if (m.lifeSupport <= 25) add('warning', 'log.low.life_support');
-  if (m.food <= 10) add('warning', 'log.critical.food');
-  else if (m.food <= 25) add('warning', 'log.low.food');
-  if (m.dose >= d.doseLimit * 0.9) add('warning', 'log.dose.danger');
-  else if (m.dose >= d.doseLimit * 0.7) add('warning', 'log.dose.caution');
+  const th = cfg.balance.thresholds;
+  if (m.lifeSupport <= th.critical) add('warning', 'log.critical.life_support');
+  else if (m.lifeSupport <= th.low) add('warning', 'log.low.life_support');
+  if (m.food <= th.critical) add('warning', 'log.critical.food');
+  else if (m.food <= th.low) add('warning', 'log.low.food');
+  if (m.dose >= d.doseLimit * th.doseDanger) add('warning', 'log.dose.danger');
+  else if (m.dose >= d.doseLimit * th.doseCaution) add('warning', 'log.dose.caution');
 
   const snapshot: DaySnapshot = {
     day,
@@ -395,6 +517,8 @@ export function runDay(state: GameState, plan: Plan, cfg: GameConfig = defaultCo
     food: m.food,
     dose: m.dose,
     modules,
+    dust,
+    cleanToday: false,
     roverAvailable,
     pendingEffects,
     history: [...state.history, snapshot],
@@ -409,7 +533,9 @@ export function runDay(state: GameState, plan: Plan, cfg: GameConfig = defaultCo
   // La derrota se evalúa al final del día; en el día 30 la derrota gana a la victoria.
   const causes = lossCauses(m, d.doseLimit);
   if (causes.length > 0 || day >= cfg.balance.days) {
-    return { ...resolved, phase: 'ended', result: computeResult(resolved, causes, cfg) };
+    const ended: GameState = { ...resolved, phase: 'ended', result: computeResult(resolved, causes, cfg) };
+    return causes.length > 0 ? ended : closeActIfDue(ended, day, cfg);
   }
-  return openEventForToday({ ...resolved, day: day + 1 }, cfg);
+  const closed = closeActIfDue(resolved, day, cfg);
+  return openEventForToday(applyDayUnlocks({ ...closed, day: day + 1 }, cfg), cfg);
 }

@@ -25,6 +25,23 @@ export interface ScheduleOptions {
   firstStorm?: StormData;
 }
 
+const levelNumber = (storm: StormData): number => Number(storm.level.slice(1));
+
+/**
+ * Tormentas reales (DONKI) cuyo nivel está en el rango; si no hay ninguna, las del nivel más
+ * cercano al rango. Nunca se cambia el nivel de una tormenta.
+ */
+export function stormsForRange(storms: readonly StormData[], [min, max]: [number, number]): StormData[] {
+  const gap = (s: StormData): number => Math.max(min - levelNumber(s), levelNumber(s) - max, 0);
+  const best = Math.min(...storms.map(gap));
+  return storms.filter((s) => gap(s) === best);
+}
+
+/**
+ * Eventos de la partida, por actos (ver balance.json → events). Determinista por semilla.
+ * Orden fijo de colocación: eventos de día fijo, hielo, tormentas, averías. Nunca dos eventos el
+ * mismo día; si una ventana no tiene hueco, el evento se descarta.
+ */
 export function scheduleEvents(
   seed: number,
   difficulty: Difficulty,
@@ -48,17 +65,25 @@ export function scheduleEvents(
     events.push(payload ? { day, kind, payload } : { day, kind });
   };
 
-  // Orden fijo: primero lo que no se puede mover.
-  place('night_warning', [ev.nightWarningDay, ev.nightWarningDay]);
+  for (const fixed of ev.fixed) place(fixed.kind, [fixed.day, fixed.day]);
   place('ice', ev.iceWindow);
-  const stormCount = cfg.balance.difficulty[difficulty].stormCount;
-  ev.stormWindows.slice(0, stormCount).forEach((window, i) => {
+
+  let firstStormPending = true;
+  for (const slot of ev.storms) {
+    const range = slot.levels[difficulty];
+    if (!range) continue; // esta dificultad no tiene esta tormenta
     // Se sortea siempre, aunque luego se sustituya, para no alterar el resto de la secuencia.
-    const picked = rng.pick(cfg.storms);
-    const storm = i === 0 && options.firstStorm ? options.firstStorm : picked;
-    place('storm', window, { ...storm });
-  });
-  place('breakdown', ev.breakdownWindow, { module: rng.pick(breakableModules(difficulty)) });
+    const picked = rng.pick(stormsForRange(cfg.storms, range));
+    const storm = firstStormPending && options.firstStorm ? options.firstStorm : picked;
+    firstStormPending = false;
+    place('storm', slot.window, { ...storm });
+  }
+
+  for (const slot of ev.breakdowns) {
+    const roll = rng.next();
+    const mod = rng.pick(breakableModules(difficulty));
+    if (roll < slot.chance[difficulty]) place('breakdown', slot.window, { module: mod });
+  }
 
   return events.sort((a, b) => a.day - b.day);
 }

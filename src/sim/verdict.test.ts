@@ -1,12 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { defaultConfig } from './config';
 import { createGame, EMPTY_PLAN, runDay } from './engine';
+import { MODULE_IDS } from './types';
 import type { GameState, Plan } from './types';
 import { planVerdict } from './verdict';
 
 const FULL: Plan = { recycler: 30, greenhouse: 25, shield: 20, workshop: 0 };
 const game = (patch: Partial<GameState> = {}): GameState => ({
   ...createGame(1, 'comandante'),
+  unlocked: [...MODULE_IDS],
   scheduledEvents: [],
   ...patch,
 });

@@ -20,16 +20,12 @@ export interface Verdict {
   wasted: number;
 }
 
-const LOW = 25;
-const CRITICAL = 10;
-const DOSE_CAUTION = 0.7;
-const DOSE_DANGER = 0.9;
-
 export function planVerdict(state: GameState, plan: Plan, cfg: GameConfig = defaultConfig): Verdict {
   const p = previewDay(state, plan, cfg);
   const lifeSupport = Math.round((state.lifeSupport + p.lifeSupport) * 100) / 100;
   const food = Math.round((state.food + p.food) * 100) / 100;
   const dose = Math.round((state.dose + p.dose) * 100) / 100;
+  const { low: LOW, critical: CRITICAL, doseCaution: DOSE_CAUTION, doseDanger: DOSE_DANGER } = cfg.balance.thresholds;
   const doseFraction = dose / cfg.balance.difficulty[state.difficulty].doseLimit;
 
   // Se revisa de lo más grave a lo menos grave; dentro de cada nivel, el recurso más bajo manda.
