@@ -79,6 +79,9 @@ Estados: `libre` · `en curso` · `hecha` · `bloqueada`. Prioridades: P0 impres
 | E-02 | Prueba de juego con checklist | P1 | hito hora 14 | | libre |
 | E-03 | Video de demo y página del proyecto en Space Apps | P0 | hito hora 24 | | libre |
 | E-04 | README, CREDITS, AI_USAGE y DECISIONES finales | P0 | — | | libre |
+| H-01 | Intro en cómic tras «Comenzar» (historia realista 2048, 5 viñetas SVG, ES/EN) | P0 | — | Daniel | en curso |
+| H-02 | Motor de retos diarios: `challenges.json`, `src/sim/challenges.ts`, store y `ChallengeModal` | P0 | — | Daniel | en curso |
+| H-03 | Los 10 retos jugables (días 2, 4, 6, 8, 12, 14, 16, 18, 24, 30), con premio y castigo | P0 | H-02 | Daniel | en curso |
 
 ## Siguiente paso recomendado (para quien retome, persona o agente)
 
