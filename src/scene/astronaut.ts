@@ -11,6 +11,9 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js';
 
+/** Poses de trabajo y gestos (se mezclan con damp sobre la animación base). */
+export type AstronautPose = 'stand' | 'crouch' | 'reach' | 'carry' | 'inspect' | 'cheer' | 'slump';
+
 export interface Astronaut {
   group: THREE.Group;
   /** Mallas que responden al puntero. */
@@ -22,9 +25,34 @@ export interface Astronaut {
   setLamp(on: boolean): void;
   /** Destello del Sol en el visor, de 0 a 1. */
   setGlint(amount: number): void;
+  /** Pose o gesto con intensidad 0..1 (se amortigua; con movimiento reducido es instantánea). */
+  setPose(pose: AstronautPose, amount?: number): void;
+  /** Salto corto y flotante de baja gravedad (alegría). */
+  hop(): void;
+  /** Puntos de la mano (en el hueso del brazo) para sujetar accesorios. */
+  hands: { right: THREE.Object3D; left: THREE.Object3D };
   update(dt: number, time: number, reducedMotion: boolean): void;
   dispose(): void;
 }
+
+interface PoseDef {
+  armR: number; armRw: number; armL: number; armLw: number;
+  crouch: number; lean: number; headX: number; out: number;
+}
+const NONE: PoseDef = { armR: 0, armRw: 0, armL: 0, armLw: 0, crouch: 0, lean: 0, headX: 0, out: 0 };
+// rotation.x negativa levanta el brazo hacia delante; -PI lo deja vertical.
+const POSES: Record<AstronautPose, PoseDef> = {
+  stand: NONE,
+  crouch: { armR: -0.85, armRw: 1, armL: -0.85, armLw: 1, crouch: 1, lean: 0.35, headX: 0.25, out: 0 },
+  reach: { armR: -1.35, armRw: 1, armL: 0, armLw: 0, crouch: 0, lean: 0.05, headX: 0.05, out: 0 },
+  carry: { armR: 0, armRw: 0, armL: -0.35, armLw: 1, crouch: 0, lean: 0, headX: 0, out: 0 },
+  inspect: { armR: -0.95, armRw: 1, armL: 0, armLw: 0, crouch: 0, lean: 0.05, headX: 0.4, out: 0 },
+  cheer: { armR: -2.8, armRw: 1, armL: 0, armLw: 0, crouch: 0, lean: -0.05, headX: -0.15, out: 0.25 },
+  slump: { armR: 0.15, armRw: 1, armL: 0.15, armLw: 1, crouch: 0, lean: 0.3, headX: 0.35, out: -0.08 },
+};
+/** Cuánto se encogen las piernas con la cuclilla completa y cuánto baja el cuerpo (m). */
+const CROUCH_SQUASH = 0.38;
+const CROUCH_DROP = 0.74 * CROUCH_SQUASH;
 
 const SUIT = 0xe9e6de;
 const DARK = 0x2a2b2e;
@@ -282,6 +310,7 @@ export function createAstronaut(color: number, phase = 0): Astronaut {
 
   // Brazos (3 mallas cada uno) con pivote en el hombro.
   const arms: THREE.Group[] = [];
+  const hands: THREE.Object3D[] = [];
   const armRest: number[] = [];
   for (const side of [-1, 1]) {
     const shoulder = new THREE.Group();
@@ -293,6 +322,11 @@ export function createAstronaut(color: number, phase = 0): Astronaut {
     mesh(sh.armDark, sh.dark, shoulder);
     arms.push(shoulder);
     armRest.push(side * 0.14);
+    // Punto de la mano: donde queda el guante (codo en (0,-0.46,0) girado -0.5 en x).
+    const hand = new THREE.Object3D();
+    hand.position.set(0, -0.86, 0.22);
+    shoulder.add(hand);
+    hands.push(hand);
   }
   // Piernas (2 mallas cada una) con pivote en la cadera.
   const legs: THREE.Group[] = [];
@@ -320,6 +354,12 @@ export function createAstronaut(color: number, phase = 0): Astronaut {
   let pace = 0;
   let stride = phase;
   let disposed = false;
+  // Pose actual (valores y pesos amortiguados) y objetivo.
+  const pose = { armR: 0, armRw: 0, armL: 0, armLw: 0, crouch: 0, lean: 0, headX: 0, out: 0 };
+  const poseGoal = { ...pose };
+  let hopT = 99;
+  const HOP_SECONDS = 1.1;
+  const HOP_HEIGHT = 0.4;
   const visorBase = visor.emissiveIntensity;
   return {
     group,
@@ -339,6 +379,23 @@ export function createAstronaut(color: number, phase = 0): Astronaut {
       glintSprite.visible = a > 0.01;
       visor.emissiveIntensity = visorBase + a * 0.5;
     },
+    hands: { right: hands[0]!, left: hands[1]! },
+    setPose(name, amount = 1) {
+      const p = POSES[name];
+      const a = Math.min(1, Math.max(0, amount));
+      // El valor del brazo solo cambia si la pose lo usa: al soltar, el peso baja y el brazo vuelve a la marcha.
+      if (p.armRw > 0) poseGoal.armR = p.armR;
+      if (p.armLw > 0) poseGoal.armL = p.armL;
+      poseGoal.armRw = p.armRw * a;
+      poseGoal.armLw = p.armLw * a;
+      poseGoal.crouch = p.crouch * a;
+      poseGoal.lean = p.lean * a;
+      poseGoal.headX = p.headX * a;
+      poseGoal.out = p.out * a;
+    },
+    hop() {
+      hopT = 0;
+    },
     update(dt, time, reducedMotion) {
       focus = damp(focus, focusTarget, 9, dt);
       pace = damp(pace, paceTarget, 8, dt);
@@ -346,13 +403,31 @@ export function createAstronaut(color: number, phase = 0): Astronaut {
       accent.emissiveIntensity = 0.15 + focus * 0.8;
       haloMat.opacity = focus * 0.5;
       halo.visible = focus > 0.01;
+      // Pose: con movimiento reducido salta al objetivo; si no, se amortigua.
+      const k = reducedMotion ? 1000 : 7;
+      pose.armR = damp(pose.armR, poseGoal.armR, k, dt);
+      pose.armL = damp(pose.armL, poseGoal.armL, k, dt);
+      pose.armRw = damp(pose.armRw, poseGoal.armRw, k, dt);
+      pose.armLw = damp(pose.armLw, poseGoal.armLw, k, dt);
+      pose.crouch = damp(pose.crouch, poseGoal.crouch, k, dt);
+      pose.lean = damp(pose.lean, poseGoal.lean, k, dt);
+      pose.headX = damp(pose.headX, poseGoal.headX, k, dt);
+      pose.out = damp(pose.out, poseGoal.out, k, dt);
+      const squash = 1 - CROUCH_SQUASH * pose.crouch;
       if (reducedMotion) {
         body.scale.y = 1;
-        head.rotation.set(0, 0, 0);
-        legs.forEach((l) => (l.rotation.x = 0));
-        arms.forEach((a, i) => a.rotation.set(0, 0, armRest[i]!));
-        body.position.y = 0;
-        body.rotation.set(0, 0, 0);
+        head.rotation.set(pose.headX, 0, 0);
+        legs.forEach((l) => {
+          l.rotation.x = 0.45 * pose.crouch;
+          l.scale.y = squash;
+        });
+        arms.forEach((a, i) => {
+          const w = i === 0 ? pose.armRw : pose.armLw;
+          const v = i === 0 ? pose.armR : pose.armL;
+          a.rotation.set(v * w, 0, armRest[i]! + (i === 0 ? -1 : 1) * pose.out);
+        });
+        body.position.y = -CROUCH_DROP * pose.crouch;
+        body.rotation.set(pose.lean, 0, 0);
         return;
       }
       const walk = Math.min(1, pace);
@@ -363,23 +438,29 @@ export function createAstronaut(color: number, phase = 0): Astronaut {
       const swing = s * (0.55 * walk + 0.25 * run);
       legs[0]!.rotation.x = swing;
       legs[1]!.rotation.x = -swing;
-      arms[0]!.rotation.x = -swing * 0.85;
-      arms[1]!.rotation.x = swing * 0.85;
+      // Los brazos mezclan la marcha con la pose de trabajo (peso 0 = marcha pura).
+      arms[0]!.rotation.x = -swing * 0.85 * (1 - pose.armRw) + (pose.armR + Math.sin(time * 3.4 + phase) * 0.07) * pose.armRw;
+      arms[1]!.rotation.x = swing * 0.85 * (1 - pose.armLw) + pose.armL * pose.armLw;
+      legs[0]!.rotation.x += 0.45 * pose.crouch;
+      legs[1]!.rotation.x += 0.45 * pose.crouch;
+      legs[0]!.scale.y = legs[1]!.scale.y = squash;
       // Respira en reposo y balancea los brazos hacia fuera al andar.
       const breath = Math.sin(time * 1.9 + phase);
       const idle = 1 - walk;
-      arms[0]!.rotation.z = armRest[0]! + breath * 0.012 * idle - Math.abs(s) * 0.05 * walk;
-      arms[1]!.rotation.z = armRest[1]! - breath * 0.012 * idle + Math.abs(s) * 0.05 * walk;
+      arms[0]!.rotation.z = armRest[0]! + breath * 0.012 * idle - Math.abs(s) * 0.05 * walk - pose.out;
+      arms[1]!.rotation.z = armRest[1]! - breath * 0.012 * idle + Math.abs(s) * 0.05 * walk + pose.out;
       // Rebote suave y flotante (seno al cuadrado: sin picos al tocar el suelo).
-      body.position.y = s * s * (0.1 * walk + 0.06 * run);
-      body.rotation.x = 0.09 * walk + 0.05 * run;
+      hopT += dt;
+      const hop = hopT < HOP_SECONDS ? Math.sin((Math.PI * hopT) / HOP_SECONDS) * HOP_HEIGHT : 0;
+      body.position.y = s * s * (0.1 * walk + 0.06 * run) - CROUCH_DROP * pose.crouch + hop;
+      body.rotation.x = 0.09 * walk + 0.05 * run + pose.lean;
       body.rotation.y = -s * 0.07 * walk;
       body.rotation.z = Math.cos(stride) * 0.025 * walk;
       body.scale.y = 1 + 0.012 * breath * idle;
       // La cabeza compensa el cuerpo y, en reposo, mira a un lado de vez en cuando.
       const glance = Math.sin(time * 0.7 + phase * 1.7) * smoothstep(0.25, 0.85, Math.sin(time * 0.19 + phase * 2.3));
       head.rotation.y = -body.rotation.y * 0.9 + 0.5 * glance * idle;
-      head.rotation.x = -body.rotation.x * 0.8 + 0.05 * Math.sin(time * 0.31 + phase);
+      head.rotation.x = -body.rotation.x * 0.8 + 0.05 * Math.sin(time * 0.31 + phase) + pose.headX;
       head.rotation.z = -body.rotation.z * 0.8;
     },
     dispose() {

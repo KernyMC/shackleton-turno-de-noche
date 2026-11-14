@@ -4,6 +4,7 @@ import { useEffect } from 'preact/hooks';
 import { Alerts } from '../components/Alerts';
 import { Coach } from '../components/Coach';
 import { Debrief } from '../components/Debrief';
+import { CrewPanel } from '../components/CrewPanel';
 import { Hud } from '../components/Hud';
 import { Loader } from '../components/Loader';
 import { SourcesPanel } from '../components/SourcesPanel';
@@ -38,6 +39,7 @@ function CurrentScreen() {
     <div class="game">
       <Scene />
       <Hud />
+      <CrewPanel />
       <Rewards />
       <StormWarning />
       <Alerts />

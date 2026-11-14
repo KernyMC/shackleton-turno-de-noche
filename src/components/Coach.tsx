@@ -6,7 +6,7 @@ import { defaultConfig } from '../sim/config';
 import { game } from '../state/store';
 import { ackTutorial, contextHint, dismissHint, helpOpen, onboardingOpen, skipTutorial, TUTORIAL_MIN, tutorialStep } from '../state/tutorial';
 import type { HintId, TutorialStep } from '../state/tutorial';
-import { crewById } from '../data/crew';
+import { crewById, crewName } from '../data/crew';
 import type { CrewId } from '../data/crew';
 import { CrewPortrait } from './CrewPortrait';
 import { Icon } from './icons';
@@ -62,11 +62,11 @@ function Bubble({ step }: { step: TutorialStep }) {
   return (
     <div class="coach" role="status" aria-live="polite" style={{ '--crew': speaker.css }} key={step}>
       <span class="coach__portrait" aria-hidden="true">
-        <CrewPortrait color={speaker.css} size={48} mood="happy" />
+        <CrewPortrait crew={speaker.id} color={speaker.css} size={48} mood="happy" />
       </span>
       <div class="coach__body">
         <p class="coach__voice">
-          <strong>{t(`crew.${speaker.id}.short`)}</strong>
+          <strong>{crewName(speaker.id)}</strong>
           {index >= 0 && (
             <span class="coach__dots" role="img" aria-label={t('coach.step', { n: index + 1, total: STEPS.length })}>
               {STEPS.map((s, i) => (
@@ -212,11 +212,11 @@ function Hint({ id }: { id: HintId }) {
       <Spot selector={target} />
       <div class="coach onb-hint" role="status" aria-live="polite" style={{ '--crew': speaker.css }} key={id} onClick={dismissHint}>
         <span class="coach__portrait" aria-hidden="true">
-          <CrewPortrait color={speaker.css} size={48} mood="happy" />
+          <CrewPortrait crew={speaker.id} color={speaker.css} size={48} mood="happy" />
         </span>
         <div class="coach__body">
           <p class="coach__voice">
-            <strong>{t(`crew.${speaker.id}.short`)}</strong>
+            <strong>{crewName(speaker.id)}</strong>
           </p>
           <p class="coach__text">{t(`coach.hint_${id}`)}</p>
           <div class="coach__actions">

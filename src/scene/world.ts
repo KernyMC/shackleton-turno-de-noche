@@ -67,6 +67,8 @@ export interface World {
   projectModule(id: ModuleId): { x: number; y: number } | null;
   /** La tripulación dentro de la base: ánimo, refugio, avería, rover. */
   setCrewState(state: CrewWalkState): void;
+  /** El jugador cambió la energía de un módulo: su tripulante va a él y hace un gesto (sube: alegría; baja: hombros caídos). */
+  crewReact(id: ModuleId, delta: number, newValue: number): void;
   /** Mirar al cielo (estrellas, Vía Láctea y la Tierra) o volver a la vista de la base. */
   setSkyLook(on: boolean): void;
   /** Muestra u oculta los rótulos de los módulos. */
@@ -923,6 +925,7 @@ export function createWorld(container: HTMLElement, cb: WorldCallbacks): World {
     centerOn,
     setLabelsVisible: (visible) => base.setLabelsVisible(visible),
     setCrewState: (state) => walkers.setState(state),
+    crewReact: (id, delta, newValue) => walkers.react(id, delta, newValue),
     projectModule(id) {
       const m = MODULES.find((mod) => mod.id === id);
       if (!m) return null;
@@ -991,7 +994,10 @@ export function createWorld(container: HTMLElement, cb: WorldCallbacks): World {
     setCrewFocus: (id) => void (crewFocused = id),
     playEnergy: (plan, night) => energy.play(plan, night),
     setBattery: (fraction) => energy.setBattery(fraction),
-    playRepair: (id) => repairFx.play(id, reducedMotion),
+    playRepair: (id) => {
+      repairFx.play(id, reducedMotion);
+      walkers.repairBeat();
+    },
     setFxLabels: (labels) => repairFx.setLabels(labels),
     setStormFx: (level, options) => stormFx.setStorm(level, options),
     burstStorm: () => stormFx.burst(),

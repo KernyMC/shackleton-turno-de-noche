@@ -1,6 +1,9 @@
-// Retrato SVG de un astronauta (casco, visor y hombros con su color). Sirve como respaldo
-// cuando no hay 3D y como botón accesible para elegirlo con teclado o toque.
-// `mood` cambia el gesto que se intuye en el reflejo del visor.
+// Retrato de un tripulante. Si hay foto del equipo (public/crew/, declarada en
+// public/optional-assets.json) se usa recortada en círculo; si no, el retrato SVG de casco.
+// `mood` cambia el gesto que se intuye en el reflejo del visor (solo en el SVG).
+import type { CrewId } from '../data/crew';
+import { crewPhotos } from '../data/crew';
+import '../styles/crew.css';
 
 export type Mood = 'happy' | 'neutral' | 'worried';
 
@@ -8,9 +11,25 @@ interface Props {
   color: string;
   mood?: Mood;
   size?: number;
+  /** Si se da y hay foto, se muestra la foto en vez del dibujo. */
+  crew?: CrewId;
 }
 
-export function CrewPortrait({ color, mood = 'happy', size = 56 }: Props) {
+export function CrewPortrait({ color, mood = 'happy', size = 56, crew }: Props) {
+  const photo = crew ? crewPhotos.value[crew] : undefined;
+  if (photo) {
+    return (
+      <img
+        class="portrait portrait--photo"
+        src={photo}
+        width={size}
+        height={size}
+        alt=""
+        draggable={false}
+        style={{ '--ring': color }}
+      />
+    );
+  }
   const mouth = mood === 'happy' ? 'M25 37 Q32 42 39 37' : mood === 'neutral' ? 'M26 38 L38 38' : 'M25 40 Q32 35 39 40';
   return (
     <svg class="portrait" width={size} height={size} viewBox="0 0 64 64" aria-hidden="true" focusable="false">

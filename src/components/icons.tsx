@@ -24,7 +24,9 @@ export type IconName =
   | 'info'
   | 'data'
   | 'bolt'
-  | 'arrow';
+  | 'arrow'
+  | 'lungs'
+  | 'crew';
 
 const PATHS: Record<IconName, JSX.Element> = {
   // Dos flechas en ciclo.
@@ -134,6 +136,22 @@ const PATHS: Record<IconName, JSX.Element> = {
   ),
   // Estrella de cuatro puntas (mirar el cielo).
   sky: <path d="M10 2.5c.6 4.2 3.3 6.9 7.5 7.5-4.2.6-6.9 3.3-7.5 7.5-.6-4.2-3.3-6.9-7.5-7.5 4.2-.6 6.9-3.3 7.5-7.5Z" />,
+  // Pulmones: aire para respirar.
+  lungs: (
+    <>
+      <path d="M10 3v6.5" />
+      <path d="M10 8c-1.6 0-2.2 1.2-3 2.8-.9 1.8-2 4-2 5.4 0 1 .8 1.5 1.6 1.5 1.6 0 3.4-.8 3.4-2.6" />
+      <path d="M10 8c1.6 0 2.2 1.2 3 2.8.9 1.8 2 4 2 5.4 0 1-.8 1.5-1.6 1.5-1.6 0-3.4-.8-3.4-2.6" />
+    </>
+  ),
+  // Casco de astronauta con visor.
+  crew: (
+    <>
+      <path d="M3.5 17c0-2.4 2.8-4 6.5-4s6.5 1.6 6.5 4" />
+      <circle cx="10" cy="8" r="5.5" />
+      <path d="M6.8 7.2a3.2 2.6 0 0 1 6.4 0v1a3.2 2.6 0 0 1-6.4 0Z" />
+    </>
+  ),
   // Información.
   info: (
     <>

@@ -5,7 +5,7 @@
 //     Se tocan los bloques, se usan − / +, o el teclado (flechas, Shift ±5, Inicio/Fin).
 //   - Veredicto: un sello de color y tres medidores de cómo amanece la base mañana.
 // Solo muestra y llama al store; las reglas viven en el motor.
-import { CREW } from '../data/crew';
+import { CREW, crewFullName } from '../data/crew';
 import { t } from '../i18n';
 import { defaultConfig } from '../sim/config';
 import { getLight } from '../sim/engine';
@@ -151,8 +151,8 @@ function Column({ id, game, onClamped }: { id: ModuleId; game: GameState; onClam
           <span class="meter__off">{t(broken ? 'board.broken' : 'board.shelter')}</span>
         )}
       </p>
-      <span class="meter__crew" title={t(`crew.${crew.id}.name`)}>
-        <CrewPortrait color={crew.css} size={22} />
+      <span class="meter__crew" title={crewFullName(crew.id)}>
+        <CrewPortrait crew={crew.id} color={crew.css} size={22} />
       </span>
     </div>
   );

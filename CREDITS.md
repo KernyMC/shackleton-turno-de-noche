@@ -35,3 +35,7 @@ Desarrollado con ayuda de Claude Code (Anthropic). Ver `AI_USAGE.md`.
 
 ## Aviso
 Proyecto independiente creado para NASA Space Apps Challenge 2026. No afiliado ni avalado por NASA.
+
+## Equipo
+Equipo Halo Sur: Christopher Iza, Kevin Vargas, Eduardo Bazurto, Vanessa Alvear.
+Retratos de la tripulación: miembros del equipo Halo Sur, usados con su consentimiento (solo si se añaden fotos en `public/crew/`).

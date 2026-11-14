@@ -5,7 +5,7 @@
 //   - los hitos: tarjeta breve; confeti solo para la noche lunar superada
 // Nada bloquea el avance; todo funciona con movimiento reducido.
 import { useEffect, useRef } from 'preact/hooks';
-import { crewById } from '../data/crew';
+import { crewById, crewName } from '../data/crew';
 import { t } from '../i18n';
 import { sceneBridge } from '../scene/bridge';
 import { collectHarvest, dayDone, dayNote, dismissMilestone, floats, harvest, milestone } from '../state/rewards';
@@ -130,11 +130,11 @@ function CrewVoice() {
       key={note.key}
     >
       <span class="voice__portrait" aria-hidden="true">
-        <CrewPortrait color={member.css} size={64} mood={note.mood === 'worried' ? 'worried' : 'happy'} />
+        <CrewPortrait crew={member.id} color={member.css} size={64} mood={note.mood === 'worried' ? 'worried' : 'happy'} />
       </span>
       <div class="voice__bubble">
         <p class="voice__who">
-          <strong>{t(`crew.${note.crew}.short`)}</strong>
+          <strong>{crewName(note.crew)}</strong>
           <span>{t('rewards.day_label', { dia: note.day })}</span>
         </p>
         <p class="voice__line">{t(note.phrase, { nombre: playerName() })}</p>

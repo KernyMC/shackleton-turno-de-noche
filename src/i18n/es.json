@@ -420,5 +420,22 @@
   "info.ice.alt": "Dibujo: un cráter en sombra permanente con hielo en el fondo y el rover en el borde.",
   "info.dust.1": "El polvo lunar es fino y se pega a todo.",
   "info.dust.2": "Tapa los paneles y dan menos energía.",
-  "info.dust.alt": "Dibujo: polvo pegado a un panel solar tapa la luz; un rover lo limpia con un cepillo."
+  "info.dust.alt": "Dibujo: polvo pegado a un panel solar tapa la luz; un rover lo limpia con un cepillo.",
+  "crew.view": "Ver a {nombre}",
+  "crew.panel.button": "Tripulación",
+  "crew.panel.title": "Tu tripulación",
+  "crew.panel.close": "Cerrar",
+  "crew.panel.all": "Ver toda la base",
+  "crew.mood.happy": "Todo bien",
+  "crew.mood.neutral": "Atento",
+  "crew.mood.worried": "Preocupación",
+  "crew.act.shelter": "En el refugio",
+  "crew.act.repairing": "Reparando: {modulo}",
+  "crew.act.rover": "Con el rover",
+  "crew.act.waiting": "Esperando la reparación",
+  "crew.act.noenergy": "Sin energía en {modulo}",
+  "crew.act.valeria": "Revisando el Reciclador",
+  "crew.act.mateo": "Regando las lechugas",
+  "crew.act.amaru": "Vigilando la radiación",
+  "crew.act.lucia": "Ordenando el Taller"
 }

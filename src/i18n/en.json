@@ -420,5 +420,22 @@
   "info.ice.alt": "Drawing: a crater in permanent shadow with ice at the bottom and the rover on the rim.",
   "info.dust.1": "Moon dust is fine and sticks to everything.",
   "info.dust.2": "It covers the panels, so they give less energy.",
-  "info.dust.alt": "Drawing: dust stuck on a solar panel blocks the light; a rover cleans it with a brush."
+  "info.dust.alt": "Drawing: dust stuck on a solar panel blocks the light; a rover cleans it with a brush.",
+  "crew.view": "See {nombre}",
+  "crew.panel.button": "Crew",
+  "crew.panel.title": "Your crew",
+  "crew.panel.close": "Close",
+  "crew.panel.all": "See the whole base",
+  "crew.mood.happy": "All good",
+  "crew.mood.neutral": "Alert",
+  "crew.mood.worried": "Worried",
+  "crew.act.shelter": "In the shelter",
+  "crew.act.repairing": "Repairing: {modulo}",
+  "crew.act.rover": "With the rover",
+  "crew.act.waiting": "Waiting for the repair",
+  "crew.act.noenergy": "No energy in {modulo}",
+  "crew.act.valeria": "Checking the Recycler",
+  "crew.act.mateo": "Watering the lettuce",
+  "crew.act.amaru": "Watching the radiation",
+  "crew.act.lucia": "Tidying the Workshop"
 }

@@ -1,5 +1,5 @@
 {
-  "_nota": "Qué recursos opcionales están instalados. terrain: lo pone en true scripts/crop-moon.mjs. models: lista los GLB que pusiste en public/models/ — valores posibles: recycler, greenhouse, shield, workshop, shelter, lander, rover.",
+  "_nota": "Qué recursos opcionales están instalados. terrain: lo pone en true scripts/crop-moon.mjs. models: lista los GLB que pusiste en public/models/ — valores posibles: recycler, greenhouse, shield, workshop, shelter, lander, rover. crew: ids de tripulantes con foto en public/crew/<id>.png (valeria, mateo, amaru, lucia); vacío = retratos dibujados.",
   "terrain": false,
   "models": [
     "recycler",
@@ -9,5 +9,6 @@
     "shelter",
     "rover",
     "lander"
-  ]
+  ],
+  "crew": []
 }

@@ -1,0 +1,78 @@
+/* Panel de tripulación y fotos de retrato. Prefijo crewp-. */
+
+/* Foto del equipo: círculo con aro del color del tripulante, filtro sutil. */
+.portrait--photo {
+  border-radius: 50%; object-fit: cover; filter: saturate(0.85) contrast(1.05);
+  box-shadow: 0 0 0 2px var(--ring, #fff); background: #0b0c0e;
+}
+.hud__face .portrait.portrait--photo,
+.res__face .hud__face .portrait.portrait--photo { margin-top: 0; width: 100%; height: 100%; box-shadow: none; border-radius: 0; }
+.onb-crew__face .portrait--photo, .crewchip .portrait--photo { box-shadow: none; }
+.cine__crew .portrait--photo { margin-left: -6px; }
+
+/* Caras del HUD convertidas en botón */
+.hud__face--btn { border: 0; padding: 0; font: inherit; color: inherit; cursor: pointer; pointer-events: auto; }
+.hud__face--btn:hover { filter: brightness(1.15); }
+.hud__face--btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.crewp {
+  position: absolute; z-index: 6; pointer-events: auto;
+  left: var(--gutter); bottom: calc(var(--gutter) * 2 + 7.4rem);
+  width: min(23rem, calc(100% - var(--gutter) * 2));
+  max-height: calc(100% - var(--topbar-h) - var(--gutter) * 5 - 7.4rem);
+  overflow-y: auto; overscroll-behavior: contain;
+  padding: 0.6rem 0.7rem 0.7rem;
+  background: var(--glass-strong); border: 1px solid var(--line); border-radius: var(--r-panel);
+  box-shadow: var(--shadow); backdrop-filter: blur(10px) saturate(1.2); -webkit-backdrop-filter: blur(10px) saturate(1.2);
+  animation: crewp-in 320ms cubic-bezier(.2,.8,.2,1);
+}
+.crewp:focus { outline: none; }
+
+@keyframes crewp-in { from { opacity: 0; transform: translateY(12px); } }
+.crewp__head { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; padding-bottom: 0.45rem; }
+.crewp__title { display: flex; align-items: center; gap: 0.45rem; margin: 0; font-size: 1.05rem; font-weight: 700; color: var(--text); }
+.crewp__title .icon { color: var(--accent); }
+.crewp__list { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.4rem; }
+.crewp__card {
+  display: grid; grid-template-columns: 52px minmax(0, 1fr); column-gap: 0.7rem; align-items: start;
+  width: 100%; padding: 0.5rem 0.6rem; text-align: left; font: inherit; color: var(--text); cursor: pointer;
+  background: rgb(255 255 255 / 0.04); border: 1px solid var(--line); border-radius: 12px;
+  transition: background 200ms, border-color 200ms, box-shadow 200ms;
+}
+.crewp__card:hover { background: rgb(255 255 255 / 0.08); }
+.crewp__card:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.crewp__card--on { border-color: var(--crew); background: color-mix(in srgb, var(--crew) 14%, transparent); box-shadow: inset 3px 0 0 var(--crew); }
+.crewp__face {
+  display: grid; place-items: end center; width: 52px; height: 52px; border-radius: 50%; overflow: hidden;
+  background: radial-gradient(circle at 50% 30%, color-mix(in srgb, var(--crew) 40%, #111), #0b0c0e 75%);
+  box-shadow: 0 0 0 2px var(--crew);
+}
+.crewp__card--worried .crewp__face { box-shadow: 0 0 0 2px var(--danger); }
+.crewp__face .portrait { display: block; }
+.crewp__face .portrait--photo { width: 100%; height: 100%; box-shadow: none; border-radius: 0; }
+.crewp__info { display: grid; gap: 0.12rem; min-width: 0; }
+.crewp__name { font-size: 1rem; }
+.crewp__role, .crewp__mood { display: flex; align-items: center; gap: 0.35rem; font-size: 0.82rem; color: var(--text-dim); }
+.crewp__role .icon { color: var(--crew); flex: none; }
+.crewp__module { font-size: 0.78rem; color: var(--text-dim); }
+.crewp__mood { font-weight: 600; }
+.crewp__mood--happy { color: var(--ok); }
+.crewp__mood--neutral { color: var(--warn); }
+.crewp__mood--worried { color: var(--danger); }
+.crewp__act { margin-top: 0.15rem; font-size: 0.86rem; color: var(--text); }
+.crewp__act--special { color: var(--accent); font-weight: 600; }
+.crewp__all { margin-top: 0.55rem; width: 100%; }
+
+/* Hoja inferior en pantallas chicas (donde la tablet también es hoja) */
+@media (max-width: 1023px) {
+  .crewp { left: var(--gutter); right: var(--gutter); width: auto; bottom: var(--gutter); max-height: 52%; }
+  .crewp__list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 520px) {
+  .crewp__list { grid-template-columns: minmax(0, 1fr); }
+  .crewp__card { padding: 0.4rem 0.5rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .crewp { animation: none; }
+  .crewp__card { transition: none; }
+}

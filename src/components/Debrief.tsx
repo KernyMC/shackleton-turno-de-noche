@@ -8,7 +8,7 @@ import { defaultConfig } from '../sim/config';
 import { reviewMission } from '../sim/debrief';
 import type { GameState, LogEntry } from '../sim/types';
 import { exitToMenu, game, restart, rewindTo, startGame } from '../state/store';
-import { crewById } from '../data/crew';
+import { crewById, crewName } from '../data/crew';
 import type { CrewId } from '../data/crew';
 import { CrewPortrait } from './CrewPortrait';
 import { DebriefCinematic } from './DebriefCinematic';
@@ -185,10 +185,10 @@ export function Debrief() {
       {/* 2. Un tripulante lo explica en una frase y da un consejo */}
       <section class="db-voice" style={{ '--crew': speaker.css }} aria-labelledby="db-voice-title">
         <span class="db-voice__portrait" aria-hidden="true">
-          <CrewPortrait color={speaker.css} size={84} mood={won ? 'happy' : 'worried'} />
+          <CrewPortrait crew={speaker.id} color={speaker.css} size={84} mood={won ? 'happy' : 'worried'} />
         </span>
         <div class="db-voice__bubble">
-          <p class="db-voice__who">{t(`crew.${speakerId}.short`)}</p>
+          <p class="db-voice__who">{crewName(speakerId)}</p>
           <p class="db-voice__line" id="db-voice-title">
             {won ? t('debrief.voice.win', { nombre: playerName() }) : t(`debrief.voice.${cause}`, { nombre: playerName() })}
           </p>

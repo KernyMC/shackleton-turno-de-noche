@@ -321,7 +321,7 @@ export function DebriefCinematic({ kind }: Props) {
       </div>
       <figcaption>
         <span class="cine__crew" aria-hidden="true">
-          {CREW.map((c) => <CrewPortrait key={c.id} color={c.css} mood={kind === 'win' ? 'happy' : 'neutral'} size={34} />)}
+          {CREW.map((c) => <CrewPortrait key={c.id} crew={c.id} color={c.css} mood={kind === 'win' ? 'happy' : 'neutral'} size={34} />)}
         </span>
         <span>{caption}</span>
       </figcaption>

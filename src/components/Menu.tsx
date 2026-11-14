@@ -5,7 +5,7 @@
 // Al empezar la misión, la tripulación camina hasta la escotilla del refugio, entra y la cámara
 // vuela a la base. Funciona con teclado, en celular y sin 3D (retratos SVG).
 import { useEffect, useRef, useState } from 'preact/hooks';
-import { CREW, crewById } from '../data/crew';
+import { CREW, crewById, crewFullName, crewName } from '../data/crew';
 import type { CrewId } from '../data/crew';
 import { lang, t } from '../i18n';
 import type { World } from '../scene/world';
@@ -141,7 +141,7 @@ export function Menu() {
         <main class="title">
           {!has3d && (
             <div class="title__crew" aria-hidden="true">
-              {CREW.map((c) => <CrewPortrait key={c.id} color={c.css} size={88} />)}
+              {CREW.map((c) => <CrewPortrait key={c.id} crew={c.id} color={c.css} size={88} />)}
             </div>
           )}
           <div class="title__logo">
@@ -184,20 +184,20 @@ export function Menu() {
                   class={`crewchip${focused === c.id ? ' crewchip--on' : ''}`}
                   style={{ '--crew': c.css }}
                   aria-pressed={focused === c.id}
-                  aria-label={`${t(`crew.${c.id}.name`)}, ${t(`crew.${c.id}.role`)}`}
+                  aria-label={`${crewFullName(c.id)}, ${t(`crew.${c.id}.role`)}`}
                   onMouseEnter={() => setFocused(c.id)}
                   onFocus={() => setFocused(c.id)}
                   onClick={() => setFocused(c.id)}
                 >
-                  <CrewPortrait color={c.css} size={has3d ? 40 : 56} />
-                  <span class="crewchip__name">{t(`crew.${c.id}.short`)}</span>
+                  <CrewPortrait crew={c.id} color={c.css} size={has3d ? 40 : 56} />
+                  <span class="crewchip__name">{crewName(c.id)}</span>
                 </button>
               </li>
             ))}
           </ul>
           {member ? (
             <p class="crewcard" style={{ '--crew': member.css }} aria-live="polite">
-              <strong>{t(`crew.${member.id}.name`)}</strong> · {t(`crew.${member.id}.role`)}
+              <strong>{crewFullName(member.id)}</strong> · {t(`crew.${member.id}.role`)}
               <span class="crewcard__quote">“{t(`crew.${member.id}.quote`)}”</span>
             </p>
           ) : (

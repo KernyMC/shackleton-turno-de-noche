@@ -18,6 +18,7 @@ import { exitToMenu, game, skyView, tabletOpen, toggleTablet } from '../state/st
 import { sourcesOpen } from '../state/sources';
 import { helpOpen } from '../state/tutorial';
 import { CrewPortrait } from './CrewPortrait';
+import { crewOpen, openCrew, toggleCrew } from '../state/crewPanel';
 import { EnergyFlow } from './EnergyFlow';
 import { num, signed } from './format';
 import { Icon } from './icons';
@@ -116,10 +117,18 @@ function lastDelta(g: GameState, key: 'lifeSupport' | 'food' | 'battery' | 'dose
 
 function Face({ crew, mood }: { crew: CrewId; mood: number }) {
   const member = crewById(crew);
+  const label = t('crew.view', { nombre: member.name });
   return (
-    <span class={`hud__face hud__face--${faceOf(mood)}`} style={{ '--crew': member.css }} title={t(`crew.${crew}.short`)}>
-      <CrewPortrait color={member.css} mood={faceOf(mood)} size={34} />
-    </span>
+    <button
+      type="button"
+      class={`hud__face hud__face--btn hud__face--${faceOf(mood)}`}
+      style={{ '--crew': member.css }}
+      title={label}
+      aria-label={label}
+      onClick={openCrew}
+    >
+      <CrewPortrait crew={crew} color={member.css} mood={faceOf(mood)} size={34} />
+    </button>
   );
 }
 
@@ -232,6 +241,16 @@ function Tools() {
         onClick={toggleMute}
       >
         <Icon name={muted.value ? 'mute' : 'sound'} size={18} />
+      </button>
+      <button
+        type="button"
+        class={`iconbtn${crewOpen.value ? ' iconbtn--on' : ''}`}
+        aria-pressed={crewOpen.value}
+        aria-label={t('crew.panel.button')}
+        title={t('crew.panel.button')}
+        onClick={toggleCrew}
+      >
+        <Icon name="crew" size={18} />
       </button>
       <button type="button" class="iconbtn" aria-label={t('sources.button')} title={t('sources.button')} onClick={() => (sourcesOpen.value = true)}>
         <Icon name="data" size={18} />

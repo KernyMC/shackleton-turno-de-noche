@@ -4,7 +4,7 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
 import type { ComponentChildren, JSX } from 'preact';
 import { t } from '../i18n';
-import { CREW } from '../data/crew';
+import { CREW, crewName } from '../data/crew';
 import { commanderName } from '../state/store';
 import { ackTutorial, onboardingOpen, skipTutorial } from '../state/tutorial';
 import { CrewPortrait } from './CrewPortrait';
@@ -319,9 +319,9 @@ export function Onboarding({ review = false, vars }: { review?: boolean; vars: V
             {CREW.map((c) => (
               <li key={c.id} style={{ '--crew': c.css }}>
                 <span class="onb-crew__face" aria-hidden="true">
-                  <CrewPortrait color={c.css} size={56} mood="happy" />
+                  <CrewPortrait crew={c.id} color={c.css} size={56} mood="happy" />
                 </span>
-                <b>{t(`crew.${c.id}.short`)}</b>
+                <b>{crewName(c.id)}</b>
                 <span>{t(`crew.${c.id}.role`)}</span>
                 <span class="onb-crew__mod">{t(`module.${c.module}`)}</span>
               </li>

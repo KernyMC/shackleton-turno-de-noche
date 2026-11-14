@@ -147,6 +147,23 @@ export function Scene() {
           });
         }),
       );
+      // Si el jugador sube o baja la energía de un módulo, su tripulante reacciona (el motor no se entera).
+      let lastPlan = plan.peek();
+      let lastDay = game.peek()?.day ?? 0;
+      stops.push(
+        effect(() => {
+          const p = plan.value;
+          const g = game.peek();
+          const prev = lastPlan;
+          lastPlan = p;
+          // Al empezar un día o al repartir automáticamente no hay nadie decidiendo: solo se refresca.
+          if (!g || g.day !== lastDay || resolving.peek() || g.phase !== 'planning') {
+            lastDay = g?.day ?? 0;
+            return;
+          }
+          for (const id of MODULE_IDS) if (p[id] !== prev[id]) w.crewReact(id, p[id] - prev[id], p[id]);
+        }),
+      );
       // El módulo elegido (en la base o en el panel) se marca con un anillo de su color.
       stops.push(effect(() => w.setSelected(tabletOpen.value ? focusModule.value : null)));
       // Con el panel abierto, la base se desplaza para que no quede tapada: en pantallas anchas el
