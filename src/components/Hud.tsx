@@ -262,23 +262,26 @@ function Resources({ g, moods }: { g: GameState; moods: Record<CrewId, number> }
   return (
     <div class="resources">
       {items.map((it) => (
+        // Una tarjeta por recurso: la cara de quien lo cuida a la izquierda, como avatar.
         <div key={it.id} class={`res res--${it.id} res--${it.level}`}>
-          <div class="res__top">
-            <span class="hud__label">
-              <Icon name={it.icon} size={14} />
-              {it.label}
-            </span>
+          <span class="res__face">
             <Face crew={it.crew} mood={moods[it.crew]} />
+          </span>
+          <div class="res__body">
+            <p class="res__name">
+              <Icon name={it.icon} size={16} />
+              {it.label}
+            </p>
+            <p class="res__value">
+              <b>{Math.round(it.value)}</b>
+              {it.id === 'battery' && <span class="hud__dim">/ {it.max}</span>}
+            </p>
+            <Bar value={it.value} max={it.max} level={it.level} label={it.label} />
+            <p class="res__foot">
+              <Status level={it.level} low="hud.status.low" critical="hud.status.critical" />
+              {it.level === 'ok' && <Trend delta={it.delta} />}
+            </p>
           </div>
-          <p class="res__value">
-            <b>{Math.round(it.value)}</b>
-            {it.id === 'battery' && <span class="hud__dim">/ {it.max}</span>}
-          </p>
-          <Bar value={it.value} max={it.max} level={it.level} label={it.label} />
-          <p class="res__foot">
-            <Status level={it.level} low="hud.status.low" critical="hud.status.critical" />
-            {it.level === 'ok' && <Trend delta={it.delta} />}
-          </p>
         </div>
       ))}
     </div>

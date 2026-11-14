@@ -1,5 +1,6 @@
-// Guía de la primera partida. El tutorial ES el día 1: Control de Misión dice qué tocar y cada
-// paso avanza solo cuando el jugador lo hace. Nunca bloquea el juego y se puede saltar.
+// Guía de la primera partida (público de 7–12 años). El tutorial ES el día 1: un tripulante con
+// nombre y cara dice qué tocar, un concepto cada vez, y cada paso avanza solo cuando el jugador
+// lo hace. La noche se explica el día 2; tormentas y antena, cuando llegan. Se puede saltar.
 // Solo observa el store; no cambia reglas.
 
 import { effect, signal } from '@preact/signals';
@@ -10,24 +11,20 @@ export type TutorialStep =
   | 'welcome' // tarjeta de bienvenida
   | 'pick_recycler'
   | 'power_recycler'
-  | 'pick_greenhouse'
-  | 'power_greenhouse'
-  | 'verdict' // se confirma con un botón
-  | 'execute'
+  | 'greenhouse' // tocar y dar energía al invernadero en un solo paso
+  | 'execute' // mirar el sello y pasar el día
   | 'night'; // día 2: se confirma con un botón
 
 const ORDER: TutorialStep[] = [
   'welcome',
   'pick_recycler',
   'power_recycler',
-  'pick_greenhouse',
-  'power_greenhouse',
-  'verdict',
+  'greenhouse',
   'execute',
   'night',
 ];
 /** Pasos que esperan a que el jugador pulse "Entendido". */
-const MANUAL: ReadonlySet<TutorialStep> = new Set(['welcome', 'verdict', 'night']);
+const MANUAL: ReadonlySet<TutorialStep> = new Set(['welcome', 'night']);
 const STORAGE_KEY = 'halosur:tutorial:v1';
 /** Energía mínima que pide la guía para dar un paso por hecho. */
 export const TUTORIAL_MIN = { recycler: 20, greenhouse: 15 } as const;
@@ -60,7 +57,7 @@ function finish(): void {
   markSeen();
 }
 
-/** El jugador confirmó un paso manual (bienvenida, veredicto, aviso de noche). */
+/** El jugador confirmó un paso manual (bienvenida o aviso de noche). */
 export function ackTutorial(): void {
   const step = tutorialStep.value;
   if (!step || !MANUAL.has(step)) return;
@@ -90,8 +87,7 @@ export function tutorialTarget(): ModuleId | null {
     case 'pick_recycler':
     case 'power_recycler':
       return 'recycler';
-    case 'pick_greenhouse':
-    case 'power_greenhouse':
+    case 'greenhouse':
       return 'greenhouse';
     default:
       return null;
@@ -107,9 +103,7 @@ function done(step: TutorialStep): boolean {
       return tabletOpen.value && focusModule.value === 'recycler';
     case 'power_recycler':
       return plan.value.recycler >= TUTORIAL_MIN.recycler;
-    case 'pick_greenhouse':
-      return focusModule.value === 'greenhouse';
-    case 'power_greenhouse':
+    case 'greenhouse':
       return plan.value.greenhouse >= TUTORIAL_MIN.greenhouse;
     case 'execute':
       return g.day > 1;

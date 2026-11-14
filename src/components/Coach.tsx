@@ -1,4 +1,4 @@
-// Guía para quien juega por primera vez: tarjeta de bienvenida y la voz de Control de Misión
+// Guía para quien juega por primera vez (7–12 años): bienvenida corta y un tripulante con cara
 // que acompaña el día 1 paso a paso. Y la leyenda "¿Cómo se juega?", disponible siempre.
 import { useEffect, useRef } from 'preact/hooks';
 import { t } from '../i18n';
@@ -6,6 +6,9 @@ import { defaultConfig } from '../sim/config';
 import { commanderName, game } from '../state/store';
 import { ackTutorial, helpOpen, skipTutorial, TUTORIAL_MIN, tutorialStep } from '../state/tutorial';
 import type { TutorialStep } from '../state/tutorial';
+import { crewById } from '../data/crew';
+import type { CrewId } from '../data/crew';
+import { CrewPortrait } from './CrewPortrait';
 import { Icon } from './icons';
 import type { IconName } from './icons';
 
@@ -31,25 +34,36 @@ function facts() {
   };
 }
 
+/**
+ * Bienvenida: una sola pantalla, tres ideas cortas con ícono y la cara de Valeria, que guía.
+ * No habla de perder: eso se aprende jugando, con avisos a tiempo.
+ */
 function Welcome() {
   const button = useRef<HTMLButtonElement>(null);
   useEffect(() => button.current?.focus(), []);
   const f = facts();
+  const guide = crewById('valeria');
   const lines: [IconName, string][] = [
     ['life_support', 'coach.welcome.crew'],
     ['sun', 'coach.welcome.energy'],
-    ['moon', 'coach.welcome.night'],
-    ['alert', 'coach.welcome.lose'],
+    ['check', 'coach.welcome.goal'],
   ];
   return (
     <div class="overlay">
-      <section class="card" role="dialog" aria-modal="true" aria-labelledby="welcome-title">
-        <p class="card__kicker">{t('coach.voice')}</p>
-        <h2 id="welcome-title">{t('coach.welcome.title_named', { nombre: commanderName.value.trim() || t('crew.commander_default') })}</h2>
-        <ul class="card__list">
+      <section class="card card--welcome" role="dialog" aria-modal="true" aria-labelledby="welcome-title" style={{ '--crew': guide.css }}>
+        <div class="welcome__guide">
+          <span class="welcome__portrait" aria-hidden="true">
+            <CrewPortrait color={guide.css} size={72} mood="happy" />
+          </span>
+          <div>
+            <p class="card__kicker">{t('coach.guide_says', { nombre: t('crew.valeria.short') })}</p>
+            <h2 id="welcome-title">{t('coach.welcome.title_named', { nombre: commanderName.value.trim() || t('crew.commander_default') })}</h2>
+          </div>
+        </div>
+        <ul class="card__list welcome__list">
           {lines.map(([icon, key]) => (
             <li key={key}>
-              <Icon name={icon} size={22} />
+              <Icon name={icon} size={24} />
               <span>{t(key, f)}</span>
             </li>
           ))}
@@ -58,45 +72,66 @@ function Welcome() {
           <button ref={button} type="button" class="btn btn--primary" onClick={ackTutorial}>
             {t('coach.welcome.start')}
           </button>
-          <button type="button" class="btn btn--ghost btn--small" onClick={skipTutorial}>
-            {t('coach.skip')}
-          </button>
         </div>
+        <button type="button" class="linkbtn welcome__skip" onClick={skipTutorial}>
+          {t('coach.skip')}
+        </button>
       </section>
     </div>
   );
 }
 
-const STEP_NUMBER: Partial<Record<TutorialStep, number>> = {
-  pick_recycler: 1,
-  power_recycler: 2,
-  pick_greenhouse: 3,
-  power_greenhouse: 4,
-  verdict: 5,
-  execute: 6,
+/** Los pasos de acción, en orden, para los puntos de progreso. */
+const STEPS: TutorialStep[] = ['pick_recycler', 'power_recycler', 'greenhouse', 'execute', 'night'];
+/** Quién habla en cada paso: el tripulante que cuida lo que se enseña. */
+const SPEAKER: Record<TutorialStep, CrewId> = {
+  welcome: 'valeria',
+  pick_recycler: 'valeria',
+  power_recycler: 'valeria',
+  greenhouse: 'mateo',
+  execute: 'lucia',
+  night: 'lucia',
 };
-const STEP_TOTAL = 6;
 
-/** Burbuja de Control de Misión con el paso actual. */
+/** Burbuja del tripulante que guía el paso actual. Esc salta la guía. */
 function Bubble({ step }: { step: TutorialStep }) {
-  const manual = step === 'verdict' || step === 'night';
-  const n = STEP_NUMBER[step];
+  const manual = step === 'night';
+  const index = STEPS.indexOf(step);
+  const speaker = crewById(SPEAKER[step]);
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent): void => {
+      if (e.key === 'Escape' && !helpOpen.value) skipTutorial();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
   return (
-    <div class="coach" role="status" aria-live="polite">
-      <p class="coach__voice">
-        {t('coach.voice')}
-        {n && <span class="coach__count">{t('coach.step', { n, total: STEP_TOTAL })}</span>}
-      </p>
-      <p class="coach__text">{t(`coach.${step}`, facts())}</p>
-      <div class="coach__actions">
-        {manual && (
-          <button type="button" class="btn btn--small btn--primary" onClick={ackTutorial}>
-            {t('coach.ok')}
+    <div class="coach" role="status" aria-live="polite" style={{ '--crew': speaker.css }} key={step}>
+      <span class="coach__portrait" aria-hidden="true">
+        <CrewPortrait color={speaker.css} size={48} mood="happy" />
+      </span>
+      <div class="coach__body">
+        <p class="coach__voice">
+          <strong>{t(`crew.${speaker.id}.short`)}</strong>
+          {index >= 0 && (
+            <span class="coach__dots" role="img" aria-label={t('coach.step', { n: index + 1, total: STEPS.length })}>
+              {STEPS.map((s, i) => (
+                <span key={s} class={`coach__dot${i < index ? ' coach__dot--done' : i === index ? ' coach__dot--now' : ''}`} />
+              ))}
+            </span>
+          )}
+        </p>
+        <p class="coach__text">{t(`coach.${step}`, facts())}</p>
+        <div class="coach__actions">
+          {manual && (
+            <button type="button" class="btn btn--small btn--primary" onClick={ackTutorial}>
+              {t('coach.ok')}
+            </button>
+          )}
+          <button type="button" class="linkbtn" onClick={skipTutorial}>
+            {t('coach.skip')}
           </button>
-        )}
-        <button type="button" class="btn btn--small btn--ghost" onClick={skipTutorial}>
-          {t('coach.skip')}
-        </button>
+        </div>
       </div>
     </div>
   );

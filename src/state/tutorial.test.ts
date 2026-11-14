@@ -27,14 +27,11 @@ describe('guía de la primera partida', () => {
     setPlanValue('recycler', TUTORIAL_MIN.recycler - 1);
     expect(tutorialStep.value).toBe('power_recycler');
     setPlanValue('recycler', TUTORIAL_MIN.recycler);
-    expect(tutorialStep.value).toBe('pick_greenhouse');
+    expect(tutorialStep.value).toBe('greenhouse');
 
     interact('greenhouse');
-    expect(tutorialStep.value).toBe('power_greenhouse');
+    expect(tutorialStep.value).toBe('greenhouse');
     setPlanValue('greenhouse', TUTORIAL_MIN.greenhouse);
-    expect(tutorialStep.value).toBe('verdict');
-
-    ackTutorial();
     expect(tutorialStep.value).toBe('execute');
     executeDay();
     vi.advanceTimersByTime(RESOLVE_MS);
@@ -51,7 +48,7 @@ describe('guía de la primera partida', () => {
     expect(tutorialStep.value).toBe('pick_recycler');
     interact('recycler');
     setPlanValue('recycler', 30);
-    expect(tutorialStep.value).toBe('pick_greenhouse');
+    expect(tutorialStep.value).toBe('greenhouse');
   });
 
   it('se puede saltar y nunca impide jugar', () => {
