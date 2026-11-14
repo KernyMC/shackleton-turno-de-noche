@@ -50,6 +50,8 @@ const MODEL_SLOTS: Record<ModelId, { x: number; z: number; height: number; rotY:
   lander: { x: -26, z: 22, height: 6, rotY: 0.6 },
   rover: { x: 22, z: 22, height: 2.2, rotY: -0.4 },
 };
+/** Dónde está la nave de descenso: de ella baja la tripulación en la presentación. */
+export const LANDER_SPOT: { x: number; z: number; height: number } = MODEL_SLOTS.lander;
 
 export interface ModuleVisualState {
   /** Energía asignada / máximo, de 0 a 1. */

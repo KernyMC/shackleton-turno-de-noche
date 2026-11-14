@@ -7,7 +7,7 @@ import * as THREE from 'three';
 import type { ModuleId } from '../sim/types';
 import { createAstronaut } from './astronaut';
 import type { Astronaut } from './astronaut';
-import { createBase, MODULES } from './base';
+import { createBase, LANDER_SPOT, MODULES } from './base';
 import { createDust } from './dust';
 import { CREW } from '../data/crew';
 import { createCrewWalk } from './crewWalk';
@@ -118,13 +118,17 @@ const ENTRY = new THREE.Vector3(0, 0, 6.4);
  */
 const TITLE_EYE = new THREE.Vector3(4.4, 1.5, 34);
 const TITLE_TARGET = new THREE.Vector3(-2.4, 6.2, 22.5);
-/** Posiciones en diagonal de la tripulación en la portada (de la más cercana a la más lejana). */
-const TITLE_SPOTS = [
-  new THREE.Vector3(-4.9, 0, 21.6),
-  new THREE.Vector3(-3.7, 0, 23.3),
-  new THREE.Vector3(-2.3, 0, 25.0),
-  new THREE.Vector3(-0.7, 0, 26.7),
-];
+/**
+ * Desembarco (al pulsar Comenzar): la tripulación sale de la nave de descenso, baja la escalerilla
+ * y camina hasta la fila. Fracciones de la secuencia: cada astronauta sale un poco después del
+ * anterior, baja (CLIMB), camina (WALK) y se gira hacia la cámara (TURN).
+ */
+const DISEMBARK_MS = 8000;
+const DISEMBARK = { stagger: 0.09, climb: 0.13, walk: 0.53, turn: 0.07 };
+/** Escotilla en la cubierta de la nave y pie de la escalerilla (metros desde su centro, hacia la fila). */
+const HATCH = { out: 1.4, up: 3.0, foot: 3.2 };
+/** Al empezar el desembarco la cámara mira entre la nave y la fila; luego sigue a la tripulación. */
+const DISEMBARK_LOOK = new THREE.Vector3(-13, 2.4, 21);
 /** Parte de la secuencia (0..1) en la que la tripulación camina; el resto es el vuelo de cámara. */
 const WALK_PART = 0.62;
 
@@ -286,7 +290,12 @@ export function createWorld(container: HTMLElement, cb: WorldCallbacks): World {
   let introViewTarget = 1;
   let introView = 1;
   const lineupSpots = new Map<string, THREE.Vector3>();
-  const titleSpots = new Map<string, THREE.Vector3>();
+  /** Momento en que empezó el desembarco (null: la tripulación sigue dentro de la nave). */
+  let disembarkAt: number | null = null;
+  const landerBase = new THREE.Vector3(LANDER_SPOT.x, 0, LANDER_SPOT.z);
+  const landerDir = new THREE.Vector3();
+  const hatchPos = new THREE.Vector3();
+  const footPos = new THREE.Vector3();
   const rocket = createRocket();
   rocket.setVisible(0);
   scene.add(rocket.group);
@@ -368,16 +377,46 @@ export function createWorld(container: HTMLElement, cb: WorldCallbacks): World {
       introEye.lerpVectors(titleEye, introEye, e);
       introTarget.lerpVectors(TITLE_TARGET, introTarget, e);
     }
-    // La tripulación pasa de la diagonal de la portada a la fila, mirando a cámara.
+    // Desembarco: en la portada la tripulación sigue dentro de la nave; al pulsar Comenzar sale
+    // uno a uno, baja la escalerilla, camina hasta su sitio en la fila y se gira hacia la cámara.
+    const D = DISEMBARK;
+    const p =
+      disembarkAt === null ? 0 : reducedMotion ? 1 : Math.min(1, (performance.now() - disembarkAt) / DISEMBARK_MS);
+    const outward = Math.atan2(landerDir.x, landerDir.z);
+    let i = 0;
     for (const [id, a] of crew) {
-      const from = titleSpots.get(id);
-      const to = lineupSpots.get(id);
-      if (!from || !to) continue;
-      a.group.position.lerpVectors(from, to, e);
-      a.group.position.y = terrain.heightAt(a.group.position.x, a.group.position.z);
-      const faceTitle = Math.atan2(TITLE_EYE.x - from.x, TITLE_EYE.z - from.z) * 0.8;
-      a.group.rotation.y = faceTitle * (1 - e);
+      const spot = lineupSpots.get(id);
+      if (!spot) continue;
+      // Sale primero quien va más lejos (la punta derecha de la fila): nadie se cruza.
+      const order = crew.size - 1 - i++;
+      const s = disembarkAt === null ? -1 : reducedMotion ? 1 : p - order * D.stagger;
+      a.group.visible = s >= 0;
+      if (s < 0) {
+        a.setWalking(0);
+        continue;
+      }
+      const climb = THREE.MathUtils.clamp(s / D.climb, 0, 1);
+      const walk = THREE.MathUtils.clamp((s - D.climb) / D.walk, 0, 1);
+      const turn = THREE.MathUtils.clamp((s - D.climb - D.walk) / D.turn, 0, 1);
+      const pos = a.group.position;
+      if (climb < 1) {
+        pos.lerpVectors(hatchPos, footPos, ease(climb));
+        a.group.rotation.y = outward;
+        a.setWalking(0.8);
+      } else if (walk < 1) {
+        pos.lerpVectors(footPos, spot, ease(walk));
+        pos.y = terrain.heightAt(pos.x, pos.z);
+        a.group.rotation.y = Math.atan2(spot.x - footPos.x, spot.z - footPos.z);
+        a.setWalking(1.6);
+      } else {
+        pos.copy(spot);
+        a.group.rotation.y = Math.atan2(spot.x - footPos.x, spot.z - footPos.z) * (1 - ease(turn));
+        a.setWalking(0);
+      }
     }
+    // La cámara empieza mirando a la nave y acompaña a la tripulación hasta encuadrar la fila.
+    const follow = disembarkAt === null ? 0 : ease(THREE.MathUtils.clamp((p - 0.25) / 0.6, 0, 1));
+    introTarget.lerp(DISEMBARK_LOOK, (1 - follow) * e);
     // Tierra de póster y cohete subiendo, solo en la portada.
     const forward = TITLE_FORWARD;
     const right = TITLE_RIGHT;
@@ -408,7 +447,8 @@ export function createWorld(container: HTMLElement, cb: WorldCallbacks): World {
   };
   const pickCrew = (clientX: number, clientY: number): string | null => {
     aim(clientX, clientY);
-    const pickables = [...crew.values()].flatMap((a) => a.pickables);
+    // Solo quien ya ha salido de la nave se puede tocar.
+    const pickables = [...crew.values()].filter((a) => a.group.visible).flatMap((a) => a.pickables);
     const hit = raycaster.intersectObjects(pickables, false)[0];
     if (!hit) return null;
     for (const [id, a] of crew) if (a.pickables.includes(hit.object)) return id;
@@ -871,13 +911,19 @@ export function createWorld(container: HTMLElement, cb: WorldCallbacks): World {
       }
       crew.clear();
       lineupSpots.clear();
-      titleSpots.clear();
+      disembarkAt = null;
+      // Escotilla y pie de la escalerilla, en el lado de la nave que mira a la fila.
+      landerDir.set(-landerBase.x, 0, LINEUP_Z - landerBase.z).normalize();
+      const ground = terrain.heightAt(landerBase.x, landerBase.z);
+      hatchPos.copy(landerBase).addScaledVector(landerDir, HATCH.out).setY(ground + HATCH.up);
+      footPos.copy(landerBase).addScaledVector(landerDir, HATCH.foot);
+      footPos.y = terrain.heightAt(footPos.x, footPos.z);
       members.forEach((m, i) => {
         const a = createAstronaut(m.color, i * 1.7);
         const x = (i - (members.length - 1) / 2) * LINEUP_SPACING;
         a.group.position.set(x, terrain.heightAt(x, LINEUP_Z), LINEUP_Z);
+        a.group.visible = false; // dentro de la nave hasta el desembarco
         lineupSpots.set(m.id, a.group.position.clone());
-        titleSpots.set(m.id, (TITLE_SPOTS[i] ?? TITLE_SPOTS[0]!).clone());
         a.group.scale.setScalar(1.05);
         crewGroup.add(a.group);
         crew.set(m.id, a);
@@ -892,6 +938,10 @@ export function createWorld(container: HTMLElement, cb: WorldCallbacks): World {
     setIntroView(view) {
       introViewTarget = view === 'title' ? 0 : 1;
       if (reducedMotion) introView = introViewTarget;
+      // Comenzar: la tripulación desembarca. Volver a la portada: vuelve a estar dentro de la nave.
+      if (view === 'crew' && disembarkAt === null) disembarkAt = performance.now();
+      if (view === 'title') disembarkAt = null;
+      lastActivity = performance.now();
     },
     setCrewFocus: (id) => void (crewFocused = id),
     ready,
