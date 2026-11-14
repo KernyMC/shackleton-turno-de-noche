@@ -4,6 +4,7 @@
 // La escena solo refleja: este archivo no conoce reglas del juego.
 
 import * as THREE from 'three';
+import { optionalAssets } from './assets';
 
 export const TEXTURE_URLS = {
   height: '/textures/moon_height.png',
@@ -109,7 +110,8 @@ export function createTerrain(options: TerrainOptions = {}): Terrain {
 
   const loadReal = async (): Promise<'real' | 'procedural'> => {
     const heightUrl = options.heightmapUrl;
-    if (!heightUrl || typeof document === 'undefined' || !(await exists(heightUrl, 'image'))) return 'procedural';
+    if (!heightUrl || typeof document === 'undefined') return 'procedural';
+    if (!(await optionalAssets()).terrain || !(await exists(heightUrl, 'image'))) return 'procedural';
     try {
       const { data, w, h } = readHeights(await loadImage(heightUrl));
       const meta: TerrainMeta =

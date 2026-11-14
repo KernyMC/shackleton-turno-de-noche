@@ -33,6 +33,8 @@ Tarda alrededor de un minuto. Escribe en `public/textures/`:
 - `moon_color.jpg` — color
 - `moon_meta.json` — fuente, radio en km y altura real mínima/máxima en metros
 
+El script también pone `"terrain": true` en `public/optional-assets.json`; sin eso el juego no busca las texturas.
+
 ## 3. Probar y subir
 
 `npm run dev` y abre el juego: el terreno debe mostrar el relieve real (el centro de la imagen

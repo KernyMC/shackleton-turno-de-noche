@@ -18,7 +18,8 @@ Reglas:
 - `src/sim` es puro y determinista; no lo reescribas. Ningún número de balance en el código. Ningún texto visible fuera de `src/i18n/es.json` y `en.json` (siempre los dos).
 - Nunca inventes datos de NASA ni los marques `verified` sin fuente comprobada. Nunca leas ni muestres el contenido de `.env`.
 - Antes de terminar: `npm test`, `npm run check` y `npm run build` deben pasar. Si algo falla y no lo puedes arreglar en un intento razonable, para y repórtalo.
-- No hagas commit ni push: el director revisa e integra.
+- No hagas commit ni push: el director revisa e integra. Si alguna vez te piden un commit, va sin firmas de IA (sin `Co-Authored-By` ni "Generated with").
+
 
 Reporte final (corto):
 - Qué archivos cambiaste y por qué (una línea cada uno).

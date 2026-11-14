@@ -12,6 +12,7 @@ Estados: `libre` · `en curso` · `hecha` · `bloqueada`. Prioridades: P0 impres
 | A · Motor | `src/sim/`, `scripts/simulate.ts` | [A-motor.md](A-motor.md) |
 | B · Mundo 3D | `src/scene/`, `src/audio/` | [B-mundo-3d.md](B-mundo-3d.md) |
 | C · Interfaz | `src/components/`, `src/state/`, `src/i18n/`, `src/styles/`, `src/app/` | [C-interfaz.md](C-interfaz.md) |
+| F · Diversión y aprendizaje | las de C, más funciones puras en `src/sim/` | [F-diversion.md](F-diversion.md) |
 | D · Datos NASA | `scripts/fetch-*.ts`, `public/data/` | [D-datos-nasa.md](D-datos-nasa.md) |
 | E · Entrega | raíz, `docs/`, deploy, video | [E-entrega.md](E-entrega.md) |
 
@@ -36,25 +37,33 @@ Estados: `libre` · `en curso` · `hecha` · `bloqueada`. Prioridades: P0 impres
 | A-06 | Insignias y eventos menores | P2 | A-03 | | libre |
 | A-07 | Umbrales de estrellas | P2 | — | | libre |
 | B-01 | Terreno procedural, sol rasante y cielo | P0 | — | | libre |
-| B-02 | Jugador: caminar, salto lunar, colisiones | P0 | — | | libre |
-| B-03 | Base: módulos, refugio, panel solar, rover | P0 | B-01 | | libre |
-| B-04 | La escena refleja el estado (luces, noche, avería) | P0 | B-03, C-01 | | libre |
-| B-05 | Acciones físicas de eventos | P1 | B-04, A-03 | | libre |
+| B-02 | ~~Jugador: caminar, salto lunar, colisiones~~ | — | — | | cancelada (NORTE) |
+| B-03 | Base: módulos, refugio, rover (hecho simple); falta panel solar y detalle | P1 | — | | libre |
+| B-04 | La escena refleja el estado (luces, noche, avería, refugio, rover, tormenta) | P0 | — | Claude | hecha |
+| B-05 | ~~Acciones físicas de eventos~~ | — | — | | cancelada (NORTE) |
 | B-06 | Partículas, tormenta y postprocesado | P1 | B-04 | | libre |
 | B-07 | Sonido por proximidad (Web Audio) | P1 | B-03 | | libre |
 | B-08 | Calidad automática y pérdida de WebGL | P2 | B-04 | | libre |
-| B-09 | Controles táctiles | P2 | B-02 | | libre |
+| B-09 | ~~Controles táctiles de caminar~~ (la maqueta ya es táctil) | — | — | | cancelada |
 | C-01 | Store completo y bucle del día | P0 | A-01 | Claude | hecha |
-| C-02 | Visor de casco | P0 | C-01 | | libre |
+| C-02 | Visor → HUD de 5 zonas estilo shooter | P0 | C-01 | Claude | hecha |
 | C-03 | Tablet: planificador con vista previa | P0 | C-01 | Claude | hecha |
-| C-04 | Panel de evento en la tablet | P0 | C-03, A-03 | | libre |
-| C-05 | Resumen del día y debrief básico | P0 | C-01, A-04 | | libre |
+| C-04 | Panel de evento → ver F-04 | P0 | — | | ver F-04 |
+| C-05 | Resumen del día y debrief → ver F-03 y F-05 | P0 | — | | ver F-03, F-05 |
 | C-06 | Menú y selección de dificultad | P0 | — | | libre |
 | C-07 | Pronóstico de luz y aviso de noche | P1 | C-02 | | libre |
 | C-08 | Ficha "¿De dónde sale este número?" | P1 | C-02, D-02 | | libre |
 | C-09 | Debrief completo: gráfica SVG y tarjetas | P1 | C-05, D-02 | | libre |
 | C-10 | Guardado, ajustes, pausa, inglés completo | P1 | C-03 | | libre |
 | C-11 | Tutorial, bitácora, créditos, modo debug | P2 | C-03 | | libre |
+| F-01 | HUD de 5 zonas y maqueta que se toca | P0 | — | Claude | hecha |
+| F-02 | Veredicto en una línea y un slider con chips | P0 | — | | libre |
+| F-03 | Predecir antes de ejecutar y causa en una frase | P0 | F-02 | | libre |
+| F-04 | Tormenta con tensión justa (panel de evento real) | P0 | — | | libre |
+| F-05 | Debrief de una frase y "volver al día N" | P0 | — | | libre |
+| F-06 | Módulos que se desbloquean por días | P1 | F-02 | | libre |
+| F-07 | Demo de 3 minutos desde el día 9 | P1 | F-05 | | libre |
+| F-08 | Voz de Control de Misión | P1 | — | | libre |
 | D-01 | Tormentas reales DONKI → `storms_real.json` + proxy en vivo | P1 | — | Claude | hecha |
 | D-02 | `sources.json` y `facts.json` con citas | P1 | — | | libre |
 | D-03 | Contrastar consumos y dosis con fuentes NASA (ver D-06) | P1 | D-02 | | libre |
@@ -68,18 +77,17 @@ Estados: `libre` · `en curso` · `hecha` · `bloqueada`. Prioridades: P0 impres
 
 ## Siguiente paso recomendado (para quien retome, persona o agente)
 
-El motor está completo. Lo que más acerca a un juego jugable, en este orden:
+Motor, store, tablet, HUD, maqueta 3D y datos NASA están hechos. La partida se juega entera.
+Lo que falta para que sea divertida y enseñe está en el **área F** (`docs/DIVERSION.md` explica el porqué):
 
-1. ~~C-01~~ hecha: la partida completa ya se juega con la tablet provisional.
-2. En paralelo: **C-03** tablet · **C-02** visor · **B-01** terreno, sol y cielo.
-3. **C-04** eventos · **C-05** resumen y debrief · **C-06** menú → *partida completa jugable*.
-4. **B-02**, **B-03**, **B-04** → el mundo responde al juego.
-5. P1: D-01, D-02, C-07, C-08, C-09, B-05, B-06, B-07, C-10, E-01.
+1. **F-02** veredicto y un slider con chips · **F-04** tormenta y eventos con texto humano (en paralelo: archivos distintos).
+2. **F-03** predicción y causa en una frase · **F-05** debrief y "volver al día N".
+3. **F-07** demo de 3 minutos (lo que verán los jueces) · **C-06** menú.
+4. **D-02** fuentes y datos curiosos · **C-08** ficha "¿De dónde sale este número?" (función estrella del Norte).
+5. Si sobra: F-06, F-08, B-01 (terreno bonito), B-06, B-07, C-10, E-01 deploy.
 
-Cada tarea está escrita para hacerse sin más contexto que su archivo de área, la spec que cita y
-`CLAUDE.md`. Una sesión = una tarea: terminarla, verificarla, marcarla y hacer commit antes de
-empezar otra.
-
+Una sesión = una tarea: terminarla, verificarla, marcarla y hacer commit antes de empezar otra.
+En modo director: el modelo principal reparte F-02 y F-04 al subagente `builder` y revisa con `verificador`.
 ## Reparto sugerido
 
 - **2 personas:** una A + C, otra B + D. E entre las dos al final.

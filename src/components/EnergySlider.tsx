@@ -3,7 +3,7 @@
 import { t } from '../i18n';
 import { defaultConfig } from '../sim/config';
 import type { GameState, ModuleId } from '../sim/types';
-import { budget, plan, requestRepair, resolving, setPlanValue } from '../state/store';
+import { budget, focusModule, plan, requestRepair, resolving, setPlanValue } from '../state/store';
 import { signed } from './format';
 import { Icon } from './icons';
 
@@ -64,7 +64,11 @@ export function EnergySlider({ id, game, onClamped }: Props) {
   };
 
   return (
-    <div class={`module${broken ? ' module--broken' : ''}${sheltered ? ' module--sheltered' : ''}`}>
+    <div
+      class={`module${broken ? ' module--broken' : ''}${sheltered ? ' module--sheltered' : ''}${focusModule.value === id ? ' module--focus' : ''}`}
+      onPointerDown={() => (focusModule.value = id)}
+      onFocusCapture={() => (focusModule.value = id)}
+    >
       <label class="module__head" for={inputId}>
         <Icon name={id} />
         <span class="module__name">{t(`module.${id}`)}</span>

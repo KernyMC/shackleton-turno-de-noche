@@ -1,0 +1,5 @@
+{
+  "_nota": "Qué recursos opcionales de NASA están instalados. scripts/crop-moon.mjs pone terrain en true; al añadir modelos GLB, lista aquí 'lander' y/o 'rover'.",
+  "terrain": false,
+  "models": []
+}

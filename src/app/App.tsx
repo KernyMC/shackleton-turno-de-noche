@@ -1,9 +1,8 @@
 // Raíz de la app: máquina de estados de pantallas (por ahora solo menú y juego).
 import { lang, t } from '../i18n';
 import { Scene } from '../scene/Scene';
-import { getEnergyBudget } from '../sim/engine';
-import { defaultConfig } from '../sim/config';
 import { useEffect } from 'preact/hooks';
+import { Hud } from '../components/Hud';
 import { SunStatus } from '../components/SunStatus';
 import { Tablet } from '../components/Tablet';
 import { loadSpaceWeather } from '../state/spaceWeather';
@@ -30,27 +29,6 @@ function Menu() {
       <SunStatus />
       <footer class="menu__footer">{t('app.disclaimer')}</footer>
     </main>
-  );
-}
-
-function Hud() {
-  const g = game.value;
-  if (!g) return null;
-  const d = defaultConfig.balance.difficulty[g.difficulty];
-  const budget = getEnergyBudget(g);
-  const round = (n: number): number => Math.round(n * 10) / 10;
-  return (
-    <header class="hud">
-      <span class="hud__day">{t('hud.day', { dia: g.day, total: defaultConfig.balance.days })}</span>
-      <span>🔋 {t('hud.battery')} <b>{round(g.battery)} / {d.batteryCapacity}</b></span>
-      <span>♻️ {t('hud.life_support')} <b>{round(g.lifeSupport)}%</b></span>
-      <span>🌱 {t('hud.food')} <b>{round(g.food)}%</b></span>
-      <span>☢️ {t('hud.dose')} <b>{round(g.dose)} / {d.doseLimit} mSv</b></span>
-      <span title={t('hud.breakdown', { bateria: round(g.battery), sol: round(budget.solar), base: budget.base })}>
-        {t('hud.available', { valor: round(budget.available) })}
-      </span>
-      <button type="button" class="btn btn--ghost" onClick={exitToMenu}>{t('menu.back')}</button>
-    </header>
   );
 }
 

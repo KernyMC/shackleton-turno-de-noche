@@ -43,6 +43,10 @@ npx @gltf-transform/cli optimize rover-src.glb public/models/rover.glb --compres
 - `--simplify-ratio 0.25`: deja ~25 % de los triángulos (necesario para el rover de 22 MB). Si aún pesa más de 2 MB, prueba `0.1`.
 - Comprueba el tamaño: `ls -la public/models`.
 
+## Activarlos
+
+Edita `public/optional-assets.json` y lista los que pusiste: `"models": ["lander", "rover"]`. Sin eso el juego no los busca.
+
 ## Créditos
 
 Añade cada modelo usado a `CREDITS.md` ("NASA 3D Resources", nombre del modelo y enlace). Las

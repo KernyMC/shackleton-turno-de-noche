@@ -1,11 +1,16 @@
 # Diseño del juego (GDD)
 
+> **Actualización 14-11-2026:** ya no se camina. Donde este documento diga "primera persona", "caminar",
+> `WASD` o "acción física", léase: **tocar la maqueta**. Las secciones 2, 3 y 5 de abajo quedan como
+> historia; el diseño vigente de la interacción está en `docs/DIVERSION.md` y `docs/tasks/F-diversion.md`.
+
 El documento original completo está en `docs/specs/00-documento-original.md`. **Este GDD lo
 modifica en tres puntos**; en todo lo demás, el original sigue valiendo.
 
 | Cambio | Original | Ahora |
 |---|---|---|
-| Cámara | Vista orbital | **Primera persona** (caminas por la base) |
+| Cámara | Vista orbital | **Maqueta 3D viva**: la cámara orbita y se toca cada módulo (se descartó caminar, ver `docs/NORTE.md`) |
+| Interfaz | HUD superior | **HUD con distribución de shooter** en las esquinas (ver `docs/DIVERSION.md`) |
 | Datos | Solo simulados | **Datos NASA reales descargados a JSON** con un script; lo que no se consiga queda marcado como simulado |
 | Alcance | Todo el documento | **MVP de 24–36 h** (sección 4) |
 

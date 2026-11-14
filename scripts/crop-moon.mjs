@@ -14,7 +14,7 @@
 // Proyección de salida: azimutal equidistante centrada en el polo sur. El centro de la imagen
 // es el polo (cerca del cráter Shackleton); la distancia al centro es proporcional a la latitud.
 
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { parseArgs } from 'node:util';
 import sharp from 'sharp';
@@ -124,4 +124,17 @@ if (values.color) {
 }
 
 await writeFile(resolve(OUT, 'moon_meta.json'), JSON.stringify(meta, null, 2) + '\n');
+
+// Avisar al juego de que el terreno real está instalado (solo si se escribió en public/textures).
+if (OUT === resolve('public/textures') && values.height) {
+  const manifestPath = resolve('public/optional-assets.json');
+  let manifest = { terrain: false, models: [] };
+  try {
+    manifest = JSON.parse(await readFile(manifestPath, 'utf8'));
+  } catch {
+    // Sin manifiesto previo: se crea.
+  }
+  manifest.terrain = true;
+  await writeFile(manifestPath, JSON.stringify(manifest, null, 2) + '\n');
+}
 console.log(`Listo en ${OUT}. Recarga el juego: el terreno usará el relieve real.`);

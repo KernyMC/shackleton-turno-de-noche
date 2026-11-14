@@ -36,6 +36,8 @@ export const resolving = signal(false);
 export const lastOutcome = signal<{ day: number; preview: DayPreview } | null>(null);
 /** Objetivo frente al que está el jugador (lo escribe la escena, lo lee la interfaz). */
 export const nearTarget = signal<TargetId | null>(null);
+/** Módulo que el jugador tocó en la maqueta: la tablet enfoca su slider. */
+export const focusModule = signal<ModuleId | null>(null);
 /** La tablet de muñeca está abierta. */
 export const tabletOpen = signal(false);
 /** Recursos reales de NASA que la escena logró cargar (para las fichas de fuente). */
@@ -210,14 +212,15 @@ export function requestRepair(id: ModuleId | null): boolean {
 }
 
 /** La escena avisa de que el jugador usó algo del mundo. La tarea B-05 le dará más significado. */
-export function interact(_target: TargetId): void {
+export function interact(target: TargetId): void {
+  if (target !== 'shelter' && target !== 'rover') focusModule.value = target;
   tabletOpen.value = true;
 }
 
 // Solo en desarrollo: acceso desde la consola del navegador para probar sin interfaz.
 if (typeof window !== 'undefined' && import.meta.env?.DEV) {
   (window as unknown as Record<string, unknown>).__store = {
-    screen, game, plan, resolving, lastOutcome, nearTarget, tabletOpen, budget, preview, realAssets,
+    screen, game, plan, resolving, lastOutcome, nearTarget, tabletOpen, focusModule, budget, preview, realAssets,
     startGame, restart, exitToMenu, toggleTablet, setPlanValue, applyPreset, executeDay,
     chooseEventOption, requestRepair, interact,
   };

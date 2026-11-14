@@ -9,6 +9,7 @@ import {
   applyPreset,
   budget,
   executeDay,
+  focusModule,
   game,
   plan,
   preview,
@@ -155,10 +156,16 @@ export function Tablet() {
   const title = useRef<HTMLHeadingElement>(null);
   const inEvent = g?.phase === 'event';
 
-  // Al abrir, el foco va al título.
+  // Al abrir, el foco va al slider del módulo tocado en la maqueta; si no hay, al título.
+  const focused = focusModule.value;
   useEffect(() => {
-    if (open) title.current?.focus();
-  }, [open]);
+    if (!open) return;
+    const slider = focused && !inEvent ? document.getElementById(`slider-${focused}`) : null;
+    if (slider instanceof HTMLInputElement && !slider.disabled) {
+      slider.focus({ preventScroll: true });
+      slider.scrollIntoView({ block: 'nearest' });
+    } else title.current?.focus();
+  }, [open, focused, inEvent]);
 
   if (!open || !g) return null;
 
@@ -177,7 +184,8 @@ export function Tablet() {
       }
       return;
     }
-    if (e.key === 'Tab') trapFocus(e, dialog.current);
+    // El foco solo se atrapa cuando hay una decisión obligatoria; si no, se puede volver a la maqueta.
+    if (e.key === 'Tab' && inEvent) trapFocus(e, dialog.current);
   };
 
   return (
@@ -185,7 +193,7 @@ export function Tablet() {
       ref={dialog}
       class="tablet"
       role="dialog"
-      aria-modal="true"
+      aria-modal={inEvent ? 'true' : 'false'}
       aria-labelledby="tablet-title"
       onKeyDown={onKeyDown}
     >

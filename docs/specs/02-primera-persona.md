@@ -1,4 +1,13 @@
-# Spec 02 — Mundo en primera persona (`src/scene`)
+# Spec 02 — Mundo 3D (`src/scene`)
+
+> **Actualización 14-11-2026 — manda sobre el resto del documento:** ya no hay primera persona.
+> `world.ts` es una **maqueta viva**: cámara en órbita automática (arrastrar gira, rueda acerca, se
+> detiene con movimiento reducido), `Raycaster` para tocar módulos (`onHover`, `onSelect`), y una API
+> que solo refleja estado: `setSunlight`, `setSunAzimuth`, `setModule(id, { efficiency, broken })`,
+> `setShelter`, `setRoverAway`, `setStorm`, `setViewShift`, `setReducedMotion`. `base.ts` construye
+> módulos, pasillos, refugio, lander y rover y anima sus luces con amortiguación; `terrain.ts` el suelo;
+> `assets.ts` lee `public/optional-assets.json` para saber si hay texturas o modelos reales.
+> `player.ts`, `interact.ts` y todo lo de caminar quedó descartado. Lo de abajo es historia.
 
 **Lee `docs/ARTE.md` antes.** Esta spec dice qué construir; ARTE dice cómo debe verse y sentirse.
 

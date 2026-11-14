@@ -1,62 +1,76 @@
-// Mundo 3D en primera persona (prototipo). Three.js puro, sin Preact.
-// Solo REFLEJA el estado y avisa de interacciones; nunca calcula reglas del juego.
-// Spec: docs/specs/02-primera-persona.md. Tareas: docs/tasks/B-mundo-3d.md.
+// Mundo 3D: una maqueta viva de la base lunar que se mira y se toca. Three.js puro, sin Preact.
+// La cámara orbita sola; se puede arrastrar para girar y usar la rueda para acercar.
+// Tocar un módulo avisa a la interfaz. Solo REFLEJA el estado; nunca calcula reglas del juego.
+// Spec: docs/specs/02-primera-persona.md (sección "Maqueta"). Arte: docs/ARTE.md.
 
 import * as THREE from 'three';
-import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
 import type { ModuleId } from '../sim/types';
-import { createBase, MODULES } from './base';
-import type { ModelId } from './base';
+import { createBase } from './base';
+import type { ModelId, ModuleVisualState } from './base';
 import { createTerrain, TEXTURE_URLS } from './terrain';
 
 export interface WorldCallbacks {
-  /** Módulo al alcance del jugador (o null). */
-  onNearModule(id: ModuleId | null): void;
-  /** El jugador pulsó E frente a un módulo. */
-  onInteract(id: ModuleId): void;
-  onLockChange(locked: boolean): void;
+  /** Módulo bajo el cursor (o null). */
+  onHover(id: ModuleId | null): void;
+  /** El jugador tocó un módulo. */
+  onSelect(id: ModuleId): void;
   /** Qué recursos reales se cargaron (terreno CGI Moon Kit, modelos GLB). */
   onAssets?(assets: { terrain?: 'real' | 'procedural'; models?: ModelId[] }): void;
 }
 
 export interface World {
-  lock(): void;
-  unlock(): void;
   /** Luz solar del día, de 0 a 1. */
   setSunlight(light: number): void;
+  /** Posición del Sol en el horizonte (radianes); avanza con los días. */
+  setSunAzimuth(azimuth: number): void;
+  setModule(id: ModuleId, state: ModuleVisualState): void;
+  setShelter(active: boolean): void;
+  setRoverAway(away: boolean): void;
+  /** Tormenta solar en curso: tinte en el horizonte. */
+  setStorm(active: boolean): void;
+  /** Desplaza la imagen hacia arriba (0..0.5 de la altura) cuando un panel tapa la parte inferior. */
+  setViewShift(fraction: number): void;
+  setReducedMotion(reduced: boolean): void;
   dispose(): void;
 }
 
-const EYE_HEIGHT = 1.7;
-const WALK_SPEED = 6;
-const REACH = 4.5;
-const BOUNDS = 40;
+const ORBIT = { radius: 54, minRadius: 30, maxRadius: 80, elevation: 0.42, minElevation: 0.16, maxElevation: 1.1 };
+const AUTO_SPEED = 0.045; // rad/s
+const RESUME_AFTER_MS = 5000;
+const CLICK_SLOP_PX = 6;
+const STORM_TINT = 0xb48cff;
+
+const damp = (current: number, target: number, k: number, dt: number): number =>
+  current + (target - current) * (1 - Math.exp(-k * dt));
 
 export function createWorld(container: HTMLElement, cb: WorldCallbacks): World {
   const renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.shadowMap.enabled = true;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
   container.appendChild(renderer.domElement);
+  const dom = renderer.domElement;
+  dom.style.touchAction = 'none';
 
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(0x000000);
+  const camera = new THREE.PerspectiveCamera(46, 1, 0.5, 600);
+  const lookAt = new THREE.Vector3(0, 2, 0);
 
-  const camera = new THREE.PerspectiveCamera(70, 1, 0.1, 400);
-  camera.position.set(0, EYE_HEIGHT, 16);
-
-  // Sol rasante del polo sur: sombras largas.
-  const sun = new THREE.DirectionalLight(0xfff4e0, 2.5);
-  sun.position.set(-60, 9, -30);
+  // Sol rasante del polo sur: sombras largas y duras. Sin niebla: en la Luna no hay aire.
+  const sun = new THREE.DirectionalLight(0xfff4e0, 0);
   sun.castShadow = true;
-  sun.shadow.camera.left = -40;
-  sun.shadow.camera.right = 40;
-  sun.shadow.camera.top = 40;
-  sun.shadow.camera.bottom = -40;
-  scene.add(sun);
-  const ambient = new THREE.AmbientLight(0x8899aa, 0.12);
-  scene.add(ambient);
+  sun.shadow.mapSize.set(2048, 2048);
+  Object.assign(sun.shadow.camera, { left: -45, right: 45, top: 45, bottom: -45, near: 1, far: 260 });
+  sun.shadow.bias = -0.0005;
+  scene.add(sun, sun.target);
+  const fill = new THREE.HemisphereLight(0x101826, 0x3b3a38, 0.5);
+  scene.add(fill);
+  // Brillo del horizonte durante una tormenta solar.
+  const stormGlow = new THREE.HemisphereLight(STORM_TINT, 0x000000, 0);
+  scene.add(stormGlow);
 
-  // Terreno: real (CGI Moon Kit) si las texturas existen, si no procedural. Ver terrain.ts.
   const terrain = createTerrain({
     heightmapUrl: TEXTURE_URLS.height,
     colorMapUrl: TEXTURE_URLS.color,
@@ -65,102 +79,191 @@ export function createWorld(container: HTMLElement, cb: WorldCallbacks): World {
   scene.add(terrain.mesh);
   void terrain.ready.then((kind) => cb.onAssets?.({ terrain: kind }));
 
-  // Base: módulos, lander y rover (GLB de NASA 3D Resources si existen). Ver base.ts.
   const base = createBase(terrain.heightAt);
   scene.add(base.group);
   void base.ready.then((models) => cb.onAssets?.({ models }));
 
-  const controls = new PointerLockControls(camera, renderer.domElement);
-  const keys = new Set<string>();
-  let near: ModuleId | null = null;
+  // --- Estado que persigue a su objetivo (nada salta) ---
+  let sunTarget = 1;
+  let sunShown = 1;
+  let azimuthTarget = 0;
+  let azimuthShown = 0;
+  let stormTarget = 0;
+  let stormShown = 0;
+  let shiftTarget = 0;
+  let shiftShown = 0;
+  let reducedMotion = false;
 
-  const onKeyDown = (e: KeyboardEvent): void => {
-    keys.add(e.code);
-    if (e.code === 'KeyE' && controls.isLocked && near) cb.onInteract(near);
+  // --- Cámara en órbita ---
+  let angle = 0.6;
+  let elevation = ORBIT.elevation;
+  let radius = ORBIT.radius;
+  let lastInteraction = -Infinity;
+  let width = 1;
+  let height = 1;
+
+  const placeCamera = (): void => {
+    const flat = Math.cos(elevation) * radius;
+    camera.position.set(Math.sin(angle) * flat, Math.sin(elevation) * radius + lookAt.y, Math.cos(angle) * flat);
+    camera.lookAt(lookAt);
   };
-  const onKeyUp = (e: KeyboardEvent): void => void keys.delete(e.code);
-  const onLock = (): void => cb.onLockChange(true);
-  const onUnlock = (): void => {
-    keys.clear();
-    cb.onLockChange(false);
+
+  // --- Puntero: arrastrar gira, tocar selecciona ---
+  const raycaster = new THREE.Raycaster();
+  const pointer = new THREE.Vector2();
+  let hovered: ModuleId | null = null;
+  let pointerDirty = false;
+  let drag: { id: number; x: number; y: number; startX: number; startY: number; moved: boolean } | null = null;
+
+  const pick = (clientX: number, clientY: number): ModuleId | null => {
+    const rect = dom.getBoundingClientRect();
+    pointer.set(((clientX - rect.left) / rect.width) * 2 - 1, -((clientY - rect.top) / rect.height) * 2 + 1);
+    raycaster.setFromCamera(pointer, camera);
+    const hit = raycaster.intersectObjects(base.pickables, false)[0];
+    return (hit?.object.userData.moduleId as ModuleId | undefined) ?? null;
   };
-  window.addEventListener('keydown', onKeyDown);
-  window.addEventListener('keyup', onKeyUp);
-  controls.addEventListener('lock', onLock);
-  controls.addEventListener('unlock', onUnlock);
+  const setHovered = (id: ModuleId | null): void => {
+    if (id === hovered) return;
+    hovered = id;
+    base.setHover(id);
+    dom.style.cursor = id ? 'pointer' : 'grab';
+    cb.onHover(id);
+  };
+
+  let lastPointer = { x: 0, y: 0 };
+  const onPointerDown = (e: PointerEvent): void => {
+    drag = { id: e.pointerId, x: e.clientX, y: e.clientY, startX: e.clientX, startY: e.clientY, moved: false };
+    dom.setPointerCapture(e.pointerId);
+    lastInteraction = performance.now();
+  };
+  const onPointerMove = (e: PointerEvent): void => {
+    lastPointer = { x: e.clientX, y: e.clientY };
+    if (drag && e.pointerId === drag.id) {
+      if (Math.hypot(e.clientX - drag.startX, e.clientY - drag.startY) > CLICK_SLOP_PX) drag.moved = true;
+      if (drag.moved) {
+        angle -= (e.clientX - drag.x) * 0.006;
+        elevation = THREE.MathUtils.clamp(elevation + (e.clientY - drag.y) * 0.004, ORBIT.minElevation, ORBIT.maxElevation);
+        dom.style.cursor = 'grabbing';
+      }
+      drag.x = e.clientX;
+      drag.y = e.clientY;
+      lastInteraction = performance.now();
+    } else {
+      pointerDirty = true; // el hover se resuelve una vez por frame
+    }
+  };
+  const onPointerUp = (e: PointerEvent): void => {
+    if (!drag || e.pointerId !== drag.id) return;
+    const wasClick = !drag.moved;
+    drag = null;
+    if (dom.hasPointerCapture(e.pointerId)) dom.releasePointerCapture(e.pointerId);
+    dom.style.cursor = hovered ? 'pointer' : 'grab';
+    if (wasClick) {
+      const id = pick(e.clientX, e.clientY);
+      if (id) cb.onSelect(id);
+    }
+  };
+  const onPointerLeave = (): void => setHovered(null);
+  const onWheel = (e: WheelEvent): void => {
+    e.preventDefault();
+    radius = THREE.MathUtils.clamp(radius + e.deltaY * 0.03, ORBIT.minRadius, ORBIT.maxRadius);
+    lastInteraction = performance.now();
+  };
+  dom.addEventListener('pointerdown', onPointerDown);
+  dom.addEventListener('pointermove', onPointerMove);
+  dom.addEventListener('pointerup', onPointerUp);
+  dom.addEventListener('pointercancel', onPointerUp);
+  dom.addEventListener('pointerleave', onPointerLeave);
+  dom.addEventListener('wheel', onWheel, { passive: false });
+  dom.style.cursor = 'grab';
+
+  const applyViewOffset = (): void => {
+    if (shiftShown < 0.002) camera.clearViewOffset();
+    else camera.setViewOffset(width, height, 0, Math.round(height * shiftShown), width, height);
+  };
 
   const resize = new ResizeObserver(() => {
     const { clientWidth: w, clientHeight: h } = container;
     if (w === 0 || h === 0) return;
+    width = w;
+    height = h;
     renderer.setSize(w, h);
     camera.aspect = w / h;
+    // En pantallas verticales se abre el campo de visión para que quepa toda la base.
+    camera.fov = w / h < 0.8 ? 62 : 46;
+    applyViewOffset();
     camera.updateProjectionMatrix();
   });
   resize.observe(container);
 
+  // No gastar batería con la pestaña oculta.
+  let running = true;
+  const onVisibility = (): void => {
+    running = !document.hidden;
+    if (running) timer.reset();
+  };
+  document.addEventListener('visibilitychange', onVisibility);
+
   const timer = new THREE.Timer();
   renderer.setAnimationLoop(() => {
+    if (!running) return;
     timer.update();
     const dt = Math.min(timer.getDelta(), 0.1);
-    if (controls.isLocked) {
-      const forward = Number(keys.has('KeyW') || keys.has('ArrowUp')) - Number(keys.has('KeyS') || keys.has('ArrowDown'));
-      const right = Number(keys.has('KeyD') || keys.has('ArrowRight')) - Number(keys.has('KeyA') || keys.has('ArrowLeft'));
-      const prevX = camera.position.x;
-      const prevZ = camera.position.z;
-      controls.moveForward(forward * WALK_SPEED * dt);
-      controls.moveRight(right * WALK_SPEED * dt);
-      camera.position.x = THREE.MathUtils.clamp(camera.position.x, -BOUNDS, BOUNDS);
-      camera.position.z = THREE.MathUtils.clamp(camera.position.z, -BOUNDS, BOUNDS);
-      // Colisión simple: no atravesar los módulos (B-01 la mejora).
-      for (const m of MODULES) {
-        if (Math.hypot(camera.position.x - m.x, camera.position.z - m.z) < 3.6) {
-          camera.position.x = prevX;
-          camera.position.z = prevZ;
-        }
-      }
-      camera.position.y = terrain.heightAt(camera.position.x, camera.position.z) + EYE_HEIGHT;
+    const time = timer.getElapsed();
+
+    if (!reducedMotion && !drag && performance.now() - lastInteraction > RESUME_AFTER_MS) angle += AUTO_SPEED * dt;
+    placeCamera();
+
+    sunShown = damp(sunShown, sunTarget, 1.6, dt);
+    azimuthShown = damp(azimuthShown, azimuthTarget, 1.2, dt);
+    stormShown = damp(stormShown, stormTarget, 2.5, dt);
+    const sunElevation = 0.05 + sunShown * 0.11; // 3°–9° sobre el horizonte
+    sun.position.set(Math.sin(azimuthShown) * 120, Math.sin(sunElevation) * 120, Math.cos(azimuthShown) * 120);
+    sun.intensity = sunShown * 3.2;
+    fill.intensity = 0.25 + sunShown * 0.35;
+    stormGlow.intensity = stormShown * (reducedMotion ? 0.5 : 0.4 + 0.15 * Math.sin(time * 2.2));
+    // De noche se sube la exposición para que la base ilumine su entorno.
+    renderer.toneMappingExposure = 1.55 - sunShown * 0.5;
+
+    const previousShift = shiftShown;
+    shiftShown = damp(shiftShown, shiftTarget, 8, dt);
+    if (Math.abs(shiftShown - previousShift) > 0.0005) {
+      applyViewOffset();
+      camera.updateProjectionMatrix();
     }
-    let closest: ModuleId | null = null;
-    let best = REACH + 3;
-    for (const m of MODULES) {
-      const d = Math.hypot(camera.position.x - m.x, camera.position.z - m.z);
-      if (d < best) {
-        best = d;
-        closest = m.id;
-      }
+
+    if (pointerDirty && !drag) {
+      pointerDirty = false;
+      setHovered(pick(lastPointer.x, lastPointer.y));
     }
-    if (closest !== near) {
-      near = closest;
-      cb.onNearModule(near);
-    }
+
+    base.update(dt, time, reducedMotion);
     renderer.render(scene, camera);
   });
 
   return {
-    lock: () => controls.lock(),
-    unlock: () => controls.unlock(),
-    setSunlight(light) {
-      sun.intensity = 2.5 * light;
-      ambient.intensity = 0.04 + 0.08 * light;
-    },
+    setSunlight: (light) => void (sunTarget = THREE.MathUtils.clamp(light, 0, 1)),
+    setSunAzimuth: (azimuth) => void (azimuthTarget = azimuth),
+    setModule: (id, state) => base.setModule(id, state),
+    setShelter: (active) => base.setShelter(active),
+    setRoverAway: (away) => base.setRoverAway(away),
+    setStorm: (active) => void (stormTarget = active ? 1 : 0),
+    setViewShift: (fraction) => void (shiftTarget = THREE.MathUtils.clamp(fraction, 0, 0.5)),
+    setReducedMotion: (reduced) => void (reducedMotion = reduced),
     dispose() {
       renderer.setAnimationLoop(null);
       resize.disconnect();
-      window.removeEventListener('keydown', onKeyDown);
-      window.removeEventListener('keyup', onKeyUp);
-      controls.removeEventListener('lock', onLock);
-      controls.removeEventListener('unlock', onUnlock);
-      controls.dispose();
+      document.removeEventListener('visibilitychange', onVisibility);
+      dom.removeEventListener('pointerdown', onPointerDown);
+      dom.removeEventListener('pointermove', onPointerMove);
+      dom.removeEventListener('pointerup', onPointerUp);
+      dom.removeEventListener('pointercancel', onPointerUp);
+      dom.removeEventListener('pointerleave', onPointerLeave);
+      dom.removeEventListener('wheel', onWheel);
       terrain.dispose();
       base.dispose();
-      scene.traverse((obj) => {
-        if (obj instanceof THREE.Mesh) {
-          obj.geometry.dispose();
-          (Array.isArray(obj.material) ? obj.material : [obj.material]).forEach((mat) => mat.dispose());
-        }
-      });
       renderer.dispose();
-      renderer.domElement.remove();
+      dom.remove();
     },
   };
 }

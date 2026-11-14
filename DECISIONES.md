@@ -51,3 +51,12 @@ corre `npm run simulate` y se ajustan **solo** los factores de escala del juego 
 
 Cuando haya valores, la idea es: tamaño del "100 %" del tanque = N días de consumo real de 4 personas
 (factor de escala, `game_balance`), y el consumo diario sale del BVAD (`verified`).
+
+## Diversión e interfaz (14-11-2026)
+
+- 2026-11-14 · **Se descarta caminar en primera persona.** La escena es una maqueta 3D que orbita y se toca. · `docs/NORTE.md` prohíbe "personaje caminando con físicas"; además funciona en celular y un juez lo entiende al instante.
+- 2026-11-14 · **HUD con distribución de shooter** (marcador arriba, "salud" abajo izquierda, "munición" abajo derecha, dial arriba izquierda, feed arriba derecha). · Pedido del equipo: los niños ya saben leerla. Sin mira, sin efectos de daño, sin armas.
+- 2026-11-14 · El HUD no captura toques y en pantallas < 900 px se pliega en una franja superior. · Que la maqueta siga siendo tocable y visible.
+- 2026-11-14 · La tablet deja de ser un diálogo modal salvo durante un evento, y en pantallas estrechas es un panel inferior (56 %) en vez de pantalla completa. · El niño debe ver la luz del módulo mientras mueve el slider.
+- 2026-11-14 · Recursos opcionales (texturas, modelos) se declaran en `public/optional-assets.json`. · Evita peticiones 404 en la consola cuando no están instalados.
+- 2026-11-14 · Acuerdos del debate de expertos (cuenta atrás de 30 s con opción segura, un slider visible, demo de 3 minutos, sin fichas coleccionables ni rachas): ver `docs/DIVERSION.md`. · Pendiente de confirmar con niños reales.

@@ -46,7 +46,6 @@ Relevance (¿responde al reto?) · Presentation.
 Deploy público · repo público · video de 30 s con subtítulos en inglés ·
 AI_USAGE.md · CREDITS.md · aviso "No afiliado ni avalado por NASA".
 
-## Conflicto abierto (pendiente de decisión del equipo)
-"Prohibido: personaje caminando con físicas" choca con la decisión de primera persona
-(`docs/GDD.md`) y con la tarea B-02 (caminar, salto lunar, colisiones). Hasta que el
-equipo decida, **no empezar B-02 ni B-05**.
+## Conflicto resuelto (14-11-2026)
+No hay personaje caminando. La escena es una **maqueta 3D viva** de la base: la cámara orbita, se toca un
+módulo para darle energía y su luz responde. Las tareas B-02, B-05 y B-09 quedaron canceladas.
