@@ -8,11 +8,13 @@
 import { CREW } from '../data/crew';
 import { t } from '../i18n';
 import { defaultConfig } from '../sim/config';
+import { getLight } from '../sim/engine';
 import { MODULE_IDS } from '../sim/types';
 import type { GameState, ModuleId } from '../sim/types';
 import type { Verdict } from '../sim/verdict';
-import { budget, focusModule, plan, requestRepair, resolving, setPlanValue } from '../state/store';
+import { budget, focusModule, plan, preview, requestRepair, resolving, setPlanValue } from '../state/store';
 import { CrewPortrait } from './CrewPortrait';
+import { EnergyFlow } from './EnergyFlow';
 import { num, signed } from './format';
 import { Icon } from './icons';
 import type { IconName } from './icons';
@@ -54,8 +56,6 @@ function Column({ id, game, onClamped }: { id: ModuleId; game: GameState; onClam
   const active = focusModule.value === id;
   const crew = CREW.find((c) => c.module === id)!;
   const out = yieldOf(id, value, game);
-  const minWorkshop = defaultConfig.balance.effects.workshopMinEnergy;
-  const canRepair = !game.modules.workshop.broken && (budget.value?.available ?? 0) >= minWorkshop;
 
   const set = (next: number): void => {
     focusModule.value = id;
@@ -126,15 +126,10 @@ function Column({ id, game, onClamped }: { id: ModuleId; game: GameState; onClam
       </p>
 
       {broken ? (
-        game.repairToday === id ? (
-          <button type="button" class="meter__fix meter__fix--on" onClick={() => requestRepair(null)}>
-            <Icon name="workshop" size={14} /> {t('board.repairing')}
-          </button>
-        ) : (
-          <button type="button" class="meter__fix" disabled={!canRepair || resolving.value} onClick={() => requestRepair(id)} title={canRepair ? undefined : t('event.reason.workshop_energy')}>
-            <Icon name="workshop" size={14} /> {t('board.repair')}
-          </button>
-        )
+        <p class={`meter__state${game.repairToday === id ? ' meter__state--fixing' : ''}`}>
+          <Icon name={game.repairToday === id ? 'workshop' : 'alert'} size={14} />
+          {t(game.repairToday === id ? 'board.repairing' : 'board.broken')}
+        </p>
       ) : (
         <div class="meter__steps">
           <button type="button" aria-label={t('board.less', { modulo: t(`module.${id}`) })} disabled={disabled || value === 0} onClick={() => set(value - BLOCK)}>
@@ -172,17 +167,11 @@ function ShareBar({ game: g, wasted }: { game: GameState; wasted: number }) {
   const capacity = defaultConfig.balance.difficulty[g.difficulty].batteryCapacity;
   return (
     <div class="share">
-      <div class="share__top">
-        <span class="share__total">
-          <Icon name="sun" size={18} />
-          <b>{num(total, 0)}</b>
-          <span>{t('board.today')}</span>
-        </span>
-        <span class="share__left">
-          <Icon name="battery" size={16} />
-          {t('board.to_battery', { valor: num(toBattery, 0), max: capacity })}
-        </span>
-      </div>
+      <EnergyFlow />
+      <p class="share__left">
+        <Icon name="battery" size={15} />
+        {t('board.to_battery', { valor: num(toBattery, 0), max: capacity })}
+      </p>
       <div class="share__bar" role="img" aria-label={t('board.share_aria', { usada: num(used, 0), total: num(total, 0) })}>
         {MODULE_IDS.map((id) => (
           <span key={id} class="share__seg" style={{ width: pct(plan.value[id]), background: COLOR[id] }} />
@@ -204,6 +193,7 @@ const STAMP: Record<Verdict['level'], IconName> = { safe: 'check', tight: 'alert
 
 /** Veredicto: sello de color + tres medidores de mañana. */
 function Forecast({ verdict, capacity }: { verdict: Verdict; capacity: number }) {
+  const p = preview.value;
   const word = verdict.reason === 'blackout' ? 'tablet.verdict.blackout' : `tablet.verdict.${verdict.level}`;
   const gauges: { key: string; icon: IconName; label: string; value: number; max: number; flag: boolean }[] = [
     { key: 'life', icon: 'life_support', label: 'hud.life_support', value: verdict.lifeSupport, max: 100, flag: verdict.reason === 'life_support' },
@@ -218,6 +208,11 @@ function Forecast({ verdict, capacity }: { verdict: Verdict; capacity: number })
       </div>
       <div class="forecast__gauges" aria-label={t('tablet.verdict.tomorrow')}>
         <span class="forecast__label">{t('tablet.verdict.tomorrow')}</span>
+        {p && (
+          <p class="forecast__words">
+            {t('board.after_today', { aire: signed(p.lifeSupport), comida: signed(p.food), bateria: num(p.battery, 0) })}
+          </p>
+        )}
         {gauges.map((gauge) => {
           const level = gauge.value / gauge.max <= 0.1 ? 'critical' : gauge.value / gauge.max <= 0.25 ? 'low' : 'ok';
           return (
@@ -234,17 +229,87 @@ function Forecast({ verdict, capacity }: { verdict: Verdict; capacity: number })
   );
 }
 
+/** Avería: un solo botón claro, con lo que cuesta y cuándo queda listo. */
+function RepairCards({ game: g }: { game: GameState }) {
+  const broken = MODULE_IDS.filter((id) => g.modules[id].broken);
+  if (broken.length === 0) return null;
+  const min = defaultConfig.balance.effects.workshopMinEnergy;
+  const canRepair = !g.modules.workshop.broken && (budget.value?.available ?? 0) >= min;
+  return (
+    <div class="repairs">
+      {broken.map((id) => {
+        const fixing = g.repairToday === id;
+        return (
+          <div key={id} class={`repair${fixing ? ' repair--on' : ''}`} style={{ '--mod': COLOR[id] }}>
+            <span class="repair__icon" aria-hidden="true">
+              <Icon name="workshop" size={22} />
+            </span>
+            <div class="repair__body">
+              <p class="repair__title">{t(fixing ? 'repair.title_on' : 'repair.title', { modulo: t(`module.${id}`) })}</p>
+              {fixing ? (
+                <p class="repair__note">{t('repair.in_progress')}</p>
+              ) : (
+                !canRepair && <p class="repair__note repair__note--warn">{t('repair.need', { min })}</p>
+              )}
+            </div>
+            {fixing ? (
+              <button type="button" class="btn btn--small btn--ghost" disabled={resolving.value} onClick={() => requestRepair(null)}>
+                {t('tablet.repair_cancel')}
+              </button>
+            ) : (
+              <button type="button" class="btn btn--small repair__go" disabled={!canRepair || resolving.value} onClick={() => requestRepair(id)}>
+                <Icon name="workshop" size={16} />
+                {t('repair.button', { min })}
+              </button>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+/** Pronóstico de Sol: hoy y los próximos días, para decidir cuánto guardar. */
+function SunForecast({ game: g }: { game: GameState }) {
+  const total = defaultConfig.balance.days;
+  const days = Array.from({ length: 6 }, (_, i) => g.day + i).filter((d) => d <= total);
+  return (
+    <div class="sunfc" role="group" aria-label={t('sunfc.title')}>
+      <p class="sunfc__title">{t('sunfc.title')}</p>
+      <ol class="sunfc__days">
+        {days.map((d) => {
+          const light = getLight(d, g.difficulty);
+          const dark = light < 0.1;
+          const text = t(dark ? 'sunfc.dark' : 'sunfc.light', { pct: Math.round(light * 100) });
+          return (
+            <li key={d} class={`sunfc__day${d === g.day ? ' sunfc__day--today' : ''}${dark ? ' sunfc__day--dark' : ''}`} title={text}>
+              <span class="sunfc__bar" aria-hidden="true">
+                <span style={{ height: `${Math.max(6, light * 100)}%` }} />
+              </span>
+              <Icon name={dark ? 'moon' : 'sun'} size={13} />
+              <span class="sunfc__label">{d === g.day ? t('sunfc.today') : t('sunfc.day', { dia: d })}</span>
+              <span class="sr-only">{text}</span>
+            </li>
+          );
+        })}
+      </ol>
+    </div>
+  );
+}
+
 export function PowerBoard({ game: g, verdict, onClamped }: { game: GameState; verdict: Verdict; onClamped(): void }) {
   const capacity = defaultConfig.balance.difficulty[g.difficulty].batteryCapacity;
   return (
     <>
       <ShareBar game={g} wasted={verdict.wasted} />
+      <RepairCards game={g} />
       <div class="board" role="group" aria-label={t('board.aria')}>
         {MODULE_IDS.map((id) => (
           <Column key={id} id={id} game={g} onClamped={onClamped} />
         ))}
       </div>
       <Forecast verdict={verdict} capacity={capacity} />
+      <SunForecast game={g} />
     </>
   );
 }

@@ -8,11 +8,12 @@ import { useEffect, useRef } from 'preact/hooks';
 import { crewById } from '../data/crew';
 import { t } from '../i18n';
 import { sceneBridge } from '../scene/bridge';
-import { collectHarvest, dayNote, dismissMilestone, floats, harvest, milestone } from '../state/rewards';
+import { collectHarvest, dayDone, dayNote, dismissMilestone, floats, harvest, milestone } from '../state/rewards';
 import type { FloatItem } from '../state/rewards';
 import { playCollect, playDayDone, playMilestone, playYield } from '../audio/sfx';
 import { CrewPortrait } from './CrewPortrait';
 import { Icon } from './icons';
+import { playerName } from './player';
 
 const reduced = (): boolean => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const TARGET_SELECTOR: Record<FloatItem['target'], string> = { vitals: '.res--life', dose: '.topbar__dose', none: '' };
@@ -92,6 +93,23 @@ function HarvestBubble() {
   );
 }
 
+/** "Día 7 completado. Ahora planifica el Día 8": cierra un día y abre el siguiente, siempre. */
+function DayDone() {
+  const done = dayDone.value;
+  useEffect(() => {
+    if (!done) return;
+    const hide = setTimeout(() => (dayDone.value = null), 3200);
+    return () => clearTimeout(hide);
+  }, [done?.key]);
+  if (!done) return null;
+  return (
+    <p class="daydone" role="status" key={done.key}>
+      <Icon name="check" size={18} />
+      {t('rewards.day_done', { dia: done.day, siguiente: done.day + 1 })}
+    </p>
+  );
+}
+
 /** La voz de la tripulación: una burbuja de diálogo con su retrato, como en los juegos de rol. */
 function CrewVoice() {
   const note = dayNote.value;
@@ -117,9 +135,9 @@ function CrewVoice() {
       <div class="voice__bubble">
         <p class="voice__who">
           <strong>{t(`crew.${note.crew}.short`)}</strong>
-          <span>{t('rewards.day_done', { dia: note.day })}</span>
+          <span>{t('rewards.day_label', { dia: note.day })}</span>
         </p>
-        <p class="voice__line">{t(note.phrase)}</p>
+        <p class="voice__line">{t(note.phrase, { nombre: playerName() })}</p>
         <span class="voice__timer" aria-hidden="true" />
       </div>
     </div>
@@ -169,6 +187,7 @@ export function Rewards() {
         <Float key={item.key} item={item} index={i} />
       ))}
       <HarvestBubble />
+      <DayDone />
       <CrewVoice />
       <Celebration />
     </div>

@@ -16,6 +16,7 @@
     "simulate": "tsx scripts/simulate.ts",
     "data:donki": "node scripts/fetch-donki.mjs",
     "data:radlab": "node scripts/fetch-radlab.mjs",
+    "sfx": "node scripts/generate-sfx.mjs",
     "check:nasa": "tsx scripts/check-spaceweather.ts",
     "models:build": "node scripts/blender/run.mjs build",
     "models:preview": "node scripts/blender/run.mjs preview",

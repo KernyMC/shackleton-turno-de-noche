@@ -22,7 +22,9 @@ export type IconName =
   | 'mute'
   | 'sky'
   | 'info'
-  | 'data';
+  | 'data'
+  | 'bolt'
+  | 'arrow';
 
 const PATHS: Record<IconName, JSX.Element> = {
   // Dos flechas en ciclo.
@@ -98,6 +100,10 @@ const PATHS: Record<IconName, JSX.Element> = {
       <path d="M4 10c0 1.4 2.7 2.5 6 2.5s6-1.1 6-2.5" />
     </>
   ),
+  // Rayo: la unidad de energía del juego.
+  bolt: <path d="M11 2.5 4.5 11.2h4.6L8 17.5l7-9h-4.7Z" />,
+  // Flecha a la derecha: "esto pasa a esto".
+  arrow: <path d="M3.5 10h12M11.5 5.5 16 10l-4.5 4.5" />,
   // Signo de pregunta dentro de un círculo.
   help: (
     <>

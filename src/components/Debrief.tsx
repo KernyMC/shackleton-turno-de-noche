@@ -15,6 +15,7 @@ import { DebriefCinematic } from './DebriefCinematic';
 import { num } from './format';
 import { ScienceCard } from './ScienceCard';
 import { Icon } from './icons';
+import { playerName } from './player';
 import type { IconName } from './icons';
 
 /** Quién explica la derrota: el tripulante que cuida el recurso que falló. */
@@ -189,7 +190,7 @@ export function Debrief() {
         <div class="db-voice__bubble">
           <p class="db-voice__who">{t(`crew.${speakerId}.short`)}</p>
           <p class="db-voice__line" id="db-voice-title">
-            {won ? t('debrief.voice.win') : t(`debrief.voice.${cause}`)}
+            {won ? t('debrief.voice.win', { nombre: playerName() }) : t(`debrief.voice.${cause}`, { nombre: playerName() })}
           </p>
           <p class="db-voice__tip">
             <Icon name="sun" size={18} />

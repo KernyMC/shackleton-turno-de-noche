@@ -35,6 +35,8 @@ export const floats = signal<FloatItem[]>([]);
 export const harvest = signal<{ key: number; amount: number } | null>(null);
 export const dayNote = signal<DayNote | null>(null);
 export const milestone = signal<MilestoneId | null>(null);
+/** Día recién completado (para el aviso "ahora planifica el siguiente"). */
+export const dayDone = signal<{ key: number; day: number } | null>(null);
 export const earned = signal<MilestoneId[]>([]);
 /** Tras ejecutar un día, la base reacciona unos instantes antes de volver al panel. */
 export const reacting = signal(false);
@@ -113,6 +115,7 @@ export function startRewardsWatcher(): () => void {
       floats.value = [];
       harvest.value = null;
       dayNote.value = null;
+      dayDone.value = null;
       reacting.value = false;
       return;
     }
@@ -126,6 +129,7 @@ export function startRewardsWatcher(): () => void {
     const broken = Object.fromEntries(Object.entries(g.modules).map(([id, m]) => [id, m.broken])) as Record<ModuleId, boolean>;
 
     floats.value = dayYields(snap, broken, g.difficulty);
+    dayDone.value = g.phase === 'ended' ? null : { key: ++counter, day: snap.day };
     xp.value += 10;
     reacting.value = true;
     if (reactTimer) clearTimeout(reactTimer);

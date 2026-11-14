@@ -9,6 +9,8 @@ import { createAstronaut } from './astronaut';
 import type { Astronaut } from './astronaut';
 import { createBase, LANDER_SPOT, MODULES } from './base';
 import { createDust } from './dust';
+import { createEnergyFlow } from './energyFlow';
+import { createRepairFx } from './repairFx';
 import { CREW } from '../data/crew';
 import { createCrewWalk } from './crewWalk';
 import type { CrewWalkState } from './crewWalk';
@@ -75,6 +77,14 @@ export interface World {
   showCrew(members: CrewLineupMember[]): void;
   /** En la presentación: 'title' es la portada (tripulación de cerca, Tierra y cohete); 'crew' es la fila. */
   setIntroView(view: 'title' | 'crew'): void;
+  /** Reparto de energía del día: Sol -> paneles -> batería -> módulos. `night`: sin Sol. */
+  playEnergy(plan: Record<ModuleId, number>, night: boolean): void;
+  /** Carga de la batería (0..1) en su indicador de celdas. */
+  setBattery(fraction: number): void;
+  /** Secuencia de reparación estilo cómic sobre un módulo. */
+  playRepair(id: ModuleId): void;
+  /** Textos de las onomatopeyas de la reparación (por idioma). */
+  setFxLabels(labels: { clank?: string; shuank?: string }): void;
   /** Ilumina y adelanta a un astronauta de la fila (o a ninguno). */
   setCrewFocus(id: string | null): void;
   /**
@@ -241,6 +251,12 @@ export function createWorld(container: HTMLElement, cb: WorldCallbacks): World {
   // La tripulación camina por los pasillos de vidrio.
   const walkers = createCrewWalk(base.routes, CREW);
   scene.add(walkers.group);
+  // Paneles solares, batería y flujo de energía; efectos de reparación.
+  const energy = createEnergyFlow(terrain.heightAt);
+  scene.add(energy.group);
+  const repairFx = createRepairFx(terrain.heightAt);
+  scene.add(repairFx.group);
+  if (import.meta.env.DEV) Object.assign(window, { __energy: energy, __repairFx: repairFx });
   const dust = createDust(terrain.heightAt);
   scene.add(dust.points);
   void base.ready.then((models) => cb.onAssets?.({ models }));
@@ -633,6 +649,7 @@ export function createWorld(container: HTMLElement, cb: WorldCallbacks): World {
     // La transmisión del vidrio renderiza la escena una vez más: en media va a la mitad de resolución, en baja se quita.
     renderer.transmissionResolutionScale = tier === 'high' ? 1 : 0.5;
     base.setLowQuality(tier === 'low');
+    energy.setTier(tier);
     dust.setDensity(DENSITY[tier].dust);
     sky.setDetail(DENSITY[tier].stars);
     shadowDirty = true;
@@ -842,6 +859,9 @@ export function createWorld(container: HTMLElement, cb: WorldCallbacks): World {
     walkers.setNight(night);
     walkers.group.visible = !introMode && !fly;
     if (walkers.group.visible) walkers.update(dt, time, reducedMotion);
+    energy.setSun(sunShown, azimuthShown);
+    energy.update(dt, time, reducedMotion);
+    repairFx.update(dt, time, reducedMotion);
     measureQuality(rawDt, now, saver);
     if (renderer.shadowMap.enabled) {
       // Sombras: se redibujan si el Sol se movió, tras cambios de calidad o de tamaño, y a baja cadencia
@@ -944,6 +964,10 @@ export function createWorld(container: HTMLElement, cb: WorldCallbacks): World {
       lastActivity = performance.now();
     },
     setCrewFocus: (id) => void (crewFocused = id),
+    playEnergy: (plan, night) => energy.play(plan, night),
+    setBattery: (fraction) => energy.setBattery(fraction),
+    playRepair: (id) => repairFx.play(id, reducedMotion),
+    setFxLabels: (labels) => repairFx.setLabels(labels),
     ready,
     flyIn(durationMs) {
       if (!introMode) return Promise.resolve();
@@ -983,6 +1007,8 @@ export function createWorld(container: HTMLElement, cb: WorldCallbacks): World {
       dom.removeEventListener('pointerleave', onPointerLeave);
       dom.removeEventListener('wheel', onWheel);
       walkers.dispose();
+      energy.dispose();
+      repairFx.dispose();
       sky.dispose();
       terrain.dispose();
       base.dispose();

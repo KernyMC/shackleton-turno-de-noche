@@ -30,6 +30,7 @@ Tipografías: Space Grotesk e IBM Plex Mono (SIL Open Font License), servidas po
 Otros: Todo modelo o audio añadido se registra aquí con origen y licencia.
 
 ## IA
+Efectos de sonido generados con IA (ElevenLabs), una sola vez con `npm run sfx`; el juego no llama a su API.
 Desarrollado con ayuda de Claude Code (Anthropic). Ver `AI_USAGE.md`.
 
 ## Aviso

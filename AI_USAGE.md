@@ -24,5 +24,7 @@ Registro honesto de qué se hizo con ayuda de IA. Añade una línea por sesión 
 | 2026-11-14 | Z-Image Turbo (Alibaba) y Hunyuan3D 2.1 (Tencent), en ComfyUI local | Imagen de referencia y malla base de public/models/experiments/habitat-ia.glb | Licencia por revisar |
 | 2026-11-14 | Claude Code (Anthropic) | Ajuste al reto oficial: panel de fuentes en el juego, datos reales de RadLab, OSDR y CSA con tarjeta Ciencia real, antena con aviso de tormenta (retraso de comunicaciones) y textos para 7–12 años | Pendiente de revisión del equipo |
 | 2026-11-14 | Claude Code (Anthropic) | Pantalla de carga entre pantallas (Loader): astronauta SVG corriendo alrededor de la Luna, estética de ARTE.md y consejos de juego ES/EN | Pendiente de revisión del equipo |
+| 2026-11-14 | ElevenLabs (text-to-sound-effects) | Efectos de sonido generados con IA (ElevenLabs): reparación, alarmas, energía; script scripts/generate-sfx.mjs | Pendiente: la clave no tiene permiso sound_generation, usa respaldo sintetizado |
+| 2026-11-14 | Claude Code (Anthropic) | Mejoras v2, bloque A (claridad): flujo de energía en el HUD, plan de HOY, reparar rediseñado, onboarding de 6 tarjetas, energía visible en 3D y onomatopeyas de reparación | Pendiente de revisión del equipo |
 
 Si se usan modelos 3D o audio generados (por ejemplo Tripo o Suno), anotarlos aquí y en `CREDITS.md`.

@@ -1,16 +1,17 @@
-// Guía para quien juega por primera vez (7–12 años): bienvenida corta y un tripulante con cara
-// que acompaña el día 1 paso a paso. Y la leyenda "¿Cómo se juega?", disponible siempre.
-import { useEffect, useRef } from 'preact/hooks';
+// Guía para quien juega por primera vez (7–12 años): presentación de 6 tarjetas (Onboarding) y un
+// tripulante con cara que acompaña el día 1 paso a paso, más pistas breves los días 2 y 3. Y la leyenda "¿Cómo se juega?", disponible siempre.
+import { useEffect, useRef, useState } from 'preact/hooks';
 import { t } from '../i18n';
 import { defaultConfig } from '../sim/config';
-import { commanderName, game } from '../state/store';
-import { ackTutorial, helpOpen, skipTutorial, TUTORIAL_MIN, tutorialStep } from '../state/tutorial';
-import type { TutorialStep } from '../state/tutorial';
+import { game } from '../state/store';
+import { ackTutorial, contextHint, dismissHint, helpOpen, onboardingOpen, skipTutorial, TUTORIAL_MIN, tutorialStep } from '../state/tutorial';
+import type { HintId, TutorialStep } from '../state/tutorial';
 import { crewById } from '../data/crew';
 import type { CrewId } from '../data/crew';
 import { CrewPortrait } from './CrewPortrait';
 import { Icon } from './icons';
 import type { IconName } from './icons';
+import { Onboarding } from './Onboarding';
 
 /** Datos del juego que aparecen en los textos: salen de la configuración, no se escriben a mano. */
 function facts() {
@@ -32,53 +33,6 @@ function facts() {
     taller: cfg.balance.effects.workshopMinEnergy,
     aviso: cfg.balance.events.warningDays,
   };
-}
-
-/**
- * Bienvenida: una sola pantalla, tres ideas cortas con ícono y la cara de Valeria, que guía.
- * No habla de perder: eso se aprende jugando, con avisos a tiempo.
- */
-function Welcome() {
-  const button = useRef<HTMLButtonElement>(null);
-  useEffect(() => button.current?.focus(), []);
-  const f = facts();
-  const guide = crewById('valeria');
-  const lines: [IconName, string][] = [
-    ['life_support', 'coach.welcome.crew'],
-    ['sun', 'coach.welcome.energy'],
-    ['check', 'coach.welcome.goal'],
-  ];
-  return (
-    <div class="overlay">
-      <section class="card card--welcome" role="dialog" aria-modal="true" aria-labelledby="welcome-title" style={{ '--crew': guide.css }}>
-        <div class="welcome__guide">
-          <span class="welcome__portrait" aria-hidden="true">
-            <CrewPortrait color={guide.css} size={72} mood="happy" />
-          </span>
-          <div>
-            <p class="card__kicker">{t('coach.guide_says', { nombre: t('crew.valeria.short') })}</p>
-            <h2 id="welcome-title">{t('coach.welcome.title_named', { nombre: commanderName.value.trim() || t('crew.commander_default') })}</h2>
-          </div>
-        </div>
-        <ul class="card__list welcome__list">
-          {lines.map(([icon, key]) => (
-            <li key={key}>
-              <Icon name={icon} size={24} />
-              <span>{t(key, f)}</span>
-            </li>
-          ))}
-        </ul>
-        <div class="card__actions">
-          <button ref={button} type="button" class="btn btn--primary" onClick={ackTutorial}>
-            {t('coach.welcome.start')}
-          </button>
-        </div>
-        <button type="button" class="linkbtn welcome__skip" onClick={skipTutorial}>
-          {t('coach.skip')}
-        </button>
-      </section>
-    </div>
-  );
 }
 
 /** Los pasos de acción, en orden, para los puntos de progreso. */
@@ -202,15 +156,87 @@ function Help() {
           </div>
         ))}
         <p class="card__goal">{t('help.storm')}</p>
+        <button
+          type="button"
+          class="btn"
+          onClick={() => {
+            helpOpen.value = false;
+            onboardingOpen.value = true;
+          }}
+        >
+          {t('help.replay')}
+        </button>
       </section>
     </div>
   );
 }
 
+/** Quién habla y qué señala cada pista de los días 2 y 3. */
+const HINTS: Record<HintId, { speaker: CrewId; target: string }> = {
+  day2: { speaker: 'valeria', target: '.eflow' },
+  day3: { speaker: 'lucia', target: '.forecast' },
+};
+const HINT_MS = 14000;
+
+/** Aro que rodea lo que señala la pista; si no existe en pantalla, no se dibuja nada. */
+function Spot({ selector }: { selector: string }) {
+  const [box, setBox] = useState<{ x: number; y: number; w: number; h: number } | null>(null);
+  useEffect(() => {
+    const measure = (): void => {
+      const el = document.querySelector(selector);
+      const r = el?.getBoundingClientRect();
+      setBox(r && r.width > 0 && r.height > 0 ? { x: r.left, y: r.top, w: r.width, h: r.height } : null);
+    };
+    measure();
+    const id = window.setInterval(measure, 300);
+    window.addEventListener('resize', measure);
+    return () => {
+      window.clearInterval(id);
+      window.removeEventListener('resize', measure);
+    };
+  }, [selector]);
+  if (!box) return null;
+  return <div class="onb-spot" aria-hidden="true" style={{ left: `${box.x - 4}px`, top: `${box.y - 4}px`, width: `${box.w + 8}px`, height: `${box.h + 8}px` }} />;
+}
+
+/** Pista breve y sin bloqueo: se cierra sola o con un toque. */
+function Hint({ id }: { id: HintId }) {
+  const { speaker: who, target } = HINTS[id];
+  const speaker = crewById(who);
+  useEffect(() => {
+    const timer = window.setTimeout(dismissHint, HINT_MS);
+    return () => window.clearTimeout(timer);
+  }, [id]);
+  return (
+    <>
+      <Spot selector={target} />
+      <div class="coach onb-hint" role="status" aria-live="polite" style={{ '--crew': speaker.css }} key={id} onClick={dismissHint}>
+        <span class="coach__portrait" aria-hidden="true">
+          <CrewPortrait color={speaker.css} size={48} mood="happy" />
+        </span>
+        <div class="coach__body">
+          <p class="coach__voice">
+            <strong>{t(`crew.${speaker.id}.short`)}</strong>
+          </p>
+          <p class="coach__text">{t(`coach.hint_${id}`)}</p>
+          <div class="coach__actions">
+            <button type="button" class="btn btn--small btn--primary" onClick={dismissHint}>
+              {t('coach.ok')}
+            </button>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
 export function Coach() {
   const step = tutorialStep.value;
+  const hint = contextHint.value;
+  if (onboardingOpen.value) return <Onboarding review vars={facts()} />;
   if (helpOpen.value) return <Help />;
-  if (step === 'welcome') return <Welcome />;
+  if (step === 'welcome') return <Onboarding vars={facts()} />;
   if (step) return <Bubble step={step} />;
+  if (hint) return <Hint id={hint} />;
   return null;
 }

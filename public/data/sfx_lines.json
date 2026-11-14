@@ -1,0 +1,12 @@
+{
+  "_nota": "Efectos de sonido generados con IA (ElevenLabs) por scripts/generate-sfx.mjs. Se generan una vez y se guardan en public/audio/sfx/. Nunca se llama a la API durante la partida.",
+  "model": "text-to-sound-effects (POST /v1/sound-generation)",
+  "effects": [
+    { "id": "repair_clank", "duration": 1.0, "influence": 0.5, "prompt": "A single dry metallic wrench hit on metal, cartoon style, short and punchy, no voice, no music" },
+    { "id": "repair_shuank", "duration": 1.2, "influence": 0.5, "prompt": "Quick ratchet screwing sound ending with a bright metallic shing, cartoon style, no voice, no music" },
+    { "id": "repair_done", "duration": 1.0, "influence": 0.5, "prompt": "Short cheerful confirmation chime, metallic little bell plus a soft power-up, friendly, no voice" },
+    { "id": "alarm_breakdown", "duration": 2.0, "influence": 0.5, "prompt": "Two-tone spaceship alarm repeated three times, gentle and not shrill, suitable for children, no voice" },
+    { "id": "storm_alert", "duration": 2.0, "influence": 0.5, "prompt": "Rising radiation warning alert, tense but soft, sci-fi, no voice" },
+    { "id": "energy_flow", "duration": 1.5, "influence": 0.5, "prompt": "Soft electric hum that rises in pitch, energy flowing through a machine, sci-fi, no voice" }
+  ]
+}

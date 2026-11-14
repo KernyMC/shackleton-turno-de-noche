@@ -77,7 +77,7 @@ function Planner({ game: g }: { game: GameState }) {
       <div class="tablet__actions">
         <button type="button" class="btn btn--primary btn--execute" disabled={resolving.value} onClick={commit}>
           <svg width="18" height="18" viewBox="0 0 20 20" aria-hidden="true"><path d="M6 4l10 6-10 6Z" fill="currentColor" /></svg>
-          {resolving.value ? t('tablet.resolving') : t('tablet.execute')}
+          {resolving.value ? t('tablet.resolving') : t('tablet.execute', { dia: g.day })}
         </button>
         {g.lastPlan && (
           <button

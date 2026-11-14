@@ -86,13 +86,92 @@ export function playMilestone(): void {
   [523, 659, 784, 1047].forEach((f, i) => tone(f, i * 0.09, 0.35, 0.045, 'triangle'));
 }
 
-/** Avería: dos zumbidos descendentes. */
-export function playBreakdown(): void {
+// Muestras generadas con IA (scripts/generate-sfx.mjs), guardadas en public/audio/sfx/.
+// Nunca se piden a ningún servicio durante la partida. Si falta el archivo, suena el respaldo sintetizado.
+const BASE = '/audio/sfx/';
+let available: Promise<Set<string>> | null = null;
+const buffers = new Map<string, Promise<AudioBuffer | null>>();
+
+function sampleIds(): Promise<Set<string>> {
+  available ??= fetch(BASE + 'index.json')
+    .then((r) => (r.ok ? r.json() : { ids: [] }))
+    .then((j: { ids?: string[] }) => new Set(j.ids ?? []))
+    .catch(() => new Set<string>());
+  return available;
+}
+
+function loadSample(ac: AudioContext, id: string): Promise<AudioBuffer | null> {
+  let p = buffers.get(id);
+  if (!p) {
+    p = sampleIds()
+      .then((ids) => (ids.has(id) ? fetch(BASE + id + '.mp3') : null))
+      .then((r) => (r && r.ok ? r.arrayBuffer() : null))
+      .then((b) => (b ? ac.decodeAudioData(b) : null))
+      .catch(() => null);
+    buffers.set(id, p);
+  }
+  return p;
+}
+
+/** Reproduce una muestra; si no existe o falla, llama al respaldo sintetizado. */
+export function playSample(id: string, fallback: () => void, volume = 0.6): void {
+  const ac = audio();
+  if (!ac) return;
+  void loadSample(ac, id).then((buf) => {
+    if (!buf) return fallback();
+    if (muted.value || document.hidden) return;
+    const src = ac.createBufferSource();
+    const gain = ac.createGain();
+    gain.gain.value = volume;
+    src.buffer = buf;
+    src.connect(gain).connect(ac.destination);
+    src.start();
+  });
+}
+
+function synthBreakdown(): void {
   tone(330, 0, 0.18, 0.06, 'sawtooth', 220);
   tone(300, 0.22, 0.26, 0.06, 'sawtooth', 180);
 }
-
-/** Tormenta solar: alarma de tres pulsos ascendentes. */
-export function playStormAlarm(): void {
+function synthStorm(): void {
   [0, 0.28, 0.56].forEach((s) => tone(520, s, 0.2, 0.05, 'square', 880));
+}
+
+/** Avería: alarma de dos tonos (muestra) o dos zumbidos descendentes (respaldo). */
+export function playBreakdown(): void {
+  playSample('alarm_breakdown', synthBreakdown);
+}
+
+/** Tormenta solar: alerta de radiación (muestra) o tres pulsos ascendentes (respaldo). */
+export function playStormAlarm(): void {
+  playSample('storm_alert', synthStorm);
+}
+
+/** Golpe de llave inglesa. */
+export function playRepairClank(): void {
+  playSample('repair_clank', () => {
+    tone(1400, 0, 0.09, 0.07, 'square', 700);
+    tone(2300, 0, 0.05, 0.03, 'triangle');
+  });
+}
+
+/** Trinquete rápido con un destello metálico al final. */
+export function playRepairShuank(): void {
+  playSample('repair_shuank', () => {
+    [0, 0.06, 0.12, 0.18].forEach((s) => tone(900, s, 0.04, 0.04, 'square'));
+    tone(1800, 0.26, 0.3, 0.04, 'triangle', 3200);
+  });
+}
+
+/** Reparación lista: campanita y subida suave. */
+export function playRepairDone(): void {
+  playSample('repair_done', () => {
+    tone(1047, 0, 0.25, 0.05, 'triangle');
+    tone(1568, 0.1, 0.4, 0.05, 'sine');
+  });
+}
+
+/** Energía que fluye al pasar el día: zumbido que sube. */
+export function playEnergyFlow(): void {
+  playSample('energy_flow', () => tone(110, 0, 1.2, 0.05, 'sawtooth', 330), 0.5);
 }

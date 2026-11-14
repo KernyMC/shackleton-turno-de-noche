@@ -136,6 +136,15 @@
       ],
       "note_es": "Reducida a 2048×1024 con scripts/earth-texture.mjs. La luz y la atmósfera del juego son una recreación.",
       "note_en": "Downscaled to 2048×1024 with scripts/earth-texture.mjs. The in-game lighting and atmosphere are a recreation."
+    },
+    "energy_unit": {
+      "name_es": "Unidades de energía",
+      "name_en": "Energy units",
+      "explain_es": "La energía del juego se cuenta en unidades simples (el rayo). Es una unidad simplificada del juego, no kilovatios-hora reales.",
+      "explain_en": "Energy in the game is counted in simple units (the bolt). It is a simplified game unit, not real kilowatt-hours.",
+      "status": "game_balance",
+      "source_name": "Decisión de diseño del equipo Halo Sur (DECISIONES.md)",
+      "url": null
     }
   }
 }

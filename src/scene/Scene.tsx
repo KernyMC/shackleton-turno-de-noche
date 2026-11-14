@@ -7,7 +7,7 @@ import { defaultConfig } from '../sim/config';
 import { getLight } from '../sim/engine';
 import { MODULE_IDS } from '../sim/types';
 import type { ModuleId } from '../sim/types';
-import { focusModule, game, interact, nearTarget, plan, realAssets, skyView, tabletOpen, toggleTablet } from '../state/store';
+import { focusModule, game, interact, nearTarget, plan, realAssets, resolving, skyView, tabletOpen, toggleTablet } from '../state/store';
 import { tutorialStep } from '../state/tutorial';
 import { clearReady, markReady } from '../state/loading';
 import { sceneBridge } from './bridge';
@@ -84,6 +84,35 @@ export function Scene() {
         ),
       );
       stops.push(effect(() => w.setSkyLook(skyView.value)));
+      // Batería, reparto de energía al pasar el día y reparación animada (solo reflejan el estado).
+      stops.push(
+        effect(() => {
+          const g = game.value;
+          if (g) w.setBattery(g.battery / defaultConfig.balance.difficulty[g.difficulty].batteryCapacity);
+        }),
+      );
+      stops.push(
+        effect(() => {
+          const clank = t('fx.clank');
+          const shuank = t('fx.shuank');
+          w.setFxLabels({ clank: clank === 'fx.clank' ? undefined : clank, shuank: shuank === 'fx.shuank' ? undefined : shuank });
+        }),
+      );
+      let wasResolving = false;
+      stops.push(
+        effect(() => {
+          const now = resolving.value;
+          const g = game.peek();
+          if (now && !wasResolving && g) {
+            const p = plan.peek();
+            const shared = {} as Record<ModuleId, number>;
+            for (const id of MODULE_IDS) shared[id] = g.shelterToday && (id === 'greenhouse' || id === 'workshop') ? 0 : p[id];
+            w.playEnergy(shared, getLight(g.day, g.difficulty) < 0.1);
+            if (g.repairToday) w.playRepair(g.repairToday);
+          }
+          wasResolving = now;
+        }),
+      );
       // La tripulación reacciona al estado: ánimo según el recurso de su módulo.
       stops.push(
         effect(() => {

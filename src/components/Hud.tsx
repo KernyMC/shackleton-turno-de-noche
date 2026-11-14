@@ -13,10 +13,11 @@ import { getLight } from '../sim/engine';
 import type { GameState, LogEntry } from '../sim/types';
 import { muted, toggleMute } from '../audio/sfx';
 import { faceOf, moodOf } from '../state/rewards';
-import { budget, exitToMenu, game, skyView, tabletOpen, toggleTablet } from '../state/store';
+import { exitToMenu, game, skyView, tabletOpen, toggleTablet } from '../state/store';
 import { sourcesOpen } from '../state/sources';
 import { helpOpen } from '../state/tutorial';
 import { CrewPortrait } from './CrewPortrait';
+import { EnergyFlow } from './EnergyFlow';
 import { num, signed } from './format';
 import { Icon } from './icons';
 import type { IconName } from './icons';
@@ -61,10 +62,11 @@ function Bar({ value, max, level, label }: { value: number; max: number; level: 
   );
 }
 
-function Trend({ delta }: { delta: number | null }) {
+/** Cambio desde ayer. `goodUp` = subir es bueno (falso para la radiación). */
+function Trend({ delta, goodUp = true }: { delta: number | null; goodUp?: boolean }) {
   if (delta === null || Math.abs(delta) < 0.05) return null;
   return (
-    <span class={`hud__trend hud__trend--${delta > 0 ? 'up' : 'down'}`}>
+    <span class={`hud__trend hud__trend--${delta > 0 === goodUp ? 'up' : 'down'}`} title={t('hud.trend')}>
       {delta > 0 ? '▲' : '▼'} {signed(delta)}
     </span>
   );
@@ -169,6 +171,7 @@ function Dose({ g, mood }: { g: GameState; mood: number }) {
         <span class="hud__value">
           <b>{num(g.dose)}</b>
           <span class="hud__dim">/ {limit} mSv</span>
+          <Trend delta={lastDelta(g, 'dose')} goodUp={false} />
         </span>
       </div>
       <Face crew="amaru" mood={mood} />
@@ -176,14 +179,9 @@ function Dose({ g, mood }: { g: GameState; mood: number }) {
   );
 }
 
-function Tools({ g }: { g: GameState }) {
-  const noSun = getLight(g.day, g.difficulty) < 0.1;
+function Tools() {
   return (
     <div class="topbar__tools">
-      <span class={`hud__sun${noSun ? ' hud__sun--none' : ''}`}>
-        <Icon name={noSun ? 'moon' : 'sun'} size={15} />
-        {noSun ? t('hud.no_sun') : t('hud.sun_today', { valor: num(budget.value?.solar ?? 0) })}
-      </span>
       <button
         type="button"
         class={`iconbtn${skyView.value ? ' iconbtn--on' : ''}`}
@@ -279,7 +277,7 @@ function Resources({ g, moods }: { g: GameState; moods: Record<CrewId, number> }
             <Bar value={it.value} max={it.max} level={it.level} label={it.label} />
             <p class="res__foot">
               <Status level={it.level} low="hud.status.low" critical="hud.status.critical" />
-              {it.level === 'ok' && <Trend delta={it.delta} />}
+              <Trend delta={it.delta} />
             </p>
           </div>
         </div>
@@ -297,7 +295,10 @@ export function Hud() {
       <header class="topbar">
         <Dose g={g} mood={moods.amaru} />
         <Scoreboard g={g} />
-        <Tools g={g} />
+        <div class="topbar__right">
+          <EnergyFlow compact />
+          <Tools />
+        </div>
       </header>
       <Feed g={g} />
       <Resources g={g} moods={moods} />

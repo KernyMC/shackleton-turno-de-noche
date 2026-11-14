@@ -1,0 +1,61 @@
+/* Presentación de 6 tarjetas y pistas de los días 2 y 3. Prefijo onb- para no pisar otros estilos. */
+.onb-card { width: min(32rem, 100%); }
+.onb-head { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; min-height: 1.4rem; }
+.onb-head .card__kicker { margin: 0; text-transform: none; letter-spacing: 0.02em; font-size: 0.95rem; }
+.onb-dots { display: inline-flex; gap: 6px; flex: none; }
+.onb-dot { width: 10px; height: 10px; border-radius: 50%; border: 2px solid var(--text-dim); box-sizing: border-box; }
+.onb-dot--done { background: var(--text-dim); }
+.onb-dot--now { background: var(--accent); border-color: var(--accent); box-shadow: 0 0 6px var(--accent); }
+.onb-card h2 { margin: 0.4rem 0 0.6rem; font-size: 1.6rem; line-height: 1.15; }
+.onb-body { animation: onb-in 260ms ease-out; min-height: 15rem; }
+@keyframes onb-in { from { opacity: 0; transform: translateX(10px); } }
+.onb-art { display: block; width: 100%; height: auto; max-height: 150px; margin: 0 auto 0.8rem; padding: 0.4rem; box-sizing: border-box; background: #0f1114; border: 1px solid var(--panel-border); border-radius: 12px; }
+.onb-text { margin: 0 0 0.55rem; font-size: 1.15rem; line-height: 1.35; }
+.onb-text--soft { color: var(--text-dim); font-size: 1rem; }
+.onb-flow { stroke-dasharray: 5 5; animation: onb-dash 900ms linear infinite; }
+@keyframes onb-dash { to { stroke-dashoffset: -10; } }
+.onb-ship { animation: onb-bob 3s ease-in-out infinite; }
+@keyframes onb-bob { 50% { transform: translateY(-3px); } }
+.onb-press { animation: onb-pulse 1.6s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+@keyframes onb-pulse { 50% { transform: scale(1.06); } }
+
+.onb-coming { display: grid; gap: 0.6rem; margin: 0 0 0.4rem; padding: 0; list-style: none; }
+.onb-coming li { display: grid; grid-template-columns: 2.6rem 1fr; gap: 0.7rem; align-items: center; padding: 0.35rem 0.5rem; background: #0f1114; border: 1px solid var(--panel-border); border-radius: 10px; font-size: 1.05rem; line-height: 1.3; }
+.onb-coming b { display: block; color: var(--text); }
+.onb-coming span { color: var(--text-dim); }
+.onb-mini { width: 2.6rem; height: 2.6rem; }
+
+.onb-rules { display: grid; gap: 0.6rem; margin: 0 0 0.5rem; padding: 0; list-style: none; }
+.onb-rules li { display: grid; grid-template-columns: 1.8rem 1fr; gap: 0.6rem; align-items: start; font-size: 1.1rem; line-height: 1.35; }
+.onb-rules__win .icon { color: var(--ok, #7ccf6a); }
+.onb-rules__lose .icon { color: var(--accent); }
+
+.onb-crew { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; margin: 0 0 0.6rem; padding: 0; list-style: none; }
+.onb-crew li { display: grid; grid-template-columns: 56px 1fr; grid-template-rows: auto auto auto; column-gap: 0.6rem; align-items: center; padding: 0.4rem 0.5rem; background: #0f1114; border: 1px solid var(--panel-border); border-bottom: 3px solid var(--crew); border-radius: 10px; font-size: 0.85rem; line-height: 1.2; }
+.onb-crew__face { grid-row: 1 / 4; display: grid; place-items: end center; width: 56px; height: 56px; border-radius: 50%; overflow: hidden; background: radial-gradient(circle at 50% 30%, color-mix(in srgb, var(--crew) 40%, #111), #0b0c0e 75%); box-shadow: 0 0 0 2px var(--crew); }
+.onb-crew b { color: var(--crew); font-size: 1rem; }
+.onb-crew li > span:not(.onb-crew__face) { color: var(--text-dim); }
+.onb-crew li > .onb-crew__mod { color: var(--text); font-weight: 600; }
+
+.onb-actions { display: flex; gap: 0.75rem; margin-top: 1rem; }
+.onb-actions .btn { min-height: 52px; font-size: 1.05rem; }
+.onb-actions .btn--primary { flex: 1 1 auto; }
+.onb-actions .btn:disabled { opacity: 0.4; cursor: default; }
+.onb-skip { display: block; margin: 0.6rem auto 0; }
+
+/* Pista contextual: el mismo globo del tripulante, con un aro sobre lo que señala. */
+.onb-hint { cursor: pointer; }
+.onb-hint .coach__text { font-size: 1.05rem; }
+.onb-spot { position: fixed; z-index: 9; pointer-events: none; border: 3px solid var(--accent); border-radius: 12px; box-shadow: 0 0 0 4px rgb(255 179 71 / 0.2), 0 0 14px rgb(255 179 71 / 0.5); animation: onb-ring 1.4s ease-in-out infinite; }
+@keyframes onb-ring { 50% { box-shadow: 0 0 0 8px rgb(255 179 71 / 0.1), 0 0 20px rgb(255 179 71 / 0.6); } }
+
+@media (max-width: 600px) {
+  .onb-card h2 { font-size: 1.4rem; }
+  .onb-text { font-size: 1.05rem; }
+  .onb-body { min-height: 0; }
+  .onb-art { max-height: 120px; }
+  .onb-crew li { font-size: 0.8rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .onb-body, .onb-flow, .onb-ship, .onb-press, .onb-spot { animation: none; }
+}
