@@ -13,7 +13,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "check": "tsc --noEmit",
-    "fetch:nasa": "tsx scripts/fetch-nasa.ts"
+    "fetch:nasa": "tsx scripts/fetch-nasa.ts",
+    "simulate": "tsx scripts/simulate.ts"
   },
   "dependencies": {
     "@astrojs/preact": "^6.1.6",

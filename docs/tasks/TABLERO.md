@@ -28,12 +28,13 @@ Estados: `libre` · `en curso` · `hecha` · `bloqueada`. Prioridades: P0 impres
 
 | ID | Tarea | Prio | Depende de | Responsable | Estado |
 |---|---|---|---|---|---|
-| A-01 | `previewDay` y `runDay` | P0 | — | | libre |
-| A-02 | Programación de eventos (`events.ts`) | P0 | — | | libre |
-| A-03 | `resolveEvent` y opciones con razón | P0 | A-01, A-02 | | libre |
-| A-04 | Resultado: causas, estrellas (`scoring.ts`) | P0 | A-01 | | libre |
-| A-05 | Test de balance y `npm run simulate` | P1 | A-03 | | libre |
+| A-01 | `previewDay` y `runDay` | P0 | — | Claude | hecha |
+| A-02 | Programación de eventos (`events.ts`) | P0 | — | Claude | hecha |
+| A-03 | `resolveEvent` y opciones con razón | P0 | A-01, A-02 | Claude | hecha |
+| A-04 | Resultado: causas, estrellas (`scoring.ts`) | P0 | A-01 | Claude | hecha |
+| A-05 | Test de balance y `npm run simulate` | P1 | A-03 | Claude | hecha |
 | A-06 | Insignias y eventos menores | P2 | A-03 | | libre |
+| A-07 | Umbrales de estrellas | P2 | — | | libre |
 | B-01 | Terreno procedural, sol rasante y cielo | P0 | — | | libre |
 | B-02 | Jugador: caminar, salto lunar, colisiones | P0 | — | | libre |
 | B-03 | Base: módulos, refugio, panel solar, rover | P0 | B-01 | | libre |
@@ -58,10 +59,24 @@ Estados: `libre` · `en curso` · `hecha` · `bloqueada`. Prioridades: P0 impres
 | D-02 | `sources.json` y `facts.json` con citas | P1 | — | | libre |
 | D-03 | Contrastar consumos y dosis con fuentes NASA | P1 | D-02 | | libre |
 | D-04 | Elevación real del polo sur (LOLA) | P2 | B-01 | | libre |
-| E-01 | Repo en GitHub y deploy automático | P0 | — | | libre |
+| E-01 | Repo en GitHub (hecho) y deploy automático | P0 | — | | libre |
 | E-02 | Prueba de juego con checklist | P1 | hito hora 14 | | libre |
 | E-03 | Video de demo y página del proyecto en Space Apps | P0 | hito hora 24 | | libre |
 | E-04 | README, CREDITS, AI_USAGE y DECISIONES finales | P0 | — | | libre |
+
+## Siguiente paso recomendado (para quien retome, persona o agente)
+
+El motor está completo. Lo que más acerca a un juego jugable, en este orden:
+
+1. **C-01** store y bucle del día (desbloquea toda la interfaz y B-04).
+2. En paralelo: **C-03** tablet · **C-02** visor · **B-01** terreno, sol y cielo.
+3. **C-04** eventos · **C-05** resumen y debrief · **C-06** menú → *partida completa jugable*.
+4. **B-02**, **B-03**, **B-04** → el mundo responde al juego.
+5. P1: D-01, D-02, C-07, C-08, C-09, B-05, B-06, B-07, C-10, E-01.
+
+Cada tarea está escrita para hacerse sin más contexto que su archivo de área, la spec que cita y
+`CLAUDE.md`. Una sesión = una tarea: terminarla, verificarla, marcarla y hacer commit antes de
+empezar otra.
 
 ## Reparto sugerido
 

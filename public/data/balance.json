@@ -8,7 +8,7 @@
       "batteryCapacity": 120,
       "batteryStart": 90,
       "lifeSupportStart": 85,
-      "foodStart": 70,
+      "foodStart": 80,
       "solarMax": 70,
       "baseConsumption": 8,
       "doseLimit": 120,
@@ -19,11 +19,11 @@
     },
     "comandante": {
       "crew": 4,
-      "batteryCapacity": 100,
-      "batteryStart": 70,
-      "lifeSupportStart": 75,
-      "foodStart": 60,
-      "solarMax": 60,
+      "batteryCapacity": 120,
+      "batteryStart": 80,
+      "lifeSupportStart": 85,
+      "foodStart": 75,
+      "solarMax": 70,
       "baseConsumption": 10,
       "doseLimit": 100,
       "doseBaseDaily": 1.4,
@@ -33,10 +33,18 @@
     }
   },
   "modules": {
-    "recycler": { "maxEnergy": 30 },
-    "greenhouse": { "maxEnergy": 25 },
-    "shield": { "maxEnergy": 20 },
-    "workshop": { "maxEnergy": 15 }
+    "recycler": {
+      "maxEnergy": 30
+    },
+    "greenhouse": {
+      "maxEnergy": 25
+    },
+    "shield": {
+      "maxEnergy": 20
+    },
+    "workshop": {
+      "maxEnergy": 15
+    }
   },
   "effects": {
     "recyclerLifeSupport": 14,
@@ -48,13 +56,67 @@
     "shelterDoseFactor": 0.15,
     "roverLifeSupport": 25
   },
-  "crewConsumption": { "lifeSupportPerPerson": 2.5, "foodPerPerson": 1.5 },
-  "stormDose": { "S1": 8, "S2": 15, "S3": 25, "S4": 35 },
+  "crewConsumption": {
+    "lifeSupportPerPerson": 2.5,
+    "foodPerPerson": 1.5
+  },
+  "stormDose": {
+    "S1": 8,
+    "S2": 15,
+    "S3": 25,
+    "S4": 35
+  },
+  "roverDelayChance": {
+    "cadete": 0,
+    "comandante": 0.1
+  },
+  "stars": {
+    "two": 15,
+    "three": 30
+  },
+  "events": {
+    "stormWindows": [
+      [
+        5,
+        8
+      ],
+      [
+        18,
+        21
+      ],
+      [
+        24,
+        27
+      ]
+    ],
+    "breakdownWindow": [
+      7,
+      10
+    ],
+    "iceWindow": [
+      20,
+      23
+    ],
+    "nightWarningDay": 8,
+    "brokenReminderDays": 5
+  },
   "sources": {
     "_nota": "Todos los valores son 'game_balance' o 'simulated' hasta que la tarea D-03 los contraste con el BVAD de NASA.",
-    "default": { "source_id": "design", "status": "game_balance" },
-    "crewConsumption": { "source_id": "bvad_pendiente", "status": "simulated" },
-    "doseBaseDaily": { "source_id": "radiacion_pendiente", "status": "simulated" },
-    "stormDose": { "source_id": "radiacion_pendiente", "status": "simulated" }
+    "default": {
+      "source_id": "design",
+      "status": "game_balance"
+    },
+    "crewConsumption": {
+      "source_id": "bvad_pendiente",
+      "status": "simulated"
+    },
+    "doseBaseDaily": {
+      "source_id": "radiacion_pendiente",
+      "status": "simulated"
+    },
+    "stormDose": {
+      "source_id": "radiacion_pendiente",
+      "status": "simulated"
+    }
   }
 }

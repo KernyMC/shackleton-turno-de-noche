@@ -12,3 +12,10 @@ Una línea por decisión que no estaba en los documentos. Formato: fecha · deci
 - 2026-11-14 · Exterior sin niebla y con estrellas solo en la noche lunar. · Fidelidad física: en la Luna no hay atmósfera.
 - 2026-11-14 · Dos pestañas abiertas: la última que guarda gana, sin sincronizar. · Simplicidad.
 - 2026-11-14 · Versiones instaladas: Astro 7, Preact 11, Three 0.187, Vitest 5. · Las últimas al crear el proyecto.
+- 2026-11-14 · **Balance de Comandante cambiado respecto al documento original:** batería 100→120, batería inicial 70→80, soporte vital inicial 75→85, comida inicial 60→75, sol máximo 60→70. Cadete: comida inicial 70→80. · Con los valores originales la jugadora prudente ganaba 0 % en Comandante (la energía total no alcanzaba). Ahora: prudente 71,3 % Comandante y 100 % Cadete; todo al reciclador 0 %; aleatoria 0 %.
+- 2026-11-14 · Un solo archivo `storms.json` (simulado hoy; `npm run fetch:nasa` lo reemplaza por datos reales). · Evita importar un archivo que puede no existir.
+- 2026-11-14 · El taller nunca se avería; en Cadete tampoco el reciclador. · Sin taller no se puede reparar nada; el reciclador roto en Cadete llegaría a la noche lunar.
+- 2026-11-14 · El aviso de noche es siempre el día 8. · El documento decía "día 8 o 9"; fijo es más simple.
+- 2026-11-14 · Reparar y enviar el rover requieren que el plan del día dé ≥ 10 al taller; si no, la acción falla y queda en la bitácora. · Así la decisión tiene coste de energía real.
+- 2026-11-14 · El margen para las estrellas no cuenta la batería. · Vaciar la batería en la noche lunar es jugar bien.
+- 2026-11-14 · Eventos menores aleatorios e insignias quedan sin implementar (tarea A-06, P2). · Prioridad.

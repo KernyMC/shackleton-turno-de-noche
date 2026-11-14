@@ -27,9 +27,50 @@ export interface ScheduledEvent {
   payload?: Record<string, unknown>;
 }
 
+export interface EventOption {
+  id: string;
+  /** Clave i18n de por qué no se puede elegir. */
+  disabledReason?: string;
+}
+
 export interface PendingEvent extends ScheduledEvent {
-  /** Opciones disponibles; `disabledReason` es una clave i18n. */
-  options: { id: string; disabledReason?: string }[];
+  options: EventOption[];
+}
+
+export type StormLevel = 'S1' | 'S2' | 'S3' | 'S4';
+
+export interface StormData {
+  id: string;
+  level: StormLevel;
+  /** Fecha real del evento (AAAA-MM-DD) o null si es simulado. */
+  date: string | null;
+  classType: string | null;
+  link?: string | null;
+}
+
+export interface StormsFile {
+  simulated: boolean;
+  version: number;
+  status: DataStatus;
+  source_id: string;
+  storms: StormData[];
+}
+
+/** Efecto que llega en un día futuro (por ejemplo, el agua del rover). */
+export interface PendingEffect {
+  day: number;
+  kind: 'rover_water';
+  amount: number;
+}
+
+/** Resultado previsto de un día. Los tres primeros son cambios; `battery` es el valor final. */
+export interface DayPreview {
+  lifeSupport: number;
+  food: number;
+  dose: number;
+  battery: number;
+  wasted: number;
+  blackout: boolean;
 }
 
 export type LossCause = 'radiation' | 'life_support' | 'food';
@@ -77,6 +118,13 @@ export interface GameState {
   modules: Record<ModuleId, { broken: boolean; brokenSinceDay?: number }>;
   roverAvailable: boolean;
   shelterToday: boolean;
+  /** Tormenta que golpea hoy (ya se eligió refugio o no). */
+  stormToday: StormLevel | null;
+  /** Módulo que se intentará reparar hoy (requiere taller con energía suficiente). */
+  repairToday: ModuleId | null;
+  /** El rover saldrá hoy (requiere taller con energía suficiente). */
+  roverSendToday: boolean;
+  pendingEffects: PendingEffect[];
   pendingEvent: PendingEvent | null;
   scheduledEvents: ScheduledEvent[];
   history: DaySnapshot[];
@@ -117,7 +165,16 @@ export interface Balance {
     roverLifeSupport: number;
   };
   crewConsumption: { lifeSupportPerPerson: number; foodPerPerson: number };
-  stormDose: Record<'S1' | 'S2' | 'S3' | 'S4', number>;
+  stormDose: Record<StormLevel, number>;
+  roverDelayChance: Record<Difficulty, number>;
+  stars: { two: number; three: number };
+  events: {
+    stormWindows: [number, number][];
+    breakdownWindow: [number, number];
+    iceWindow: [number, number];
+    nightWarningDay: number;
+    brokenReminderDays: number;
+  };
 }
 
 export interface LightSequence {
@@ -132,6 +189,7 @@ export interface LightSequence {
 export interface GameConfig {
   balance: Balance;
   light: LightSequence;
+  storms: StormData[];
 }
 
 export interface EnergyBudget {

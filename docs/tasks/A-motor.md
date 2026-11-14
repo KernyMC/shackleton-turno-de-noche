@@ -1,32 +1,37 @@
 # Área A — Motor (`src/sim`)
 
-Spec: `docs/specs/01-motor-simulacion.md`. Reglas: `docs/specs/00-documento-original.md` §4–6.
-Forma de trabajo: test primero. Nada de DOM, Three, Preact ni `Math.random`.
+Spec y API: `docs/specs/01-motor-simulacion.md`. Nada de DOM, Three, Preact ni `Math.random`.
+Verificación de toda tarea de esta área: `npm test && npm run check`.
 
-## A-01 · `previewDay` y `runDay` (P0)
-- **Archivos:** `engine.ts`, `engine.test.ts`.
-- **Hacer:** `previewDay` devuelve los deltas del día. `runDay` sigue el orden exacto de §4.6: validar, energía, refugio, producción, consumo, dosis, efectos pendientes, limitar 0–100, guardar `DaySnapshot` y bitácora (claves i18n), comprobar derrota/victoria, avanzar día.
-- **Hecho cuando:** tests de producción, consumo, apagón, desperdicio, refugio, límites, derrota por cada causa, dos causas con prioridad, victoria y derrota en el día 30, y `previewDay` = `runDay`. `runDay` no muta el estado recibido.
+## Hechas
 
-## A-02 · Programación de eventos (P0)
-- **Archivos:** `events.ts`, `events.test.ts`, `public/data/events.json`, `public/data/storms_sample.json`.
-- **Hacer:** `scheduleEvents(seed, difficulty)` con las ventanas y reglas de §6.1 (nunca dos el mismo día, nunca día 1, avería nunca en el reciclador de noche en Cadete, tormenta 18–21 distinta del día del hielo). Conectar en `createGame`. Lee tormentas de `storms.json` si existe; si no, de `storms_sample.json`.
-- **Hecho cuando:** test con 1000 semillas: todos los garantizados dentro de su ventana y sin choques, en ambas dificultades.
+- **A-01** `previewDay` y `runDay` · **A-02** `scheduleEvents` · **A-03** `resolveEvent`, `getEventOptions`, `setRepairToday` · **A-04** `computeResult` · **A-05** estrategias, `npm run simulate`, test de balance con 1000 semillas y ajuste de `balance.json`.
 
-## A-03 · `resolveEvent` y opciones (P0)
-- **Depende de:** A-01, A-02.
-- **Hacer:** al llegar a un día con evento, `phase = 'event'` y `pendingEvent` con sus opciones. `getEventOptions` marca `disabledReason` (taller < 10, rover el día 30). `resolveEvent` aplica: refugio, reparar (queda arreglado al final del día), rover (+25 mañana; 10 % de retraso en Comandante), avisos sin decisión.
-- **Hecho cuando:** tests de cada opción y cada razón de deshabilitado; una partida completa se resuelve solo con llamadas al motor.
+## A-06 · Eventos menores e insignias (P2)
 
-## A-04 · Resultado (P0)
-- **Archivos:** `scoring.ts`, `scoring.test.ts`.
-- **Hacer:** `computeResult`: causas ordenadas, estrellas por margen mínimo (≥ 15 → 2, ≥ 30 → 3).
-- **Hecho cuando:** tests de 0, 1, 2 y 3 estrellas.
+**Contexto.** El motor solo tiene eventos garantizados. Faltan los menores aleatorios y las insignias
+del debrief. Es contenido extra: no bloquea nada.
 
-## A-05 · Balance (P1)
-- **Archivos:** `balance.test.ts`, `scripts/simulate.ts`, script `simulate` en `package.json`.
-- **Hacer:** tres estrategias automáticas (todo al reciclador, prudente, aleatoria) × 1000 semillas. Objetivos: prudente ≥ 70 % en Comandante y ≥ 90 % en Cadete; todo al reciclador ≤ 10 % en Comandante; aleatoria ≤ 25 %.
-- **Hecho cuando:** objetivos cumplidos tocando **solo** `balance.json`; cambios anotados en `DECISIONES.md`.
+**Eventos menores** (`00-documento-original.md` §6.1–6.2):
+1. En `events.ts`, función nueva `rollMinorEvent(state, cfg): ScheduledEvent | null`. Usa un rng derivado de semilla y día, igual que el retraso del rover en `engine.ts` (`createRng((seed ^ Math.imul(day, CONSTANTE)) >>> 0)`). Probabilidad: `difficulty.minorEventChance`.
+2. Solo si el día no tiene evento garantizado, no es el día 1 y no es 29 ni 30.
+3. Tipos: `harvest` (+8 comida), `earth_message` (sin efecto; `payload.factIndex` elegido con el rng), `micro_fault` (−5 batería, solo Comandante), `supplies` (+10 comida y +10 soporte vital, solo Cadete). Los valores van en `balance.json` dentro de un bloque nuevo `minorEvents`, no en el código.
+4. En `engine.ts`, `openEventForToday` llama a `rollMinorEvent` cuando no hay evento programado. Todos tienen una sola opción `ok`; el efecto se aplica en `resolveEvent` (limitando a 0–100 y a la capacidad de la batería).
+5. Claves i18n `log.harvest`, `log.earth_message`, `log.micro_fault`, `log.supplies` en ES y EN.
 
-## A-06 · Insignias y eventos menores (P2)
-- Insignias de §4.9 y eventos menores aleatorios de §6.1 (no en días 29–30).
+**Insignias** (`§4.9`), en `scoring.ts`, calculadas desde `state.history` y `state.log`:
+- `night_guardian`: ningún `blackout` en los días de `light.nightDays`.
+- `solar_shield`: todas las entradas de tormenta de la bitácora son `log.storm.shelter` (y hubo al menos una).
+- `ice_hunter`: existe `log.rover.arrived`.
+- `steady_hand`: existe un `log.repair.done` el mismo día que su `log.breakdown`.
+- `zero_waste`: `wasted === 0` en todo el historial.
+`computeResult` necesita entonces `state.log`: amplía su primer parámetro. Máximo 3 insignias, en ese orden.
+
+**Hecho cuando:** tests nuevos para cada evento menor y cada insignia; `npm run simulate` sigue cumpliendo los objetivos (si no, ajustar solo `balance.json` y anotarlo en `DECISIONES.md`); el test de 1000 semillas de eventos garantizados sigue pasando.
+
+## A-07 · Umbrales de estrellas (P2)
+
+`npm run simulate` muestra que la jugadora prudente nunca saca 3 estrellas y en Comandante nunca
+pasa de 1. Probar umbrales más bajos en `balance.json` → `stars` (por ejemplo 8 y 18) hasta que
+prudente obtenga 2 estrellas en ~30 % de sus victorias de Comandante. Actualizar el test de
+estrellas en `balance.test.ts` para que lea los umbrales de `defaultConfig` en vez de 15 y 30.

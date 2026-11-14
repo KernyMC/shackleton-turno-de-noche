@@ -51,12 +51,13 @@ solo y le da las reglas, la dirección de arte y el flujo de trabajo.
 | `npm test` | Tests del motor |
 | `npm run check` | Tipos TypeScript |
 | `npm run build` | Build estático en `dist/` |
+| `npm run simulate` | Juega 1000 partidas automáticas y muestra el balance |
 | `npm run fetch:nasa` | Descarga datos reales de NASA a `public/data/` |
 
 ## Estado actual
 
-- Hecho: esqueleto (Astro + Preact + Three.js + TypeScript + Vitest), base del motor con tests, prototipo caminable, menú, ES/EN mínimo, documentación y tareas.
-- Falta: casi todo el juego. Ver el tablero.
+- Hecho: esqueleto (Astro + Preact + Three.js + TypeScript + Vitest), **motor del juego completo** (30 días, eventos, derrota y victoria, 50 tests, balance medido con 1000 partidas), prototipo caminable, documentación y tareas detalladas.
+- Falta: la interfaz (tablet, visor, eventos, debrief), el mundo 3D definitivo y los datos reales de NASA. Ver el tablero.
 
 ## Estructura
 

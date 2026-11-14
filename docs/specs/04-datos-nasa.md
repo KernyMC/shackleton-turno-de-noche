@@ -19,7 +19,7 @@ Cada dato lleva `status`:
 
 | Dato | Fuente | Cómo | Archivo | Tarea |
 |---|---|---|---|---|
-| Tormentas solares (fecha, clase) | NASA DONKI, fulguraciones (FLR) | `npm run fetch:nasa` | `storms.json` | D-01 |
+| Tormentas solares (fecha, clase) | NASA DONKI, fulguraciones (FLR) | `npm run fetch:nasa` | `storms.json` (hoy simulado) | D-01 |
 | Consumo de agua, oxígeno y comida por persona | NASA BVAD (Baseline Values and Assumptions Document) | Manual, citando tabla y página | `balance.json` + `sources.json` | D-03 |
 | Dosis de radiación en superficie lunar | Publicaciones NASA / LRO CRaTER | Manual, con cita | `sources.json` | D-03 |
 | Elevación del polo sur (cráter Shackleton) | LRO LOLA / NASA SVS CGI Moon Kit | Descarga manual de un recorte pequeño | `public/terrain/` | D-04 (P2) |
@@ -36,7 +36,9 @@ D-01 debe:
 
 1. Volver a probar `npm run fetch:nasa`.
 2. Si sigue fallando, buscar la URL vigente en https://api.nasa.gov (sección DONKI) y en la página de DONKI del CCMC, y corregir la constante `url` del script.
-3. Si no hay forma, crear `storms_sample.json` con `status: "simulated"` y dejarlo dicho en `DECISIONES.md`.
+3. Si no hay forma, dejar `storms.json` como está (hoy trae 8 tormentas simuladas con `status: "simulated"`) y dejarlo dicho en `DECISIONES.md`.
+
+El script **sobrescribe** `public/data/storms.json`. El motor valida el archivo al cargar: `storms` no vacío y cada `level` entre S1 y S4.
 
 Clave de API: copia `.env.example` a `.env` y pon tu clave gratuita de https://api.nasa.gov
 (`DEMO_KEY` funciona, con pocas peticiones por hora). `.env` no se sube al repositorio.

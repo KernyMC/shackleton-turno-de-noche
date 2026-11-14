@@ -19,6 +19,7 @@ npm run dev        # http://localhost:4321
 npm test           # tests del motor (Vitest)
 npm run check      # tipos TypeScript
 npm run build      # build estático en dist/
+npm run simulate   # 1000 partidas automáticas: mide el balance
 npm run fetch:nasa # descarga datos reales a public/data (ver docs/specs/04-datos-nasa.md)
 ```
 
@@ -43,6 +44,16 @@ npm run fetch:nasa # descarga datos reales a public/data (ver docs/specs/04-dato
 6. Marca `hecha` en el tablero. Decisiones no previstas → una línea en `DECISIONES.md`. Uso de IA → una línea en `AI_USAGE.md`.
 
 Para una capa visual: constrúyela, mírala en el navegador y compárala con `docs/ARTE.md` antes de pasar a la siguiente.
+
+## Si eres un agente que retoma el trabajo
+
+- No hay memoria de sesiones anteriores: **todo el contexto está en el repo**. Empieza por `docs/tasks/TABLERO.md`, sección "Siguiente paso recomendado".
+- Haz **una tarea por sesión**, completa: código, verificación, tablero, commit y push. No dejes tareas a medias; si no puedes terminarla, escribe en su archivo de área qué falta y por qué.
+- No reescribas `src/sim`: está probado con 50 tests. Si la interfaz necesita algo del motor, añade una función pura con su test.
+- No cambies números de `public/data/balance.json` sin correr `npm run simulate` y `npm test` (hay un test de balance).
+- Trabajo visual: una capa cada vez, mirándola en el navegador contra `docs/ARTE.md`. Pointer Lock no funciona en vistas previas embebidas; usa una pestaña normal o el respaldo de arrastre (tarea B-02).
+- Datos: nunca inventes cifras, citas ni URLs de NASA. Lo que no puedas comprobar queda `simulated`.
+- Ante una duda no resuelta por los documentos: elige lo más simple que respete `docs/GDD.md` y `docs/ARTE.md`, y anótalo en `DECISIONES.md`.
 
 ## Mapa del código
 
