@@ -1,0 +1,42 @@
+/* Caritas de la tripulación en el HUD: estilo pegatina, contorno oscuro de 2 px, color plano. Prefijo face-. */
+
+/* Rasgos del visor: rebote breve al cambiar de emoción y parpadeo ocasional. */
+.face-feat { transform-box: fill-box; transform-origin: 50% 60%; }
+.face-feat--pop { animation: face-pop 250ms cubic-bezier(.3, 1.6, .5, 1); }
+@keyframes face-pop { 0% { transform: scale(0.7); } 100% { transform: scale(1); } }
+.face-eyes { transform-box: fill-box; transform-origin: 50% 50%; animation: face-blink 5.2s ease-in-out infinite; }
+.face-feat--pop .face-eyes { animation-delay: 0.3s; }
+@keyframes face-blink { 0%, 93%, 100% { transform: scaleY(1); } 96% { transform: scaleY(0.1); } }
+
+/* Contenedor del HUD: palabra de estado bajo el retrato. */
+.face-box { display: inline-flex; flex-direction: column; align-items: center; gap: 2px; }
+.face-word {
+  max-width: 100%; padding: 0 0.3rem; border: 2px solid #14120f; border-radius: 4px; white-space: nowrap;
+  font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 0.72rem; line-height: 1.15; letter-spacing: 0.02em;
+  color: #14120f; background: var(--warn, #ffb347);
+}
+.face-word--scared { background: var(--danger, #ff6b5e); }
+
+/* Retrato pegatina en las tarjetas y en la dosis (gana a global.css con el prefijo html). */
+html .hud__face {
+  background: color-mix(in srgb, var(--crew) 30%, #f4efe2);
+  border: 2px solid #14120f; box-shadow: none; box-sizing: border-box;
+}
+html .hud__face--worried { box-shadow: 0 0 0 2px var(--danger); }
+html .hud__face .portrait { width: 100%; height: 100%; margin-top: 0; display: block; }
+html .res__face .hud__face { width: 52px; height: 52px; box-shadow: none; }
+html .res__face .hud__face--worried { box-shadow: 0 0 0 2px var(--danger); }
+html .res__face .hud__face .portrait { width: 100%; height: 100%; margin-top: 0; }
+html .topbar__dose .hud__face { width: 44px; height: 44px; }
+@media (min-width: 1280px) {
+  html .res { grid-template-columns: 52px 1fr; }
+}
+@media (min-width: 900px) and (max-width: 1279px) {
+  html .res { grid-template-columns: 40px 1fr; column-gap: 0.55rem; }
+  html .res__face .hud__face { width: 40px; height: 40px; }
+  html .res__face .hud__face .portrait { width: 100%; height: 100%; margin-top: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .face-feat--pop, .face-eyes { animation: none; }
+}

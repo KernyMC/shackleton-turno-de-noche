@@ -15,7 +15,8 @@ import { resourceLevels } from '../sim/thresholds';
 import type { AlertLevel } from '../sim/thresholds';
 import type { GameState, LogEntry } from '../sim/types';
 import { muted, toggleMute } from '../audio/sfx';
-import { faceOf, moodOf } from '../state/rewards';
+import { emotionOf, faceOf, moodOf, planEmotion } from '../state/rewards';
+import type { Emotion } from '../state/rewards';
 import { exitToMenu, game, preview, resolving, skyView, tabletOpen, toggleTablet } from '../state/store';
 import { sourcesOpen } from '../state/sources';
 import { helpOpen } from '../state/tutorial';
@@ -136,20 +137,26 @@ function lastDelta(g: GameState, key: 'lifeSupport' | 'food' | 'battery' | 'dose
   return now - start;
 }
 
-function Face({ crew, mood }: { crew: CrewId; mood: number }) {
+/** Carita de quien cuida un recurso: emoción según su ánimo (o según el plan, si `plan` viene) y una palabra cuando no está bien. */
+function Face({ crew, mood, plan = null }: { crew: CrewId; mood: number; plan?: Emotion | null }) {
   const member = crewById(crew);
-  const label = t('crew.view', { nombre: member.name });
+  const emotion = plan ?? emotionOf(mood);
+  const label = t('face.aria', { nombre: member.name, estado: t(`face.state.${emotion}`) });
+  const word = emotion === 'worried' || emotion === 'scared' ? t(`face.word.${emotion}`) : null;
   return (
-    <button
-      type="button"
-      class={`hud__face hud__face--btn hud__face--${faceOf(mood)}`}
-      style={{ '--crew': member.css }}
-      title={label}
-      aria-label={label}
-      onClick={openCrew}
-    >
-      <CrewPortrait crew={crew} color={member.css} mood={faceOf(mood)} size={34} />
-    </button>
+    <span class="face-box">
+      <button
+        type="button"
+        class={`hud__face hud__face--btn hud__face--${faceOf(mood)}`}
+        style={{ '--crew': member.css }}
+        title={label}
+        aria-label={label}
+        onClick={openCrew}
+      >
+        <CrewPortrait crew={crew} color={member.css} emotion={emotion} size={52} />
+      </button>
+      {word && <span class={`face-word face-word--${emotion}`} aria-hidden="true">{word}</span>}
+    </span>
   );
 }
 
@@ -327,10 +334,12 @@ function Resources({ g, moods }: { g: GameState; moods: Record<CrewId, number> }
   const battery: Level = levels.battery > 0 ? (noSun ? 'critical' : 'low') : 'ok';
   // Con el panel abierto, cada tarjeta adelanta lo que hará el plan: contador y tramo fantasma en la barra.
   const p = tabletOpen.value && !resolving.value ? preview.value : null;
+  // La carita reacciona al plan: nivel de alerta que tendría el recurso al terminar el día.
+  const after = p ? resourceLevels({ ...g, lifeSupport: g.lifeSupport + p.lifeSupport, food: g.food + p.food, battery: p.battery }) : null;
   const items = [
-    { id: 'life', icon: 'life_support' as const, label: t('hud.life_support'), value: g.lifeSupport, max: 100, level: life, delta: lastDelta(g, 'lifeSupport'), crew: 'valeria' as const, plan: p ? p.lifeSupport : null },
-    { id: 'food', icon: 'food' as const, label: t('hud.food'), value: g.food, max: 100, level: food, delta: lastDelta(g, 'food'), crew: 'mateo' as const, plan: p ? p.food : null },
-    { id: 'battery', icon: 'battery' as const, label: t('hud.battery'), value: g.battery, max: capacity, level: battery, delta: lastDelta(g, 'battery'), crew: 'lucia' as const, plan: p ? p.battery - g.battery : null },
+    { id: 'life', icon: 'life_support' as const, label: t('hud.life_support'), value: g.lifeSupport, max: 100, level: life, delta: lastDelta(g, 'lifeSupport'), crew: 'valeria' as const, plan: p ? p.lifeSupport : null, face: after ? planEmotion(emotionOf(moods.valeria), p!.lifeSupport, after.lifeSupport) : null },
+    { id: 'food', icon: 'food' as const, label: t('hud.food'), value: g.food, max: 100, level: food, delta: lastDelta(g, 'food'), crew: 'mateo' as const, plan: p ? p.food : null, face: after ? planEmotion(emotionOf(moods.mateo), p!.food, after.food) : null },
+    { id: 'battery', icon: 'battery' as const, label: t('hud.battery'), value: g.battery, max: capacity, level: battery, delta: lastDelta(g, 'battery'), crew: 'lucia' as const, plan: p ? p.battery - g.battery : null, face: after ? planEmotion(emotionOf(moods.lucia), p!.battery - g.battery, after.battery) : null },
   ];
   return (
     <div class="resources">
@@ -338,7 +347,7 @@ function Resources({ g, moods }: { g: GameState; moods: Record<CrewId, number> }
         // Una tarjeta por recurso: la cara de quien lo cuida a la izquierda, como avatar.
         <div key={it.id} class={`res res--${it.id} res--${it.level}${it.plan !== null ? ' res--planning' : ''}`}>
           <span class="res__face">
-            <Face crew={it.crew} mood={moods[it.crew]} />
+            <Face crew={it.crew} mood={moods[it.crew]} plan={it.face} />
           </span>
           <div class="res__body">
             <p class="res__name">

@@ -1,4 +1,4 @@
-// Modal de reto diario: misión → juego → resultado. Pantalla completa opaca, foco atrapado.
+// Modal de reto diario: misión → demostración → juego → resultado. Pantalla completa opaca, foco atrapado.
 // Esc NO cierra (decisión: un reto abierto se resuelve jugando o con «Saltar»; así el día nunca queda a medias).
 // Si el reto no tiene componente registrado, se salta (o cuenta como parcial) sin colgar el juego.
 import { useEffect, useRef, useState } from 'preact/hooks';
@@ -8,11 +8,12 @@ import type { ChallengeDef, ChallengeOutcome } from '../../sim/types';
 import { activeChallenge, completeChallenge, game } from '../../state/store';
 import { sourcesOpen } from '../../state/sources';
 import { Icon } from '../icons';
+import { ChallengeDemo } from './ChallengeDemo';
 import { registry } from './registry';
 import { EffectList } from './shared';
 import '../../styles/challenge.css';
 
-type Step = 'mission' | 'play' | 'result';
+type Step = 'mission' | 'demo' | 'play' | 'result';
 /** Tras abrirse el resultado se ignoran activaciones durante este tiempo (ms). */
 const RESULT_GUARD_MS = 300;
 type Status = 'verified' | 'simulated' | 'game_balance';
@@ -40,7 +41,15 @@ function useSource(id: string): SourceInfo | null {
   return src;
 }
 
-function Challenge({ def, assist }: { def: ChallengeDef; assist: number }) {
+/**
+ * Un reto de punta a punta. En la partida aplica el resultado al juego; con `onFinish` (práctica
+ * desde la portada) no toca el estado: solo avisa de que terminó.
+ */
+export function Challenge({ def, assist, onFinish }: { def: ChallengeDef; assist: number; onFinish?: () => void }) {
+  const complete = (outcome: ChallengeOutcome, optionId?: string): void => {
+    if (onFinish) onFinish();
+    else completeChallenge(outcome, optionId);
+  };
   const [step, setStep] = useState<Step>('mission');
   const [score, setScore] = useState(0);
   const [optionId, setOptionId] = useState<string | undefined>(undefined);
@@ -55,7 +64,7 @@ function Challenge({ def, assist }: { def: ChallengeDef; assist: number }) {
 
   // Sin minijuego registrado: nunca colgar el juego.
   useEffect(() => {
-    if (!Game) completeChallenge(def.skippable ? 'skipped' : 'partial');
+    if (!Game) complete(def.skippable ? 'skipped' : 'partial');
   }, [Game]);
 
   // Foco al botón principal en Misión y Resultado (Enter avanza); al título en el juego. Al cerrar, lo devuelve quien lo tenía.
@@ -157,11 +166,16 @@ function Challenge({ def, assist }: { def: ChallengeDef; assist: number }) {
               </p>
             )}
             <div class="chl-actions">
-              <button ref={primaryRef} type="button" class="btn btn--primary" onClick={() => setStep('play')}>
+              <button ref={primaryRef} type="button" class="btn btn--primary" onClick={() => setStep('demo')}>
                 {t('challenge.start')}
               </button>
-              {def.skippable && (
-                <button type="button" class="btn btn--ghost" onClick={() => completeChallenge('skipped')}>
+              {onFinish && (
+                <button type="button" class="btn btn--ghost" onClick={onFinish}>
+                  {t('practice.back')}
+                </button>
+              )}
+              {def.skippable && !onFinish && (
+                <button type="button" class="btn btn--ghost" onClick={() => complete('skipped')}>
                   {t('challenge.skip')}
                   <span class="chl-skipcost">
                     {def.outcomes.skipped.length === 0 ? t('challenge.skip_free') : t('challenge.skip_cost')}
@@ -169,11 +183,26 @@ function Challenge({ def, assist }: { def: ChallengeDef; assist: number }) {
                 </button>
               )}
             </div>
-            {def.skippable && def.outcomes.skipped.length > 0 && (
+            {def.skippable && !onFinish && def.outcomes.skipped.length > 0 && (
               <div class="chl-skipfx">
                 <EffectList effects={def.outcomes.skipped} />
               </div>
             )}
+          </div>
+        )}
+
+        {step === 'demo' && (
+          <div class="chl-body">
+            <p class="chd-kicker">{t('challenge.demo.title')}</p>
+            <ChallengeDemo id={def.id} />
+            <div class="chl-actions">
+              <button ref={primaryRef} type="button" class="btn btn--primary" onClick={() => setStep('play')}>
+                {t('challenge.demo.go')}
+              </button>
+              <button type="button" class="btn btn--ghost" onClick={() => setStep('play')}>
+                {t('challenge.demo.skip')}
+              </button>
+            </div>
           </div>
         )}
 
@@ -211,7 +240,7 @@ function Challenge({ def, assist }: { def: ChallengeDef; assist: number }) {
                 onClick={() => {
                   // Un Enter o clic arrastrado del juego no debe cerrar el resultado al instante.
                   if (performance.now() - resultAt.current < RESULT_GUARD_MS) return;
-                  completeChallenge(outcome, optionId);
+                  complete(outcome, optionId);
                 }}
               >
                 {t('challenge.continue')}

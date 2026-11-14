@@ -1078,3 +1078,17 @@ html .res__plan--down { color: #ffc46b; }
 html .harvest { animation: harvest-pop 420ms cubic-bezier(.2,1.5,.4,1), harvest-bob 1.2s 420ms ease-in-out infinite, harvest-out 380ms 2220ms ease-in forwards; }
 @keyframes harvest-out { to { transform: translate(-50%, -50%) scale(0.2); opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { html .harvest { animation: none; } }
+
+/* ============ Bloques de energía como ladrillos de construcción (tetones arriba, canto duro abajo) ============ */
+html .meter__track { gap: 3px; }
+html .meter__block { border-radius: 3px; background: #1d1f23; box-shadow: inset 0 0 0 1px #2c2f35; }
+html .meter__block span {
+  border-radius: 3px;
+  box-shadow: inset 0 -3px 0 rgb(0 0 0 / 0.32), inset 0 0 0 1px rgb(0 0 0 / 0.35);
+  background-image:
+    radial-gradient(circle at 27% 7px, rgb(255 255 255 / 0.42) 0 3.5px, transparent 4px),
+    radial-gradient(circle at 73% 7px, rgb(255 255 255 / 0.42) 0 3.5px, transparent 4px);
+}
+/* Al encajar un bloque, rebota como una pieza que hace clic. */
+html .meter__block span { transition: height 160ms cubic-bezier(.2, 1.6, .4, 1); }
+@media (prefers-reduced-motion: reduce) { html .meter__block span { transition: none; } }

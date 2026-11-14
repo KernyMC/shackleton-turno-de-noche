@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { LogEntry } from '../sim/types';
-import { collectHarvest, dayNote, earned, floats, freshEntries, harvest, milestone, startRewardsWatcher, xp } from './rewards';
+import { collectHarvest, dayNote, earned, emotionOf, floats, freshEntries, harvest, milestone, moodOfEmotion, planEmotion, startRewardsWatcher, xp } from './rewards';
 import { executeDay, game, RESOLVE_MS, rewindTo, setPlanValue, startGame } from './store';
 
 let stop: () => void;
@@ -69,5 +69,28 @@ describe('recompensas', () => {
     // Un acto distinto sí es nuevo.
     const met2: LogEntry = { ...met, day: 10, vars: { act: 2, name: 'sol_despierta' } };
     expect(freshEntries([unlock, met, met2], seen, ['log.act.met', 'log.unlock'])).toEqual([met2]);
+  });
+});
+
+describe('caritas del HUD', () => {
+  it('cinco emociones según el ánimo y coherentes con faceOf', () => {
+    expect([95, 70, 40, 20, 5].map(emotionOf)).toEqual(['joy', 'happy', 'calm', 'worried', 'scared']);
+    expect(moodOfEmotion(emotionOf(51))).toBe('happy');
+    expect(moodOfEmotion(emotionOf(26))).toBe('neutral');
+    expect(moodOfEmotion(emotionOf(25))).toBe('worried');
+  });
+
+  it('el plan que deja el recurso crítico asusta y el bajo preocupa', () => {
+    expect(planEmotion('joy', -30, 2)).toBe('scared');
+    expect(planEmotion('joy', -30, 1)).toBe('worried');
+    expect(planEmotion('scared', -5, 1)).toBe('scared');
+  });
+
+  it('un plan bueno sonríe un paso más y nunca deja a nadie peor que tranquilo si el recurso queda bien', () => {
+    expect(planEmotion('calm', 8, 0)).toBe('happy');
+    expect(planEmotion('happy', 8, 0)).toBe('joy');
+    expect(planEmotion('joy', 8, 0)).toBe('joy');
+    expect(planEmotion('worried', 8, 0)).toBe('calm');
+    expect(planEmotion('happy', -2, 0)).toBe('happy');
   });
 });

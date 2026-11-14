@@ -6,6 +6,7 @@ import { effect, signal } from '@preact/signals';
 import { CREW } from '../data/crew';
 import type { CrewId } from '../data/crew';
 import { defaultConfig } from '../sim/config';
+import type { AlertLevel } from '../sim/thresholds';
 import type { DaySnapshot, GameState, LogEntry, ModuleId } from '../sim/types';
 import { fastForwarding, game, gameId, screen } from './store';
 
@@ -96,6 +97,38 @@ export function faceOf(value: number): 'happy' | 'neutral' | 'worried' {
   if (value > 50) return 'happy';
   if (value > 25) return 'neutral';
   return 'worried';
+}
+
+/** Emociones de la carita del HUD, de peor a mejor. */
+export type Emotion = 'scared' | 'worried' | 'calm' | 'happy' | 'joy';
+const EMOTIONS: readonly Emotion[] = ['scared', 'worried', 'calm', 'happy', 'joy'];
+const rank = (e: Emotion): number => EMOTIONS.indexOf(e);
+
+/** Emoción a partir del ánimo (0–100). Coincide con `faceOf` en 50 y 25; añade «muy contento» y «asustado». */
+export function emotionOf(value: number): Emotion {
+  if (value > 80) return 'joy';
+  if (value > 50) return 'happy';
+  if (value > 25) return 'calm';
+  if (value > 10) return 'worried';
+  return 'scared';
+}
+
+/**
+ * Emoción mientras se planifica: reacciona al plan, no solo al presente.
+ * `delta` es el cambio previsto del recurso; `level` es su nivel de alerta si el plan se cumple
+ * (de `resourceLevels`: 0 bien, 1 bajo, 2 crítico). Bajo → como mucho preocupado; crítico → asustado;
+ * un cambio bueno sonríe un paso más; nunca peor que «tranquilo» si el recurso queda bien.
+ */
+export function planEmotion(base: Emotion, delta: number, level: AlertLevel): Emotion {
+  if (level >= 2) return 'scared';
+  if (level === 1) return EMOTIONS[Math.min(rank(base), rank('worried'))]!;
+  const up = delta > 0 ? 1 : 0;
+  return EMOTIONS[Math.min(rank('joy'), Math.max(rank('calm'), rank(base) + up))]!;
+}
+
+/** Gesto antiguo de tres estados a partir de una emoción (para retratos que solo conocen tres). */
+export function moodOfEmotion(e: Emotion): 'happy' | 'neutral' | 'worried' {
+  return e === 'joy' || e === 'happy' ? 'happy' : e === 'calm' ? 'neutral' : 'worried';
 }
 
 /** Hitos ganados durante el avance rápido: se muestran al detenerse. */

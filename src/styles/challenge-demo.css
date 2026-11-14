@@ -1,0 +1,273 @@
+/* «Proyección» de cómo se juega (prefijo chd-). Estilo pictórico: formas gruesas, colores planos, contorno oscuro de 2 px.
+   Regla: el dibujo base es el fotograma FINAL; las animaciones (6 s, en bucle) parten de un estado inicial.
+   Con prefers-reduced-motion no hay animación y se ve el fotograma final. */
+.chd { display: grid; gap: 0.8rem; --chd-edge: #0b0c0e; --chd-cy: #4fd1e0; --chd-t: 6s; }
+.chd-kicker { margin: 0; font-family: var(--font-display); font-weight: 700; font-size: 1.15rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-dim); }
+.chd-stage {
+  display: block; width: 100%; max-height: 36dvh; background: var(--panel-deep);
+  border: 2px solid var(--line); border-radius: var(--radius);
+}
+
+/* ---- Pasos ---- */
+.chd-steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.6rem; }
+.chd-step {
+  display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.6rem; min-width: 0;
+  background: var(--panel-2); border: 2px solid var(--line); border-radius: var(--radius);
+  font-size: 0.95rem; line-height: 1.25;
+}
+.chd-step svg { flex: none; color: var(--accent); }
+.chd-step__n {
+  flex: none; display: grid; place-items: center; width: 1.9rem; height: 1.9rem; border: 2px solid var(--chd-edge); border-radius: 50%;
+  background: var(--accent); color: #1a1206; font-family: var(--font-display); font-weight: 700; font-size: 1.15rem;
+}
+.chd-step__t { min-width: 0; }
+
+/* ---- Dibujo común ---- */
+.chd-ground { stroke: var(--text-dim); stroke-width: 2; }
+.chd-base { fill: var(--panel-2); stroke: var(--text); stroke-width: 2; }
+.chd-rock { fill: #3a3d44; stroke: var(--chd-edge); stroke-width: 2; }
+.chd-zone { fill: none; stroke: var(--ok); stroke-width: 2; stroke-dasharray: 4 3; }
+.chd-sample { fill: var(--ok); stroke: var(--chd-edge); stroke-width: 2; }
+.chd-seg-o { stroke: var(--chd-edge); stroke-width: 14; stroke-linecap: round; }
+.chd-seg { stroke-width: 9; stroke-linecap: round; }
+.chd-seg--1 { stroke: var(--accent); }
+.chd-seg--2 { stroke: var(--chd-cy); }
+.chd-joint { stroke: var(--chd-edge); stroke-width: 2.5; }
+.chd-joint--1 { fill: var(--accent); }
+.chd-joint--2 { fill: var(--chd-cy); }
+.chd-num { fill: var(--chd-edge); font-family: var(--font-display); font-weight: 700; font-size: 14px; pointer-events: none; }
+.chd-tip { fill: var(--text); stroke: var(--chd-edge); stroke-width: 2.5; }
+.chd-btn { fill: var(--panel-2); stroke: var(--edge-hi); stroke-width: 2; }
+.chd-btn--grab { fill: var(--accent); stroke: var(--chd-edge); }
+.chd-tri { fill: var(--text); stroke: var(--chd-edge); stroke-width: 1.5; stroke-linejoin: round; }
+.chd-tick { fill: none; stroke: var(--chd-edge); stroke-width: 3.5; stroke-linecap: round; stroke-linejoin: round; }
+.chd-ok { fill: var(--ok); stroke: var(--chd-edge); stroke-width: 2.5; }
+.chd-hand__p { fill: var(--text); stroke: var(--chd-edge); stroke-width: 2.5; stroke-linejoin: round; }
+
+/* Rover */
+.chd-cell { stroke: var(--line); stroke-width: 2; }
+.chd-cell--base, .chd-cell--ice { fill: #1d2a33; }
+.chd-cell--sun { fill: #3a2c12; }
+.chd-cell--shade { fill: #14171c; }
+.chd-sunc { fill: var(--accent); stroke: var(--chd-edge); stroke-width: 2; }
+.chd-moon { fill: #9aa6b8; }
+.chd-moon-cut { fill: #14171c; }
+.chd-moon-cut--far { fill: #2b3038; }
+.chd-icep { fill: #bfe6ff; stroke: var(--chd-edge); stroke-width: 2; stroke-linejoin: round; }
+.chd-house { fill: none; stroke: var(--text); stroke-width: 2.5; stroke-linejoin: round; }
+.chd-rover__b { fill: var(--text); stroke: var(--chd-edge); stroke-width: 2; }
+.chd-rover__w { fill: var(--accent); stroke: var(--chd-edge); stroke-width: 2; }
+.chd-rover__a { fill: none; stroke: var(--text); stroke-width: 2.5; stroke-linecap: round; }
+
+/* Radar */
+.chd-screen { fill: #14171c; stroke: var(--line); stroke-width: 2; }
+.chd-wave { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.chd-wave--ref { stroke: var(--text-dim); stroke-width: 4; stroke-dasharray: 8 6; }
+.chd-wave--mine { stroke: var(--accent); stroke-width: 4; }
+.chd-track { fill: var(--panel-2); stroke: var(--chd-edge); stroke-width: 2; }
+.chd-knob { fill: var(--accent); stroke: var(--chd-edge); stroke-width: 2.5; }
+.chd-grip { stroke: var(--chd-edge); stroke-width: 2; stroke-linecap: round; }
+
+/* Sellos y cables */
+.chd-zone-cell { fill: var(--panel-2); stroke: var(--line); stroke-width: 2; }
+.chd-zone-far { fill: #2b3038; stroke: var(--chd-edge); stroke-width: 2; }
+.chd-zone-near { fill: #4a3612; stroke: var(--accent); stroke-width: 2; }
+.chd-zone-ok { fill: var(--ok); stroke: var(--chd-edge); stroke-width: 2; }
+.chd-bang { stroke: var(--accent); stroke-width: 4; stroke-linecap: round; }
+.chd-tick--dark { stroke: var(--chd-edge); }
+.chd-cable { fill: none; stroke-width: 7; stroke-linecap: round; stroke-linejoin: round; }
+.chd-cable--cy { stroke: var(--chd-cy); }
+.chd-cable--am { stroke: var(--accent); stroke-dasharray: 168; stroke-dashoffset: 0; }
+.chd-node { stroke: var(--chd-edge); stroke-width: 2.5; }
+.chd-node--cy { fill: var(--chd-cy); }
+.chd-node--am { fill: var(--accent); }
+
+/* ---- Fotograma final (base) del brazo, rover, radar, sellos y cables ---- */
+.chd-arm-sh { transform-origin: 50px 112px; transform: rotate(-60deg); }
+.chd-arm-el { transform-origin: 114px 112px; transform: rotate(60deg); }
+.chd-arm-num2 { transform-origin: 114px 112px; transform: rotate(60deg); }
+.chd-hand { transform: translate(269px, 144px); }
+.chd-hand--rover { transform: translate(244px, 109px); }
+.chd-hand--radar { transform: translate(180px, 144px); }
+.chd-hand--seals { transform: translate(191px, 109px); }
+.chd-hand--cables { transform: translate(216px, 57px); }
+.chd-rover { transform: translate(244px, 109px); }
+.chd-knob-g { transform: translate(180px, 143px); }
+.chd-wave-mine { transform: translateX(0); }
+
+/* ---- Animaciones ---- */
+@media (prefers-reduced-motion: no-preference) {
+  .chd-hand, .chd-rover, .chd-knob-g, .chd-wave-mine, .chd-arm-sh, .chd-arm-el, .chd-arm-num2, .chd-seal,
+  .chd-pop, .chd-flash, .chd-cable--grow, .chd-tile, .chd-gen__hand {
+    animation-duration: var(--chd-t); animation-iteration-count: infinite; animation-fill-mode: both;
+    animation-timing-function: ease-in-out;
+  }
+  .chd-hand--arm { animation-name: chd-h-arm; }
+  .chd-hand--rover { animation-name: chd-h-rover; }
+  .chd-hand--radar { animation-name: chd-h-radar; }
+  .chd-hand--seals { animation-name: chd-h-seals; }
+  .chd-hand--cables { animation-name: chd-h-cables; }
+
+  .chd-arm-sh { animation-name: chd-arm-sh; }
+  .chd-arm-el { animation-name: chd-arm-el; }
+  .chd-arm-num2 { animation-name: chd-arm-n2; }
+  .chd-flash { animation-name: chd-flash; }
+  .chd-flash--a { animation-delay: 0.6s; }
+  .chd-flash--b { animation-delay: 1.9s; }
+  .chd-flash--c { animation-delay: 3.4s; animation-name: chd-flash-c; }
+  .chd-pop { animation-name: chd-pop; }
+  .chd-pop--arm { animation-delay: 4s; }
+  .chd-pop--rover { animation-delay: 4.4s; }
+  .chd-pop--radar { animation-delay: 3.5s; }
+  .chd-pop--cables { animation-delay: 4.9s; }
+
+  .chd-rover { animation-name: chd-rover; }
+  .chd-knob-g { animation-name: chd-knob; }
+  .chd-wave-mine { animation-name: chd-wave; }
+  .chd-seal--a { animation-name: chd-seal-a; }
+  .chd-seal--b { animation-name: chd-seal-b; }
+  .chd-seal--c { animation-name: chd-seal-c; }
+  .chd-cable--grow { animation-name: chd-grow; animation-timing-function: linear; }
+
+  .chd-tile--1 { animation-delay: 0.85s; }
+  .chd-tile--2 { animation-delay: 2.05s; }
+  .chd-tile--3 { animation-delay: 3.5s; }
+  .chd-tile { animation-name: chd-tile; }
+  .chd-gen__hand { animation-name: chd-h-gen; }
+}
+
+@keyframes chd-h-arm {
+  0% { transform: translate(150px, 190px); }
+  10%, 22% { transform: translate(95px, 144px); }
+  30%, 46% { transform: translate(203px, 144px); }
+  56%, 66% { transform: translate(269px, 144px); }
+  78%, 100% { transform: translate(290px, 190px); }
+}
+@keyframes chd-arm-sh {
+  0%, 12% { transform: rotate(-25deg); }
+  24%, 92% { transform: rotate(-60deg); }
+  100% { transform: rotate(-25deg); }
+}
+@keyframes chd-arm-el {
+  0%, 33% { transform: rotate(20deg); }
+  46%, 92% { transform: rotate(60deg); }
+  100% { transform: rotate(20deg); }
+}
+@keyframes chd-arm-n2 {
+  0%, 12% { transform: rotate(25deg); }
+  24%, 92% { transform: rotate(60deg); }
+  100% { transform: rotate(25deg); }
+}
+/* Pulsación de un botón dibujado (se hunde y se ilumina 0,84 s). */
+@keyframes chd-flash {
+  0%, 14% { fill: var(--accent); transform: translateY(2px); }
+  15%, 100% { transform: none; }
+}
+@keyframes chd-flash-c {
+  0%, 14% { fill: #ffe0a8; transform: translateY(2px); }
+  15%, 100% { transform: none; }
+}
+@keyframes chd-pop {
+  0% { opacity: 0; transform: scale(0.4); }
+  5% { opacity: 1; transform: scale(1.2); }
+  9%, 17% { opacity: 1; transform: scale(1); }
+  21%, 100% { opacity: 0; transform: scale(1); }
+}
+
+@keyframes chd-h-rover {
+  0% { transform: translate(180px, 190px); }
+  10%, 17% { transform: translate(132px, 33px); }
+  26%, 32% { transform: translate(132px, 71px); }
+  40%, 46% { transform: translate(188px, 71px); }
+  54%, 60% { transform: translate(244px, 71px); }
+  68%, 76% { transform: translate(244px, 109px); }
+  88%, 100% { transform: translate(300px, 190px); }
+}
+@keyframes chd-rover {
+  0%, 12% { transform: translate(76px, 33px); }
+  17%, 27% { transform: translate(132px, 33px); }
+  32%, 41% { transform: translate(132px, 71px); }
+  45%, 55% { transform: translate(188px, 71px); }
+  59%, 69% { transform: translate(244px, 71px); }
+  73%, 92% { transform: translate(244px, 109px); }
+  100% { transform: translate(76px, 33px); }
+}
+
+@keyframes chd-h-radar {
+  0% { transform: translate(60px, 190px); }
+  12%, 18% { transform: translate(100px, 144px); }
+  58%, 70% { transform: translate(180px, 144px); }
+  82%, 100% { transform: translate(300px, 190px); }
+}
+@keyframes chd-knob {
+  0%, 18% { transform: translate(100px, 143px); }
+  58%, 92% { transform: translate(180px, 143px); }
+  100% { transform: translate(100px, 143px); }
+}
+@keyframes chd-wave {
+  0%, 18% { transform: translateX(40px); }
+  58%, 92% { transform: translateX(0); }
+  100% { transform: translateX(40px); }
+}
+
+@keyframes chd-h-seals {
+  0% { transform: translate(150px, 190px); }
+  10%, 20% { transform: translate(67px, 33px); }
+  34%, 44% { transform: translate(129px, 109px); }
+  56%, 66% { transform: translate(191px, 109px); }
+  80%, 100% { transform: translate(300px, 190px); }
+}
+@keyframes chd-seal-a { 0%, 11% { opacity: 0; } 13%, 90% { opacity: 1; } 96%, 100% { opacity: 0; } }
+@keyframes chd-seal-b { 0%, 35% { opacity: 0; } 37%, 90% { opacity: 1; } 96%, 100% { opacity: 0; } }
+@keyframes chd-seal-c { 0%, 57% { opacity: 0; } 59%, 90% { opacity: 1; } 96%, 100% { opacity: 0; } }
+
+@keyframes chd-h-cables {
+  0% { transform: translate(40px, 190px); }
+  14% { transform: translate(104px, 57px); }
+  25% { transform: translate(132px, 57px); }
+  36% { transform: translate(160px, 57px); }
+  47% { transform: translate(160px, 85px); }
+  58% { transform: translate(188px, 85px); }
+  69% { transform: translate(188px, 57px); }
+  80% { transform: translate(216px, 57px); }
+  92%, 100% { transform: translate(300px, 190px); }
+}
+@keyframes chd-grow {
+  0%, 14% { stroke-dashoffset: 168; animation-timing-function: steps(6, end); }
+  80%, 100% { stroke-dashoffset: 0; }
+}
+
+/* ---- Demo genérica (manita + tres fichas) ---- */
+.chd-gen {
+  position: relative; display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.7rem; padding: 1rem 0.8rem 2.2rem;
+  background: var(--panel-deep); border: 2px solid var(--line); border-radius: var(--radius); overflow: hidden;
+}
+.chd-tile {
+  position: relative; display: grid; place-items: center; min-height: 6rem; padding: 0.5rem;
+  background: #2a2010; color: var(--accent); border: 2px solid var(--accent); border-radius: var(--radius);
+  box-shadow: 0 3px 0 #000; transform: translateY(2px);
+}
+.chd-tile__n {
+  position: absolute; top: 0.3rem; left: 0.3rem; display: grid; place-items: center; width: 1.6rem; height: 1.6rem;
+  border: 2px solid var(--chd-edge); border-radius: 50%; background: var(--accent); color: #1a1206;
+  font-family: var(--font-display); font-weight: 700; font-size: 1rem;
+}
+.chd-gen__hand { position: absolute; left: 83.3%; top: 56%; margin-left: -14px; pointer-events: none; }
+@keyframes chd-tile {
+  0% { background: var(--panel-2); color: var(--text-dim); border-color: var(--edge-hi); transform: none; }
+  1%, 22% { background: #2a2010; color: var(--accent); border-color: var(--accent); transform: translateY(2px); }
+  23%, 100% { background: var(--panel-2); color: var(--text-dim); border-color: var(--edge-hi); transform: none; }
+}
+@keyframes chd-h-gen {
+  0% { left: 50%; top: 135%; }
+  14%, 24% { left: 16.7%; top: 56%; }
+  34%, 44% { left: 50%; top: 56%; }
+  58%, 72% { left: 83.3%; top: 56%; }
+  84%, 100% { left: 83.3%; top: 135%; }
+}
+
+@media (max-width: 899px) {
+  .chd-steps { grid-template-columns: 1fr; }
+  .chd-stage { max-height: 34dvh; }
+  .chd-tile { min-height: 4.6rem; }
+}

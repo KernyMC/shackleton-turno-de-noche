@@ -2,7 +2,9 @@
 // Params (challenges.json): seconds, assistSeconds, grabs, assistGrabs, tolerance (unidades del dibujo), perfectTries,
 // len1, len2, armRadius, base [x,y], sample [x,y], rocks [[x,y,r],...], shoulderMin/Max, elbowMin/Max, startShoulder, startElbow.
 // Puntuación: agarra en los primeros `perfectTries` intentos sin haber rozado una roca → perfecto; más tarde o tras rozar → parcial; no agarra → fallo (valores en challenges.json, scores).
-// «Rozar» = intentar agarrar con un segmento tocando una roca (mover los deslizadores sin agarrar no penaliza).
+// «Rozar» = intentar agarrar con un segmento tocando una roca (girar los ejes sin agarrar no penaliza).
+// Controles «por ejes»: dos filas de botones (1 hombro, 2 codo; mantener pulsado repite), arrastre en el dibujo
+// (el codo gira el hombro, la punta gira el codo) y teclado (←/→ hombro, ↑/↓ codo, Espacio/Enter agarra).
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { t } from '../../i18n';
 import { defaultConfig } from '../../sim/config';
@@ -12,6 +14,10 @@ import { numParam, TimeBar, useCountdown } from './shared';
 
 const VW = 300;
 const VH = 200;
+/** Constantes de manejo (no son balance): repetición al mantener pulsado y radio de toque de las articulaciones. */
+const REPEAT_DELAY_MS = 320;
+const REPEAT_MS = 85;
+const HIT_R = 26;
 
 function pairParam(v: unknown, fallback: number[]): number[] {
   return Array.isArray(v) && v.every((n) => typeof n === 'number') ? (v as number[]) : fallback;
@@ -24,6 +30,15 @@ function segDist(px: number, py: number, ax: number, ay: number, bx: number, by:
   const len2 = dx * dx + dy * dy;
   const u = len2 === 0 ? 0 : Math.max(0, Math.min(1, ((px - ax) * dx + (py - ay) * dy) / len2));
   return Math.hypot(px - (ax + u * dx), py - (ay + u * dy));
+}
+
+/** Envuelve el ángulo al lado más cercano del rango y lo limita. */
+function clampAngle(a: number, min: number, max: number): number {
+  const mid = (min + max) / 2;
+  let v = a;
+  while (v - mid > 180) v -= 360;
+  while (v - mid < -180) v += 360;
+  return Math.max(min, Math.min(max, v));
 }
 
 interface Run {
@@ -54,7 +69,7 @@ export function RoboticArm({ params, assist, onDone }: ChallengeGameProps) {
   const elMin = numParam(params, 'elbowMin', -150);
   const elMax = numParam(params, 'elbowMax', 150);
 
-  // Paso de teclado: ~45 pulsaciones por recorrido (hay solución dentro de la tolerancia en las dos dificultades).
+  // Paso de los botones y del teclado: ~45 pulsaciones por recorrido (hay solución dentro de la tolerancia en las dos dificultades).
   const shStep = Math.max(1, Math.round((shMax - shMin) / 45));
   const elStep = Math.max(1, Math.round((elMax - elMin) / 45));
 
@@ -106,8 +121,16 @@ export function RoboticArm({ params, assist, onDone }: ChallengeGameProps) {
 
   const move = (key: 'sh' | 'el', v: number): void => {
     if (runRef.current.end) return;
-    setRun({ ...runRef.current, [key]: v, msg: '' });
+    const [lo, hi] = key === 'sh' ? [shMin, shMax] : [elMin, elMax];
+    const nv = clampAngle(v, lo, hi);
+    if (nv === runRef.current[key]) return;
+    const next = { ...runRef.current, [key]: nv, msg: '' };
+    runRef.current = next;
+    setRun(next);
   };
+  /** dir +1 = contra el reloj (◄ / ← / ↑), -1 = a favor del reloj (► / → / ↓). */
+  const nudge = (key: 'sh' | 'el', dir: 1 | -1): void =>
+    move(key, runRef.current[key] + dir * (key === 'sh' ? shStep : elStep));
 
   const grab = (): void => {
     const r = runRef.current;
@@ -122,12 +145,152 @@ export function RoboticArm({ params, assist, onDone }: ChallengeGameProps) {
     setRun(next);
     if (next.end) finish(next, 1000);
   };
+  // `grab` depende del dibujo actual (hit, dist): el teclado usa siempre la última versión.
+  const grabRef = useRef(grab);
+  grabRef.current = grab;
+
+  // Mantener pulsado repite el giro; se detiene al soltar, salir, cancelar y al desmontar.
+  const hold = useRef({ delay: 0, rep: 0 });
+  const stopHold = (): void => {
+    window.clearTimeout(hold.current.delay);
+    window.clearInterval(hold.current.rep);
+  };
+  const startHold = (key: 'sh' | 'el', dir: 1 | -1): void => {
+    stopHold();
+    nudge(key, dir);
+    hold.current.delay = window.setTimeout(() => {
+      hold.current.rep = window.setInterval(() => nudge(key, dir), REPEAT_MS);
+    }, REPEAT_DELAY_MS);
+  };
+  useEffect(() => stopHold, []);
+  useEffect(() => {
+    if (run.end) stopHold();
+  }, [run.end]);
+
+  // Arrastrar en el dibujo: el codo gira el hombro, la punta gira el codo.
+  const svgRef = useRef<SVGSVGElement>(null);
+  const dragging = useRef<null | 'sh' | 'el'>(null);
+  const toSvg = (e: PointerEvent): [number, number] => {
+    const m = svgRef.current?.getScreenCTM();
+    if (!m) return [0, 0];
+    const p = new DOMPoint(e.clientX, e.clientY).matrixTransform(m.inverse());
+    return [p.x, p.y];
+  };
+  const dragTo = (px: number, py: number): void => {
+    const r = runRef.current;
+    if (dragging.current === 'sh') {
+      move('sh', Math.atan2(by - py, px - bx) / rad);
+    } else if (dragging.current === 'el') {
+      const jxr = bx + l1 * Math.cos(r.sh * rad);
+      const jyr = by - l1 * Math.sin(r.sh * rad);
+      move('el', Math.atan2(jyr - py, px - jxr) / rad - r.sh);
+    }
+  };
+  const onDown = (e: PointerEvent): void => {
+    if (runRef.current.end) return;
+    const [px, py] = toSvg(e);
+    const dTip = Math.hypot(px - tx, py - ty);
+    const dJoint = Math.hypot(px - jx, py - jy);
+    const pick: 'sh' | 'el' = dTip <= dJoint ? 'el' : 'sh';
+    if (Math.min(dTip, dJoint) > HIT_R) return;
+    dragging.current = pick;
+    svgRef.current?.setPointerCapture(e.pointerId);
+    e.preventDefault();
+    dragTo(px, py);
+  };
+  const onMove = (e: PointerEvent): void => {
+    if (!dragging.current) return;
+    const [px, py] = toSvg(e);
+    dragTo(px, py);
+  };
+  const onUp = (): void => {
+    dragging.current = null;
+  };
+
+  // Teclado: ←/→ hombro, ↑/↓ codo, Espacio/Enter agarra (si no hay un botón enfocado).
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent): void => {
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      const dirs: Record<string, ['sh' | 'el', 1 | -1]> = {
+        ArrowLeft: ['sh', 1],
+        ArrowRight: ['sh', -1],
+        ArrowUp: ['el', 1],
+        ArrowDown: ['el', -1],
+      };
+      const d = dirs[e.key];
+      if (d) {
+        e.preventDefault();
+        nudge(d[0], d[1]);
+        return;
+      }
+      if ((e.key === ' ' || e.key === 'Enter') && !(e.target instanceof HTMLButtonElement || e.target instanceof HTMLAnchorElement)) {
+        e.preventDefault();
+        grabRef.current();
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
+
+  const arc = (cx: number, cy: number, r: number, a1: number, a2: number): string => {
+    const p = (a: number): string => `${(cx + r * Math.cos(a * rad)).toFixed(1)} ${(cy - r * Math.sin(a * rad)).toFixed(1)}`;
+    return `M${p(a1)} A${r} ${r} 0 ${a2 - a1 > 180 ? 1 : 0} 0 ${p(a2)}`;
+  };
+  const segCls = (c: string): string => `chl-arm-seg chl-arm-seg--${c}${hit ? ' chl-arm-seg--hit' : ''}`;
+
+  const axis = (key: 'sh' | 'el', n: 1 | 2) => {
+    const name = t(key === 'sh' ? 'challenge.arm.shoulder' : 'challenge.arm.elbow');
+    const btn = (dir: 1 | -1) => (
+      <button
+        type="button"
+        class={`btn chl-arm-turn chl-arm-turn--${n}`}
+        disabled={run.end}
+        aria-label={t(dir === 1 ? 'challenge.arm.ccw' : 'challenge.arm.cw', { axis: name })}
+        onPointerDown={(e) => {
+          e.preventDefault();
+          startHold(key, dir);
+        }}
+        onPointerUp={stopHold}
+        onPointerLeave={stopHold}
+        onPointerCancel={stopHold}
+        onContextMenu={(e) => e.preventDefault()}
+        onClick={(e) => {
+          // El clic de puntero ya giró en pointerdown; solo el teclado (detail 0) gira aquí.
+          if (e.detail === 0) nudge(key, dir);
+        }}
+      >
+        <svg viewBox="0 0 20 20" width="22" height="22" aria-hidden="true">
+          <path d={dir === 1 ? 'M14 3 5 10l9 7Z' : 'M6 3l9 7-9 7Z'} />
+        </svg>
+      </button>
+    );
+    return (
+      <div class={`chl-arm-axis chl-arm-axis--${n}`} role="group" aria-label={name}>
+        <span class="chl-arm-badge" aria-hidden="true">{n}</span>
+        <span class="chl-arm-axis__name">
+          {name} <b>{t('challenge.arm.deg', { n: Math.round(run[key]) })}</b>
+        </span>
+        {btn(1)}
+        {btn(-1)}
+      </div>
+    );
+  };
 
   return (
     <div class="chl-game chl-arm">
       <p class="chl-howto">{t('challenge.day12_robotic_arm.how')}</p>
       <TimeBar left={left} total={seconds} />
-      <svg class="chl-arm-svg" viewBox={`0 0 ${VW} ${VH}`} role="img" aria-label={t('challenge.arm.alt')}>
+      <svg
+        ref={svgRef}
+        class="chl-arm-svg"
+        viewBox={`0 0 ${VW} ${VH}`}
+        role="img"
+        aria-label={t('challenge.arm.alt')}
+        onPointerDown={onDown}
+        onPointerMove={onMove}
+        onPointerUp={onUp}
+        onPointerCancel={onUp}
+      >
         <line x1="0" y1={by} x2={VW} y2={by} class="chl-arm-ground" />
         <rect x={bx - 16} y={by - 10} width="32" height="10" class="chl-arm-base" />
         {rocks.map((r, i) => (
@@ -139,11 +302,15 @@ export function RoboticArm({ params, assist, onDone }: ChallengeGameProps) {
         <circle cx={sx} cy={sy} r={tol} class="chl-arm-zone" />
         <circle cx={sx} cy={sy} r="5" class="chl-arm-sample" />
         <text x={sx} y={sy - tol - 5} class="chl-arm-label" text-anchor="middle">{t('challenge.arm.sample')}</text>
-        <line x1={bx} y1={by - 5} x2={jx} y2={jy} class={`chl-arm-seg${hit ? ' chl-arm-seg--hit' : ''}`} />
-        <line x1={jx} y1={jy} x2={tx} y2={ty} class={`chl-arm-seg${hit ? ' chl-arm-seg--hit' : ''}`} />
-        <circle cx={bx} cy={by - 5} r="6" class="chl-arm-joint" />
-        <circle cx={jx} cy={jy} r="6" class="chl-arm-joint" />
-        <circle cx={tx} cy={ty} r="5" class="chl-arm-tip" />
+        <path d={arc(bx, by, 26, shMin, shMax)} class="chl-arm-arc chl-arm-arc--1" />
+        <path d={arc(jx, jy, 22, run.sh + elMin, run.sh + elMax)} class="chl-arm-arc chl-arm-arc--2" />
+        <line x1={bx} y1={by} x2={jx} y2={jy} class={segCls('1')} />
+        <line x1={jx} y1={jy} x2={tx} y2={ty} class={segCls('2')} />
+        <circle cx={bx} cy={by} r="10" class="chl-arm-joint chl-arm-joint--1" />
+        <text x={bx} y={by + 4} class="chl-arm-num" text-anchor="middle">1</text>
+        <circle cx={jx} cy={jy} r="10" class="chl-arm-joint chl-arm-joint--2" />
+        <text x={jx} y={jy + 4} class="chl-arm-num" text-anchor="middle">2</text>
+        <circle cx={tx} cy={ty} r="6" class="chl-arm-tip" />
       </svg>
       <div class="chl-stats" role="status" aria-live="polite">
         <span class="chl-stat">
@@ -158,36 +325,8 @@ export function RoboticArm({ params, assist, onDone }: ChallengeGameProps) {
         </span>
       </div>
       <div class="chl-arm-controls">
-        <label class="chl-slider">
-          <span class="chl-slider__label">
-            {t('challenge.arm.shoulder')} <b>{t('challenge.arm.deg', { n: Math.round(run.sh) })}</b>
-          </span>
-          <input
-            type="range"
-            min={shMin}
-            max={shMax}
-            step={shStep}
-            value={run.sh}
-            disabled={run.end}
-            aria-label={t('challenge.arm.shoulder')}
-            onInput={(e) => move('sh', Number((e.currentTarget as HTMLInputElement).value))}
-          />
-        </label>
-        <label class="chl-slider">
-          <span class="chl-slider__label">
-            {t('challenge.arm.elbow')} <b>{t('challenge.arm.deg', { n: Math.round(run.el) })}</b>
-          </span>
-          <input
-            type="range"
-            min={elMin}
-            max={elMax}
-            step={elStep}
-            value={run.el}
-            disabled={run.end}
-            aria-label={t('challenge.arm.elbow')}
-            onInput={(e) => move('el', Number((e.currentTarget as HTMLInputElement).value))}
-          />
-        </label>
+        {axis('sh', 1)}
+        {axis('el', 2)}
         <button type="button" class="btn btn--primary chl-arm-grab" disabled={run.end} onClick={grab}>
           {t('challenge.arm.grab')}
         </button>

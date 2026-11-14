@@ -250,16 +250,37 @@ html .chl-card .btn { min-height: 48px; padding: 0 1.4rem; }
 .chl-arm-ground { stroke: var(--text-dim); stroke-width: 2; }
 .chl-arm-base { fill: var(--panel-2); stroke: var(--text); stroke-width: 2; }
 .chl-arm-rock { fill: #3a3d44; stroke: var(--text-dim); stroke-width: 2; }
-.chl-arm-zone { fill: none; stroke: var(--accent); stroke-width: 1.5; stroke-dasharray: 4 3; }
-.chl-arm-sample { fill: var(--accent); stroke: var(--text); stroke-width: 1.5; }
+.chl-arm-zone { fill: none; stroke: var(--ok); stroke-width: 1.5; stroke-dasharray: 4 3; }
+.chl-arm-sample { fill: var(--ok); stroke: var(--text); stroke-width: 1.5; }
 .chl-arm-label { fill: var(--text-dim); font-family: var(--font-display); font-size: 10px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
-.chl-arm-seg { stroke: var(--text); stroke-width: 8; stroke-linecap: round; }
-.chl-arm-seg--hit { stroke: #e0705a; stroke-dasharray: 6 4; }
-.chl-arm-joint { fill: var(--panel-2); stroke: var(--text); stroke-width: 2; }
-.chl-arm-tip { fill: var(--accent); stroke: var(--text); stroke-width: 2; }
+.chl-arm-svg { touch-action: none; }
+.chl-arm-seg { stroke-width: 9; stroke-linecap: round; paint-order: stroke; }
+.chl-arm-seg--1 { stroke: var(--accent); }
+.chl-arm-seg--2 { stroke: #4fd1e0; }
+html .chl-arm-seg--hit { stroke: #e0705a; stroke-dasharray: 6 4; }
+.chl-arm-arc { fill: none; stroke-width: 2; stroke-dasharray: 2 4; stroke-linecap: round; opacity: 0.55; pointer-events: none; }
+.chl-arm-arc--1 { stroke: var(--accent); }
+.chl-arm-arc--2 { stroke: #4fd1e0; }
+.chl-arm-joint { stroke: #0b0c0e; stroke-width: 2.5; cursor: grab; }
+.chl-arm-joint--1 { fill: var(--accent); }
+.chl-arm-joint--2 { fill: #4fd1e0; }
+.chl-arm-num { fill: #0b0c0e; font-family: var(--font-display); font-weight: 700; font-size: 14px; pointer-events: none; }
+.chl-arm-tip { fill: var(--text); stroke: #0b0c0e; stroke-width: 2.5; cursor: grab; }
 .chl-arm-warn { color: #e0705a; font-weight: 700; }
-.chl-arm-controls { display: grid; grid-template-columns: 1fr 1fr auto; gap: 0.7rem; align-items: end; }
-.chl-arm-grab { min-height: 48px; }
+.chl-arm-controls { display: grid; grid-template-columns: 1fr 1fr auto; gap: 0.7rem; align-items: center; }
+.chl-arm-axis { display: grid; grid-template-columns: auto 1fr auto auto; gap: 0.5rem; align-items: center; padding: 0.4rem 0.5rem; background: var(--panel-2); border: 2px solid var(--line); border-radius: var(--radius); }
+.chl-arm-axis--1 { border-color: var(--accent); }
+.chl-arm-axis--2 { border-color: #4fd1e0; }
+.chl-arm-badge { display: grid; place-items: center; width: 2.2rem; height: 2.2rem; border: 2px solid #0b0c0e; border-radius: 50%; font-family: var(--font-display); font-weight: 700; font-size: 1.4rem; color: #0b0c0e; }
+.chl-arm-axis--1 .chl-arm-badge { background: var(--accent); }
+.chl-arm-axis--2 .chl-arm-badge { background: #4fd1e0; }
+.chl-arm-axis__name { font-family: var(--font-display); font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; min-width: 0; }
+.chl-arm-axis__name b { display: block; font-family: var(--font-body, inherit); font-size: 0.9rem; letter-spacing: 0; }
+html .chl-card .btn.chl-arm-turn { min-width: 52px; min-height: 52px; padding: 0; display: grid; place-items: center; touch-action: manipulation; user-select: none; }
+.chl-arm-turn svg { fill: currentColor; }
+html .chl-card .btn.chl-arm-turn--1 { color: var(--accent); }
+html .chl-card .btn.chl-arm-turn--2 { color: #4fd1e0; }
+html .chl-card .btn.chl-arm-grab { min-height: 56px; }
 .chl-bio-cards { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.6rem; }
 .chl-bio-card { padding: 0.5rem; background: var(--panel-2); border: 2px solid var(--line); border-radius: var(--radius); display: grid; gap: 0.35rem; align-content: start; min-width: 0; }
 .chl-bio-head { display: flex; align-items: center; gap: 0.5rem; }
@@ -387,3 +408,52 @@ html .chl-sector-opt .chl-fx__item { display: flex; align-items: center; gap: 0.
 @media (max-width: 899px) {
   html .chl-trench-grid { grid-auto-rows: 40px; }
 }
+
+/* ============ Chequeo de la tripulación con dibujos (día 14) ============ */
+.chl-bio-tray { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem; }
+html .chl-card .btn.chl-bio-token { display: grid; justify-items: center; gap: 0.15rem; min-width: 5.6rem; min-height: 72px; padding: 0.4rem 0.7rem; }
+.chl-bio-token__icon { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; border: 2px solid #0b0c0e; background: var(--tok); color: #0b0c0e; }
+.chl-bio-token__name { font-size: 0.85rem; }
+.chl-bio-token--rest { --tok: #b9a4ff; }
+.chl-bio-token--water { --tok: #4fd1e0; }
+.chl-bio-token--rad { --tok: #ffb347; }
+html .chl-card .btn.chl-bio-token[aria-pressed='true'] { border-color: var(--tok); background: var(--panel-deep); transform: translateY(-3px); box-shadow: 0 6px 0 #000; }
+.chl-bio-left { display: inline-flex; gap: 0.3rem; margin-left: auto; }
+.chl-bio-left i { width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--line); background: var(--panel-deep); }
+.chl-bio-left .chl-bio-left__on { background: var(--accent); border-color: #0b0c0e; }
+.chl-bio-card { justify-items: center; gap: 0.5rem; padding: 0.6rem 0.5rem; }
+.chl-bio-card--target { border-color: var(--accent); }
+.chl-bio-pick { display: grid; justify-items: center; gap: 0.2rem; width: 100%; padding: 0.2rem; border: 0; background: none; color: inherit; cursor: pointer; border-radius: var(--radius); }
+.chl-bio-pick:disabled { cursor: default; }
+.chl-bio-pick:not(:disabled):hover { background: var(--panel-deep); }
+.chl-bio-pick:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.chl-bio-meters { display: grid; gap: 0.35rem; width: 100%; }
+.chl-bio-meter { display: grid; grid-template-columns: 26px 1fr 20px; align-items: center; gap: 0.35rem; }
+.chl-bio-meter__icon { display: grid; place-items: center; color: var(--text-dim); }
+.chl-bio-pips { display: grid; grid-template-columns: repeat(5, 1fr); gap: 3px; }
+.chl-bio-pips i { height: 12px; border-radius: 2px; background: var(--panel-deep); box-shadow: inset 0 0 0 1px var(--line); }
+.chl-bio-pips .chl-bio-pip--on { background: #8a8d94; box-shadow: inset 0 -2px 0 rgb(0 0 0 / 0.3); }
+.chl-bio-meter--water .chl-bio-pip--on { background: #4fd1e0; }
+.chl-bio-meter--bad .chl-bio-meter__icon, .chl-bio-flag { color: var(--accent); }
+.chl-bio-meter--bad .chl-bio-pip--on { background: var(--accent); }
+.chl-bio-meter--bad.chl-bio-meter--water .chl-bio-pips i { box-shadow: inset 0 0 0 2px var(--accent); }
+.chl-bio-flag { display: grid; place-items: center; }
+.chl-bio-given { display: flex; gap: 0.3rem; min-height: 40px; align-items: center; }
+.chl-bio-chip { display: inline-flex; align-items: center; gap: 0.15rem; min-height: 40px; padding: 0 0.45rem; border-radius: 999px; border: 2px solid #0b0c0e; background: var(--tok); color: #0b0c0e; cursor: pointer; box-shadow: 0 3px 0 #000; animation: chl-bio-pop 260ms cubic-bezier(.2, 1.6, .4, 1); }
+.chl-bio-chip:disabled { cursor: default; }
+.chl-bio-chip--ok { outline: 3px solid var(--ok, #7ddc9a); }
+.chl-bio-chip--no { opacity: 0.6; }
+@keyframes chl-bio-pop { from { transform: scale(0.3); } }
+@media (prefers-reduced-motion: reduce) { .chl-bio-chip { animation: none; } html .chl-card .btn.chl-bio-token[aria-pressed='true'] { transform: none; } }
+@media (max-width: 640px) {
+  html .chl-card .btn.chl-bio-token { min-width: 4.6rem; min-height: 64px; padding: 0.3rem 0.4rem; }
+  .chl-bio-token__icon { width: 36px; height: 36px; }
+}
+
+/* ============ Práctica de minijuegos (portada) ============ */
+.chl-practice-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; }
+html .chl-card .btn.chl-practice-item { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 0.6rem; width: 100%; min-height: 52px; padding: 0 0.8rem; text-align: left; }
+.chl-practice-day { color: var(--accent); font-size: 0.85rem; white-space: nowrap; }
+.chl-practice-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@media (max-width: 640px) { .chl-practice-list { grid-template-columns: 1fr; } }
+html .title__practice { margin-top: 0.6rem; min-height: 44px; padding: 0 1.2rem; }
