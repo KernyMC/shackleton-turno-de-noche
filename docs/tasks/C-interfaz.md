@@ -66,7 +66,11 @@ Semilla: si la URL trae `?seed=123`, usarla.
 
 ---
 
-## C-03 · Tablet: planificador (P0) — la interacción central
+## C-03 · Tablet: planificador (P0) — **HECHA**
+
+Implementada en `src/components/Tablet.tsx`, `EnergySlider.tsx`, `icons.tsx` (íconos SVG reutilizables para C-02) y `format.ts`. `EventPanel.tsx` es **provisional** (lo reemplaza C-04). Atajos: `Tab` abre la tablet; dentro, `Tab` mueve el foco (atrapado) y `Esc` la cierra; Enter ejecuta el día si el foco no está en un botón o slider. El efecto previsto de cada slider se calcula en la interfaz solo para mostrar; los números de la vista previa vienen de `previewDay`.
+
+### Especificación original
 
 **Archivos:** `src/components/Tablet.tsx`, `src/components/EnergySlider.tsx`.
 

@@ -3,21 +3,8 @@ import { lang, t } from '../i18n';
 import { Scene } from '../scene/Scene';
 import { getEnergyBudget } from '../sim/engine';
 import { defaultConfig } from '../sim/config';
-import {
-  applyPreset,
-  chooseEventOption,
-  executeDay,
-  exitToMenu,
-  game,
-  plan,
-  resolving,
-  restart,
-  screen,
-  setPlanValue,
-  startGame,
-  tabletOpen,
-  toggleTablet,
-} from '../state/store';
+import { Tablet } from '../components/Tablet';
+import { exitToMenu, game, restart, screen, startGame } from '../state/store';
 
 function Menu() {
   return (
@@ -58,50 +45,6 @@ function Hud() {
       </span>
       <button type="button" class="btn btn--ghost" onClick={exitToMenu}>{t('menu.back')}</button>
     </header>
-  );
-}
-
-// PROVISIONAL: las tareas C-03 (planificador) y C-04 (eventos) reemplazan esta tablet.
-// Solo sirve para jugar una partida completa mientras tanto.
-function Tablet() {
-  const g = game.value;
-  if (!tabletOpen.value || !g) return null;
-  const event = g.phase === 'event' ? g.pendingEvent : null;
-  return (
-    <div class="tablet" role="dialog" aria-modal="true" aria-labelledby="tablet-title">
-      <h2 id="tablet-title">{t('tablet.title')}</h2>
-      {event ? (
-        <div class="tablet__options">
-          <p>{event.kind} {String(event.payload?.level ?? event.payload?.module ?? '')}</p>
-          {event.options.map((o) => (
-            <button key={o.id} type="button" class="btn" disabled={!!o.disabledReason}
-              title={o.disabledReason ? t(o.disabledReason) : undefined}
-              onClick={() => chooseEventOption(o.id)}>
-              {o.id}
-            </button>
-          ))}
-        </div>
-      ) : (
-        <>
-          {(['recycler', 'greenhouse', 'shield', 'workshop'] as const).map((id) => (
-            <label key={id} class="tablet__row">
-              <span>{t(`module.${id}`)}</span>
-              <input type="range" min={0} max={defaultConfig.balance.modules[id].maxEnergy}
-                value={plan.value[id]} disabled={g.modules[id].broken || resolving.value}
-                onInput={(e) => setPlanValue(id, Number(e.currentTarget.value))} />
-              <b>{plan.value[id]}</b>
-            </label>
-          ))}
-          <div class="tablet__options">
-            <button type="button" class="btn" onClick={() => applyPreset('saving')}>ahorro</button>
-            <button type="button" class="btn btn--primary" disabled={resolving.value} onClick={executeDay}>
-              {resolving.value ? t('tablet.resolving') : t('tablet.execute')}
-            </button>
-          </div>
-        </>
-      )}
-      {!event && <button type="button" class="btn btn--ghost" onClick={toggleTablet}>✕</button>}
-    </div>
   );
 }
 

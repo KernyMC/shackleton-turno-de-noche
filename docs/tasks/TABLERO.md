@@ -46,7 +46,7 @@ Estados: `libre` · `en curso` · `hecha` · `bloqueada`. Prioridades: P0 impres
 | B-09 | Controles táctiles | P2 | B-02 | | libre |
 | C-01 | Store completo y bucle del día | P0 | A-01 | Claude | hecha |
 | C-02 | Visor de casco | P0 | C-01 | | libre |
-| C-03 | Tablet: planificador con vista previa | P0 | C-01 | Claude | en curso |
+| C-03 | Tablet: planificador con vista previa | P0 | C-01 | Claude | hecha |
 | C-04 | Panel de evento en la tablet | P0 | C-03, A-03 | | libre |
 | C-05 | Resumen del día y debrief básico | P0 | C-01, A-04 | | libre |
 | C-06 | Menú y selección de dificultad | P0 | — | | libre |

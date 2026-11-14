@@ -29,7 +29,8 @@ export function Scene() {
       });
     });
     const onKey = (e: KeyboardEvent): void => {
-      if (e.code === 'Tab') {
+      // Tab abre la tablet. Con la tablet abierta, Tab mueve el foco dentro de ella y Esc la cierra.
+      if (e.code === 'Tab' && !tabletOpen.value) {
         e.preventDefault();
         toggleTablet();
       }

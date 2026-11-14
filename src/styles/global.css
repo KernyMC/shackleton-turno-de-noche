@@ -87,15 +87,113 @@ b { font-family: var(--font-mono); }
 .hud__day { font-weight: 700; color: var(--accent); }
 .hud .btn { margin-left: auto; }
 
+/* ---------- Tablet de muñeca (C-03) ---------- */
+.icon { flex: none; }
+.btn--small { min-height: var(--tap); padding: 0 0.85rem; font-size: 0.9rem; }
+.btn--icon { width: var(--tap); padding: 0; display: inline-grid; place-items: center; }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; border-color: var(--panel-border); }
+
 .tablet {
   position: absolute; left: 50%; bottom: 1rem; transform: translateX(-50%);
-  width: min(640px, calc(100% - 2rem));
-  padding: 1rem 1.25rem;
-  background: var(--panel); border: 1px solid var(--accent); border-radius: var(--radius);
+  width: min(720px, calc(100% - 2rem));
+  max-height: calc(100% - 5.5rem);
+  overflow-y: auto;
+  padding: 0.75rem 1.25rem 1rem;
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  border-top: 2px solid var(--accent);
+  border-radius: var(--radius);
 }
-.tablet h2 { margin: 0 0 0.5rem; }
-.tablet__row { display: grid; grid-template-columns: 8rem 1fr 2.5rem; align-items: center; gap: 0.75rem; min-height: var(--tap); }
-.tablet__options { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0.75rem 0; }
+.tablet__head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.tablet__head h2 {
+  margin: 0; font-size: 0.85rem; font-weight: 400; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--text-dim); font-family: var(--font-mono);
+}
+.tablet__head h2:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.tablet__budget-head { margin: 0.5rem 0 0.75rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--panel-border); }
+.tablet__available { margin: 0; font-size: 1.1rem; }
+.tablet__available b { color: var(--accent); font-size: 1.5rem; }
+.tablet__breakdown { margin: 0.15rem 0 0; color: var(--text-dim); font-family: var(--font-mono); font-size: 0.85rem; }
+
+.tablet__modules { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.5rem 1.5rem; }
+
+.module { padding: 0.35rem 0; }
+.module__head { display: flex; align-items: center; gap: 0.5rem; }
+.module__name { flex: 1; }
+.module__value b { font-size: 1.05rem; }
+.module__max { color: var(--text-dim); font-family: var(--font-mono); font-size: 0.85rem; margin-left: 0.2rem; }
+.module__effect, .module__repair {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 0.4rem;
+  margin: 0; min-height: 1.4rem; color: var(--text-dim); font-size: 0.85rem;
+}
+.module__repair { margin-top: 0.35rem; }
+.module__reason { color: var(--text-dim); font-size: 0.8rem; }
+.module--broken .module__head, .module--broken .module__effect { color: var(--danger); }
+.module--sheltered .module__effect { color: var(--accent); }
+
+/* Slider: pista de 2 px, mango cuadrado ámbar, zona táctil de 44 px. */
+.module__slider {
+  -webkit-appearance: none; appearance: none;
+  width: 100%; height: var(--tap); margin: 0;
+  background: transparent; cursor: pointer;
+}
+.module__slider:disabled { cursor: not-allowed; opacity: 0.4; }
+.module__slider::-webkit-slider-runnable-track { height: 2px; background: var(--panel-border); }
+.module__slider::-moz-range-track { height: 2px; background: var(--panel-border); }
+.module__slider::-moz-range-progress { height: 2px; background: var(--accent); }
+.module__slider::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 16px; height: 22px; margin-top: -10px;
+  background: var(--accent); border: 2px solid var(--bg); border-radius: 2px;
+}
+.module__slider::-moz-range-thumb {
+  width: 12px; height: 18px; background: var(--accent); border: 2px solid var(--bg); border-radius: 2px;
+}
+.module__slider:focus-visible { outline: 2px solid var(--accent); outline-offset: -8px; }
+
+.budget { margin-top: 0.75rem; }
+.budget__bar { display: flex; height: 6px; background: var(--bg); border: 1px solid var(--panel-border); }
+.budget__seg { display: block; height: 100%; transition: width 200ms ease-out; }
+.budget__seg--assigned { background: var(--accent); }
+.budget__seg--battery { background: var(--text-dim); }
+.budget__seg--wasted {
+  background: repeating-linear-gradient(135deg, var(--warn) 0 3px, transparent 3px 6px);
+}
+.budget__legend { display: flex; flex-wrap: wrap; gap: 0.25rem 1.25rem; margin: 0.4rem 0 0; font-size: 0.85rem; color: var(--text-dim); }
+.budget__legend span { display: inline-flex; align-items: center; gap: 0.4rem; }
+.budget__key { display: inline-block; width: 10px; height: 10px; }
+.budget__key--assigned { background: var(--accent); }
+.budget__key--battery { background: var(--text-dim); }
+
+.tablet__notice { display: flex; align-items: center; gap: 0.4rem; margin: 0.4rem 0 0; min-height: 1.3rem; font-size: 0.9rem; color: var(--text-dim); }
+.tablet__notice--warn { color: var(--warn); }
+.tablet__notice--danger { color: var(--danger); }
+
+.tablet__preview {
+  display: flex; flex-wrap: wrap; gap: 0.25rem 1rem;
+  margin: 0.5rem 0 0; padding: 0.5rem 0.75rem;
+  border-left: 2px solid var(--accent); background: var(--bg);
+  font-family: var(--font-mono); font-size: 0.9rem;
+}
+.tablet__actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.75rem; margin-top: 0.75rem; }
+.tablet__presets { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.btn--execute { min-width: 12rem; min-height: 52px; font-size: 1.05rem; }
+
+.event__options { display: flex; flex-wrap: wrap; gap: 0.75rem; margin: 0.75rem 0; }
+.event__option { display: grid; gap: 0.25rem; }
+
+/* Menos de 1024 px: la tablet ocupa toda la pantalla. */
+@media (max-width: 1023px) {
+  .tablet {
+    inset: 0; left: 0; bottom: 0; transform: none;
+    width: 100%; max-height: none; height: 100%;
+    border-radius: 0; border-left: 0; border-right: 0;
+  }
+}
+@media (max-width: 600px) {
+  .tablet { padding: 0.75rem 1rem 1rem; }
+  .tablet__modules { grid-template-columns: minmax(0, 1fr); }
+  .btn--execute { width: 100%; }
+}
 
 @media (prefers-reduced-motion: reduce) {
   * { animation: none !important; transition: none !important; }
