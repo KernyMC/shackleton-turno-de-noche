@@ -333,6 +333,7 @@
   "coach.welcome.goal": "Last {dias} days and we all go home.",
   "coach.greenhouse": "Now the Greenhouse: give it {invernadero}. It is our food!",
   "loading.kicker": "Shackleton link",
+  "loading.initial": "Landing at the south pole…",
   "loading.to_game": "Heading down to the base…",
   "loading.to_menu": "Gathering the crew…",
   "loading.tip_label": "Mission Control tip",

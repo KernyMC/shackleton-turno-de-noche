@@ -333,6 +333,7 @@
   "coach.welcome.goal": "Aguanta {dias} días y volvemos a casa.",
   "coach.greenhouse": "Ahora el Invernadero: dale {invernadero}. ¡Es la comida!",
   "loading.kicker": "Enlace con Shackleton",
+  "loading.initial": "Aterrizando en el polo sur…",
   "loading.to_game": "Bajando a la base…",
   "loading.to_menu": "Reuniendo a la tripulación…",
   "loading.tip_label": "Consejo de Control de Misión",
