@@ -20,12 +20,19 @@ import {
   toggleTablet,
 } from '../state/store';
 import { helpOpen, tutorialStep } from '../state/tutorial';
+import { reacting } from '../state/rewards';
+import { playCommit } from '../audio/sfx';
 import { EventPanel } from './EventPanel';
 import { num, signed } from './format';
 import { Icon } from './icons';
 import { PowerBoard } from './PowerBoard';
 
 const NOTICE_MS = 2000;
+
+/** Ejecutar con su golpe de sonido. */
+function commit(): void {
+  if (executeDay()) playCommit();
+}
 
 function Planner({ game: g }: { game: GameState }) {
   const [notice, setNotice] = useState<string | null>(null);
@@ -68,7 +75,7 @@ function Planner({ game: g }: { game: GameState }) {
       </p>
 
       <div class="tablet__actions">
-        <button type="button" class="btn btn--primary btn--execute" disabled={resolving.value} onClick={executeDay}>
+        <button type="button" class="btn btn--primary btn--execute" disabled={resolving.value} onClick={commit}>
           <svg width="18" height="18" viewBox="0 0 20 20" aria-hidden="true"><path d="M6 4l10 6-10 6Z" fill="currentColor" /></svg>
           {resolving.value ? t('tablet.resolving') : t('tablet.execute')}
         </button>
@@ -119,7 +126,17 @@ export function Tablet() {
     else if (!dialog.current?.contains(document.activeElement)) title.current?.focus();
   }, [open, focused, inEvent]);
 
+  // Cada día arranca con el plan de ayer (ajustado a la energía de hoy): se corrige, no se rehace.
+  const day = g?.day;
+  useEffect(() => {
+    if (!open || !g || g.phase !== 'planning' || resolving.value || !g.lastPlan) return;
+    const total = Object.values(plan.value).reduce((a, b) => a + b, 0);
+    if (total === 0) applyPreset('repeat');
+  }, [open, day, g?.phase, resolving.value]);
+
   if (!open || !g) return null;
+  // Mientras la base reacciona al día ejecutado, el panel se aparta para que se vea la maqueta.
+  const away = !inEvent && (resolving.value || reacting.value);
 
   const onKeyDown = (e: KeyboardEvent): void => {
     if (e.key === 'Escape') {
@@ -132,7 +149,7 @@ export function Tablet() {
       // Enter ejecuta el día salvo que el foco esté en un botón o desplegable, que ya usan Enter.
       if (target.tagName !== 'BUTTON' && target.tagName !== 'SUMMARY') {
         e.preventDefault();
-        executeDay();
+        commit();
       }
       return;
     }
@@ -143,7 +160,7 @@ export function Tablet() {
   return (
     <div
       ref={dialog}
-      class="tablet"
+      class={`tablet${away ? ' tablet--away' : ''}`}
       data-coach={tutorialStep.value ?? undefined}
       role="dialog"
       aria-modal={inEvent ? 'true' : 'false'}
@@ -155,11 +172,11 @@ export function Tablet() {
           {t('tablet.title', { dia: g.day })}
         </h2>
         <div class="tablet__head-actions">
-          <button type="button" class="btn btn--ghost btn--small" onClick={() => (helpOpen.value = true)}>
-            {t('help.button')}
+          <button type="button" class="iconbtn" aria-label={t('help.button')} title={t('help.button')} onClick={() => (helpOpen.value = true)}>
+            <Icon name="help" size={18} />
           </button>
           {!inEvent && (
-            <button type="button" class="btn btn--icon btn--ghost" aria-label={t('tablet.close')} onClick={toggleTablet}>
+            <button type="button" class="iconbtn" aria-label={t('tablet.close')} title={t('tablet.close')} onClick={toggleTablet}>
               <Icon name="close" />
             </button>
           )}

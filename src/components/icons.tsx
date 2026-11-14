@@ -15,7 +15,13 @@ export type IconName =
   | 'moon'
   | 'alert'
   | 'check'
-  | 'close';
+  | 'close'
+  | 'help'
+  | 'exit'
+  | 'sound'
+  | 'mute'
+  | 'sky'
+  | 'info';
 
 const PATHS: Record<IconName, JSX.Element> = {
   // Dos flechas en ciclo.
@@ -83,6 +89,43 @@ const PATHS: Record<IconName, JSX.Element> = {
   ),
   check: <path d="M4 10.5l4 4 8-9" />,
   close: <path d="M5 5l10 10M15 5 5 15" />,
+  // Signo de pregunta dentro de un círculo.
+  help: (
+    <>
+      <circle cx="10" cy="10" r="7.5" />
+      <path d="M7.8 7.8a2.3 2.3 0 1 1 3.2 2.1c-.6.3-1 .8-1 1.5v.4M10 14.3v.2" />
+    </>
+  ),
+  // Puerta con flecha hacia fuera.
+  exit: (
+    <>
+      <path d="M8 3.5H4.5v13H8" />
+      <path d="M8.5 10h8M13.5 6.8 16.7 10l-3.2 3.2" />
+    </>
+  ),
+  // Altavoz con ondas.
+  sound: (
+    <>
+      <path d="M3.5 7.5h3l4-3.5v12l-4-3.5h-3Z" />
+      <path d="M13.5 7.5a3.5 3.5 0 0 1 0 5M15.6 5.4a6.5 6.5 0 0 1 0 9.2" />
+    </>
+  ),
+  // Altavoz tachado.
+  mute: (
+    <>
+      <path d="M3.5 7.5h3l4-3.5v12l-4-3.5h-3Z" />
+      <path d="M13.5 8l4 4M17.5 8l-4 4" />
+    </>
+  ),
+  // Estrella de cuatro puntas (mirar el cielo).
+  sky: <path d="M10 2.5c.6 4.2 3.3 6.9 7.5 7.5-4.2.6-6.9 3.3-7.5 7.5-.6-4.2-3.3-6.9-7.5-7.5 4.2-.6 6.9-3.3 7.5-7.5Z" />,
+  // Información.
+  info: (
+    <>
+      <circle cx="10" cy="10" r="7.5" />
+      <path d="M10 9v5M10 6.2v.2" />
+    </>
+  ),
 };
 
 export function Icon({ name, size = 20 }: { name: IconName; size?: number }) {

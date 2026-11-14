@@ -19,5 +19,6 @@ Registro honesto de qué se hizo con ayuda de IA. Añade una línea por sesión 
 | 2026-11-14 | Claude Code (Anthropic) | P1 tripulación: pantalla "Conoce a tu tripulación", 4 astronautas low-poly con animación, vuelo de cámara a la base, retratos SVG; pasillos con esclusas | Pendiente de revisión del equipo |
 | 2026-11-14 | Claude Code (Anthropic) | Portada estilo póster, entrada de la tripulación a la base, panel de energía gráfico, anillo de selección, mirar al cielo, barra de desplazamiento | Pendiente de revisión del equipo |
 | 2026-11-14 | Claude Code (Anthropic) | G-P2 base viva: pasillos de vidrio con tripulación caminando y reacciones, números flotantes, cosecha, frase del día, hitos con confeti, cohete de progreso, XP y sonidos Web Audio | Pendiente de revisión del equipo |
+| 2026-11-14 | Claude Code (Anthropic) | G-P3: rediseño de la interfaz de juego, cámara casi isométrica con doble clic, polvo, brillo en visores, sonidos Web Audio, caras de la tripulación en el HUD y cinemática animada del debrief | Pendiente de revisión del equipo |
 
 Si se usan modelos 3D o audio generados (por ejemplo Tripo o Suno), anotarlos aquí y en `CREDITS.md`.

@@ -6,6 +6,7 @@ import { Debrief } from '../components/Debrief';
 import { Hud } from '../components/Hud';
 import { Rewards } from '../components/Rewards';
 import { startRewardsWatcher } from '../state/rewards';
+import { startSoundWatcher } from '../audio/watch';
 import { Menu } from '../components/Menu';
 import { Tablet } from '../components/Tablet';
 import { startTutorialWatcher } from '../state/tutorial';
@@ -15,6 +16,7 @@ export default function App() {
   // La guía de la primera partida observa el juego desde que arranca la app.
   useEffect(() => startTutorialWatcher(), []);
   useEffect(() => startRewardsWatcher(), []);
+  useEffect(() => startSoundWatcher(), []);
   if (screen.value === 'menu') {
     return (
       <>

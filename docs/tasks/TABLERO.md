@@ -68,7 +68,7 @@ Estados: `libre` · `en curso` · `hecha` · `bloqueada`. Prioridades: P0 impres
 | F-10 | Módulos con forma propia y rótulo, suelo con cráteres, Tierra y estrellas | P0 | — | Halo Sur | hecha |
 | G-P1 | Tripulación: pantalla de inicio, 4 astronautas, vuelo a la base | P0 | — | Halo Sur | hecha |
 | G-P2 | Base viva: pasillos de vidrio con astronautas, reacciones, mini-panel por módulo, números flotantes, hitos | P0 | G-P1 | Kevin | hecha |
-| G-P3 | Pulido: cámara isométrica, polvo, sonidos, caras en el HUD, tripulación en el debrief | P1 | G-P2 | | libre |
+| G-P3 | Pulido: cámara isométrica, polvo, sonidos, caras en el HUD, tripulación en el debrief | P1 | G-P2 | Kevin | hecha |
 | D-01 | Tormentas reales DONKI → `storms_real.json` + proxy en vivo | P1 | — | Claude | hecha |
 | D-02 | `sources.json` y `facts.json` con citas | P1 | — | | libre |
 | D-03 | Contrastar consumos y dosis con fuentes NASA (ver D-06) | P1 | D-02 | | libre |

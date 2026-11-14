@@ -8,6 +8,7 @@ import type { ModuleId } from '../sim/types';
 import { createAstronaut } from './astronaut';
 import type { Astronaut } from './astronaut';
 import { createBase, MODULES } from './base';
+import { createDust } from './dust';
 import { CREW } from '../data/crew';
 import { createCrewWalk } from './crewWalk';
 import type { CrewWalkState } from './crewWalk';
@@ -50,9 +51,14 @@ export interface World {
   setStorm(active: boolean): void;
   /**
    * Desplaza la imagen cuando un panel tapa parte de la pantalla: `up` hacia arriba (0..0.5 de la
-   * altura) y `right` hacia la derecha (0..0.5 del ancho).
+   * altura) y `right` hacia la derecha (-0.5..0.5 del ancho; negativo = hacia la izquierda).
    */
   setViewShift(up: number, right?: number): void;
+  /**
+   * Centra la cámara en un módulo (el punto de mira se desplaza y el radio se acerca) o, con null,
+   * vuelve al centro de la base y al radio por defecto. Todo amortiguado.
+   */
+  centerOn(id: ModuleId | null): void;
   /** Posición en pantalla (px, relativa a la ventana) de lo alto de un módulo. */
   projectModule(id: ModuleId): { x: number; y: number } | null;
   /** La tripulación dentro de la base: ánimo, refugio, avería, rover. */
@@ -80,7 +86,14 @@ export interface World {
   dispose(): void;
 }
 
-const ORBIT = { radius: 62, minRadius: 34, maxRadius: 90, elevation: 0.42, minElevation: 0.03, maxElevation: 1.1 };
+// Cámara casi isométrica: FOV estrecho y radio grande, para el look de maqueta.
+const ORBIT = { radius: 93, minRadius: 51, maxRadius: 135, elevation: 0.62, minElevation: 0.03, maxElevation: 1.1 };
+/** Campo de visión: la presentación mantiene el suyo; en juego es estrecho (más aún en vertical, 42). */
+const FOV = { intro: 46, introPortrait: 62, game: 30, gamePortrait: 42 };
+/** Al centrar un módulo el radio se queda en esta fracción del actual. */
+const CENTER_ZOOM = 0.6;
+const DOUBLE_CLICK_MS = 300;
+const CENTER_LOOK = new THREE.Vector3(0, 2, 0);
 /** Por debajo de esta elevación la cámara levanta la mirada al cielo. */
 const SKY_LOOK_START = 0.3;
 const AUTO_SPEED = 0.045; // rad/s
@@ -126,7 +139,8 @@ export function createWorld(container: HTMLElement, cb: WorldCallbacks): World {
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(0x000000);
   const camera = new THREE.PerspectiveCamera(46, 1, 0.5, 1400);
-  const lookAt = new THREE.Vector3(0, 2, 0);
+  const lookAt = CENTER_LOOK.clone();
+  const lookGoal = CENTER_LOOK.clone();
 
   // Sol rasante del polo sur: sombras largas y duras. Sin niebla: en la Luna no hay aire.
   const sun = new THREE.DirectionalLight(0xfffaf2, 0);
@@ -156,6 +170,8 @@ export function createWorld(container: HTMLElement, cb: WorldCallbacks): World {
   // La tripulación camina por los pasillos de vidrio.
   const walkers = createCrewWalk(base.routes, CREW);
   scene.add(walkers.group);
+  const dust = createDust(terrain.heightAt);
+  scene.add(dust.points);
   void base.ready.then((models) => cb.onAssets?.({ models }));
 
   // --- Estado que persigue a su objetivo (nada salta) ---
@@ -205,13 +221,25 @@ export function createWorld(container: HTMLElement, cb: WorldCallbacks): World {
   let angle = 0.6;
   let elevation = ORBIT.elevation;
   let radius = ORBIT.radius;
+  let radiusGoal = ORBIT.radius;
+  let centered: ModuleId | null = null;
+  let radiusBeforeCenter = ORBIT.radius;
   let lastInteraction = -Infinity;
   let width = 1;
   let height = 1;
+  let portrait = false;
+  let fovShown = -1; // -1: se fija en el primer fotograma
+  let lastClick = { time: -Infinity, x: 0, y: 0 };
+  const presentationFov = (): number => (portrait ? FOV.introPortrait : FOV.intro);
+  const gameFov = (): number => (portrait ? FOV.gamePortrait : FOV.game);
 
   const orbitPosition = (out: THREE.Vector3): THREE.Vector3 => {
     const flat = Math.cos(elevation) * radius;
-    return out.set(Math.sin(angle) * flat, Math.sin(elevation) * radius + lookAt.y, Math.cos(angle) * flat);
+    return out.set(
+      lookAt.x + Math.sin(angle) * flat,
+      Math.sin(elevation) * radius + lookAt.y,
+      lookAt.z + Math.cos(angle) * flat,
+    );
   };
   const skyTarget = new THREE.Vector3();
   let skyLook: number | null = null; // elevación objetivo del botón "Mirar el cielo"
@@ -334,7 +362,17 @@ export function createWorld(container: HTMLElement, cb: WorldCallbacks): World {
       if (id) cb.onCrewSelect?.(id);
     } else if (wasClick) {
       const id = pick(e.clientX, e.clientY);
-      if (id) cb.onSelect(id);
+      const now = performance.now();
+      const isDouble =
+        now - lastClick.time < DOUBLE_CLICK_MS && Math.hypot(e.clientX - lastClick.x, e.clientY - lastClick.y) <= CLICK_SLOP_PX * 2;
+      if (isDouble) {
+        // Doble clic: centra el módulo (o vuelve al centro si se toca suelo vacío).
+        lastClick = { time: -Infinity, x: 0, y: 0 };
+        centerOn(id);
+      } else {
+        lastClick = { time: now, x: e.clientX, y: e.clientY };
+        if (id) cb.onSelect(id);
+      }
     }
   };
   const onPointerLeave = (): void => {
@@ -344,7 +382,7 @@ export function createWorld(container: HTMLElement, cb: WorldCallbacks): World {
   const onWheel = (e: WheelEvent): void => {
     if (introMode) return;
     e.preventDefault();
-    radius = THREE.MathUtils.clamp(radius + e.deltaY * 0.03, ORBIT.minRadius, ORBIT.maxRadius);
+    radiusGoal = THREE.MathUtils.clamp(radiusGoal + e.deltaY * 0.045, ORBIT.minRadius, ORBIT.maxRadius);
     lastInteraction = performance.now();
   };
   dom.addEventListener('pointerdown', onPointerDown);
@@ -355,8 +393,29 @@ export function createWorld(container: HTMLElement, cb: WorldCallbacks): World {
   dom.addEventListener('wheel', onWheel, { passive: false });
   dom.style.cursor = 'grab';
 
+  /** Centra la cámara en un módulo (o en la base si id es null). Amortiguado; instantáneo con movimiento reducido. */
+  function centerOn(id: ModuleId | null): void {
+    if (id) {
+      const m = MODULES.find((mod) => mod.id === id);
+      if (!m) return;
+      if (centered === null) radiusBeforeCenter = radiusGoal;
+      centered = id;
+      lookGoal.set(m.x, terrain.heightAt(m.x, m.z) + CENTER_LOOK.y, m.z);
+      radiusGoal = THREE.MathUtils.clamp(radiusBeforeCenter * CENTER_ZOOM, ORBIT.minRadius, ORBIT.maxRadius);
+    } else {
+      centered = null;
+      lookGoal.copy(CENTER_LOOK);
+      radiusGoal = ORBIT.radius;
+    }
+    if (reducedMotion) {
+      lookAt.copy(lookGoal);
+      radius = radiusGoal;
+    }
+    lastInteraction = performance.now();
+  }
+
   const applyViewOffset = (): void => {
-    if (shiftShown < 0.002 && shiftXShown < 0.002) camera.clearViewOffset();
+    if (Math.abs(shiftShown) < 0.002 && Math.abs(shiftXShown) < 0.002) camera.clearViewOffset();
     else camera.setViewOffset(width, height, -Math.round(width * shiftXShown), Math.round(height * shiftShown), width, height);
   };
 
@@ -367,8 +426,8 @@ export function createWorld(container: HTMLElement, cb: WorldCallbacks): World {
     height = h;
     renderer.setSize(w, h);
     camera.aspect = w / h;
-    // En pantallas verticales se abre el campo de visión para que quepa toda la base.
-    camera.fov = w / h < 0.8 ? 62 : 46;
+    // En pantallas verticales se abre el campo de visión (se aplica cada fotograma, amortiguado).
+    portrait = w / h < 0.8;
     applyViewOffset();
     camera.updateProjectionMatrix();
   });
@@ -450,6 +509,8 @@ export function createWorld(container: HTMLElement, cb: WorldCallbacks): World {
         camera.position.lerpVectors(flyEye, orbitEye, w);
         camera.position.y += Math.sin(Math.PI * w) * 5;
         camera.lookAt(introTarget.lerpVectors(flyTarget, lookAt, w));
+        // El campo de visión se cierra hacia el de juego a la vez que la cámara sube.
+        fovShown = THREE.MathUtils.lerp(presentationFov(), gameFov(), w);
       }
       if (t >= 1) {
         const done = fly.resolve;
@@ -465,7 +526,25 @@ export function createWorld(container: HTMLElement, cb: WorldCallbacks): World {
     } else {
       if (!reducedMotion && !drag && performance.now() - lastInteraction > RESUME_AFTER_MS) angle += AUTO_SPEED * dt;
       if (skyLook !== null && !drag) elevation = reducedMotion ? skyLook : damp(elevation, skyLook, 2.2, dt);
+      // El punto de mira y el radio persiguen su objetivo (doble clic, rueda).
+      if (reducedMotion) {
+        lookAt.copy(lookGoal);
+        radius = radiusGoal;
+      } else {
+        const k = 1 - Math.exp(-4 * dt);
+        lookAt.lerp(lookGoal, k);
+        radius += (radiusGoal - radius) * k;
+      }
       placeCamera();
+    }
+
+    // Campo de visión: el de presentación en portada/fila/vuelo; el estrecho en juego (suave).
+    const fovTarget = introMode || fly ? presentationFov() : gameFov();
+    if (fovShown < 0 || reducedMotion) fovShown = fovTarget;
+    else if (!fly) fovShown = damp(fovShown, fovTarget, 3, dt);
+    if (Math.abs(camera.fov - fovShown) > 0.001) {
+      camera.fov = fovShown;
+      camera.updateProjectionMatrix();
     }
 
     sunShown = damp(sunShown, sunTarget, 1.6, dt);
@@ -482,8 +561,8 @@ export function createWorld(container: HTMLElement, cb: WorldCallbacks): World {
     renderer.toneMappingExposure = 1.55 - sunShown * 0.5;
 
     const previousShift = shiftShown + shiftXShown;
-    shiftShown = damp(shiftShown, shiftTarget, 8, dt);
-    shiftXShown = damp(shiftXShown, shiftXTarget, 8, dt);
+    shiftShown = reducedMotion ? shiftTarget : damp(shiftShown, shiftTarget, 8, dt);
+    shiftXShown = reducedMotion ? shiftXTarget : damp(shiftXShown, shiftXTarget, 8, dt);
     if (Math.abs(shiftShown + shiftXShown - previousShift) > 0.0005) {
       applyViewOffset();
       camera.updateProjectionMatrix();
@@ -494,10 +573,18 @@ export function createWorld(container: HTMLElement, cb: WorldCallbacks): World {
       if (introMode && introViewTarget === 1) setCrewHovered(pickCrew(lastPointer.x, lastPointer.y));
       else setHovered(pick(lastPointer.x, lastPointer.y));
     }
+    // Destello del Sol en los visores: más fuerte con luz y cuando la cámara mira desde el lado del Sol.
+    const camLen = Math.hypot(camera.position.x, camera.position.z) || 1;
+    const sunSide =
+      (camera.position.x / camLen) * Math.sin(azimuthShown) + (camera.position.z / camLen) * Math.cos(azimuthShown);
+    const glint = sunShown * (0.55 + 0.45 * (sunSide * 0.5 + 0.5));
+    walkers.setGlint(glint);
     for (const [id, a] of crew) {
       a.setFocus(!fly && (id === crewFocused || id === crewHovered));
+      a.setGlint(glint);
       a.update(dt, time, reducedMotion);
     }
+    dust.update(dt, time, sunShown, reducedMotion);
 
     base.update(dt, time, reducedMotion);
     // De noche: pasillos al 30 % y linternas de los cascos encendidas.
@@ -521,8 +608,9 @@ export function createWorld(container: HTMLElement, cb: WorldCallbacks): World {
     setStorm: (active) => void (stormTarget = active ? 1 : 0),
     setViewShift: (up, right = 0) => {
       shiftTarget = THREE.MathUtils.clamp(up, 0, 0.5);
-      shiftXTarget = THREE.MathUtils.clamp(right, 0, 0.5);
+      shiftXTarget = THREE.MathUtils.clamp(right, -0.5, 0.5);
     },
+    centerOn,
     setLabelsVisible: (visible) => base.setLabelsVisible(visible),
     setCrewState: (state) => walkers.setState(state),
     projectModule(id) {
@@ -562,6 +650,7 @@ export function createWorld(container: HTMLElement, cb: WorldCallbacks): World {
         crew.set(m.id, a);
       });
       introMode = members.length > 0;
+      if (introMode) fovShown = -1; // la presentación entra directa con su campo de visión
       dom.style.cursor = introMode ? 'default' : 'grab';
       // La fila mira a la cámara: el Sol de la presentación los ilumina de frente y de lado.
       if (introMode) azimuthTarget = azimuthShown = 0.55;
@@ -597,6 +686,7 @@ export function createWorld(container: HTMLElement, cb: WorldCallbacks): World {
     dispose() {
       for (const a of crew.values()) a.dispose();
       rocket.dispose();
+      dust.dispose();
       renderer.setAnimationLoop(null);
       resize.disconnect();
       document.removeEventListener('visibilitychange', onVisibility);

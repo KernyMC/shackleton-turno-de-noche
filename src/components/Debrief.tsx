@@ -7,6 +7,7 @@ import { defaultConfig } from '../sim/config';
 import { reviewMission } from '../sim/debrief';
 import type { GameState, LogEntry } from '../sim/types';
 import { exitToMenu, game, restart, rewindTo, startGame } from '../state/store';
+import { DebriefCinematic } from './DebriefCinematic';
 import { num } from './format';
 import { Icon } from './icons';
 import type { IconName } from './icons';
@@ -158,6 +159,7 @@ export function Debrief() {
 
   return (
     <main class={`debrief ${won ? 'debrief--win' : 'debrief--loss'}`}>
+      <DebriefCinematic kind={won ? 'win' : (cause ?? 'life_support')} />
       <header class="debrief__head">
         <p class="card__kicker">{t('coach.voice')}</p>
         <h1>{won ? t('debrief.win') : t('debrief.loss', { dia: result.day })}</h1>

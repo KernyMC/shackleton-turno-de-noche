@@ -27,6 +27,8 @@ export interface CrewWalk {
   group: THREE.Group;
   setState(state: CrewWalkState): void;
   setNight(night: boolean): void;
+  /** Destello del Sol en los visores, de 0 a 1. */
+  setGlint(amount: number): void;
   update(dt: number, time: number, reducedMotion: boolean): void;
   dispose(): void;
 }
@@ -195,6 +197,9 @@ export function createCrewWalk(routes: Record<ModuleId, THREE.Vector3[]>, member
     },
     setNight(night) {
       for (const w of walkers) w.astro.setLamp(night);
+    },
+    setGlint(amount) {
+      for (const w of walkers) w.astro.setGlint(amount);
     },
     update(dt, time, reducedMotion) {
       let wrenchOn = false;

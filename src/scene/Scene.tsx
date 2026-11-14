@@ -1,11 +1,12 @@
 // Isla Preact que monta la maqueta 3D y la conecta con el store.
 // Traduce el estado del juego en llamadas a la escena; nunca al revés.
-import { effect } from '@preact/signals';
+import { effect, signal } from '@preact/signals';
 import { useEffect, useRef } from 'preact/hooks';
 import { t } from '../i18n';
 import { defaultConfig } from '../sim/config';
 import { getLight } from '../sim/engine';
 import { MODULE_IDS } from '../sim/types';
+import type { ModuleId } from '../sim/types';
 import { focusModule, game, interact, nearTarget, plan, realAssets, skyView, tabletOpen, toggleTablet } from '../state/store';
 import { tutorialStep } from '../state/tutorial';
 import { sceneBridge } from './bridge';
@@ -23,7 +24,9 @@ export function Scene() {
     let world: World | null = null;
     const stops: (() => void)[] = [];
     const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const narrow = window.matchMedia('(max-width: 1023px)');
+    const viewWidth = signal(window.innerWidth);
+    const onResize = (): void => void (viewWidth.value = window.innerWidth);
+    window.addEventListener('resize', onResize);
 
     // Three.js se carga aparte para no bloquear el primer render del menú.
     void import('./world').then(({ createWorld }) => {
@@ -101,8 +104,29 @@ export function Scene() {
       );
       // El módulo elegido (en la base o en el panel) se marca con un anillo de su color.
       stops.push(effect(() => w.setSelected(tabletOpen.value ? focusModule.value : null)));
-      // Con el panel abierto, la base se sube para que no quede tapada.
-      stops.push(effect(() => w.setViewShift(tabletOpen.value ? (narrow.matches ? 0.27 : 0.2) : 0)));
+      // Con el panel abierto, la base se desplaza para que no quede tapada: en pantallas anchas el
+      // panel es lateral derecho (la imagen va a la izquierda); en estrechas es una hoja inferior.
+      stops.push(
+        effect(() => {
+          const open = tabletOpen.value;
+          const vw = viewWidth.value;
+          if (!open) w.setViewShift(0, 0);
+          else if (vw >= 1024) w.setViewShift(0, -(Math.min(440, Math.max(380, vw * 0.28)) / 2 / vw));
+          else w.setViewShift(0.27, 0);
+        }),
+      );
+      // Cámara en eventos: avería centra el módulo roto; al volver a planificar, vuelve al centro.
+      let centered: ModuleId | null = null;
+      stops.push(
+        effect(() => {
+          const g = game.value;
+          const raw = g && g.phase === 'event' && g.pendingEvent?.kind === 'breakdown' ? g.pendingEvent.payload?.module : null;
+          const target = MODULE_IDS.find((id) => id === raw) ?? null;
+          if (target === centered) return;
+          centered = target;
+          w.centerOn(target);
+        }),
+      );
     });
 
     const onMotion = (): void => world?.setReducedMotion(motion.matches);
@@ -119,6 +143,7 @@ export function Scene() {
       disposed = true;
       stops.forEach((stop) => stop());
       motion.removeEventListener('change', onMotion);
+      window.removeEventListener('resize', onResize);
       window.removeEventListener('keydown', onKey);
       world?.dispose();
       sceneBridge.project = null;

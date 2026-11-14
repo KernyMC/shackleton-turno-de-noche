@@ -287,5 +287,8 @@
   "crew.amaru.good": "La radiación está bajo control. Seguimos atentos al Sol.",
   "crew.amaru.worried": "Hemos recibido mucha radiación. Más Blindaje, por favor.",
   "crew.lucia.good": "Todo funciona. Mis herramientas pueden descansar.",
-  "crew.lucia.worried": "Algo está fallando o la batería está muy baja. Estoy en ello."
+  "crew.lucia.worried": "Algo está fallando o la batería está muy baja. Estoy en ello.",
+  "hud.sound_on": "Activar el sonido",
+  "hud.sound_off": "Silenciar",
+  "debrief.cinematic.replay": "Repetir animación"
 }

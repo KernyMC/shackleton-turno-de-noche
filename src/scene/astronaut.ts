@@ -17,6 +17,8 @@ export interface Astronaut {
   setWalking(pace: number): void;
   /** Linterna del casco (de noche). */
   setLamp(on: boolean): void;
+  /** Destello del Sol en el visor, de 0 a 1. */
+  setGlint(amount: number): void;
   update(dt: number, time: number, reducedMotion: boolean): void;
   dispose(): void;
 }
@@ -37,7 +39,31 @@ export function createAstronaut(color: number, phase = 0): Astronaut {
   // Visor dorado y liso: brilla cálido y refleja el Sol rasante.
   const visor = new THREE.MeshStandardMaterial({ color: 0x3a2c14, roughness: 0.12, metalness: 0.55, emissive: 0x7a5420, emissiveIntensity: 0.45 });
   const lamp = new THREE.MeshStandardMaterial({ color: 0x333333, emissive: 0xfff1c8, emissiveIntensity: 0 });
-  const materials = [suit, accent, dark, visor, lamp];
+  // Destello: mancha cálida aditiva sobre el visor (sprite con degradado radial).
+  const glintCanvas = document.createElement('canvas');
+  glintCanvas.width = glintCanvas.height = 32;
+  const gctx = glintCanvas.getContext('2d')!;
+  const gradient = gctx.createRadialGradient(16, 16, 0, 16, 16, 16);
+  gradient.addColorStop(0, 'rgba(255,244,214,1)');
+  gradient.addColorStop(0.35, 'rgba(255,214,140,0.55)');
+  gradient.addColorStop(1, 'rgba(255,190,100,0)');
+  gctx.fillStyle = gradient;
+  gctx.fillRect(0, 0, 32, 32);
+  const glintTexture = new THREE.CanvasTexture(glintCanvas);
+  glintTexture.colorSpace = THREE.SRGBColorSpace;
+  const glintMat = new THREE.SpriteMaterial({
+    map: glintTexture,
+    transparent: true,
+    opacity: 0,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+    toneMapped: false,
+  });
+  const glintSprite = new THREE.Sprite(glintMat);
+  glintSprite.scale.setScalar(0.2);
+  glintSprite.position.set(0.1, 0.07, 0.4);
+  glintSprite.visible = false;
+  const materials = [suit, accent, dark, visor, lamp, glintMat];
   const geometries: THREE.BufferGeometry[] = [];
   const mesh = (geo: THREE.BufferGeometry, mat: THREE.Material, parent: THREE.Object3D, x = 0, y = 0, z = 0): THREE.Mesh => {
     geometries.push(geo);
@@ -88,6 +114,7 @@ export function createAstronaut(color: number, phase = 0): Astronaut {
   shield.scale.set(1, 1, 1.05);
   mesh(new THREE.TorusGeometry(0.27, 0.06, 6, 20), accent, head, 0, -0.28, 0).rotation.x = Math.PI / 2;
   mesh(new THREE.BoxGeometry(0.1, 0.07, 0.1), lamp, head, 0.26, 0.12, 0.18);
+  head.add(glintSprite);
 
   // Luz de foco: ilumina al astronauta seleccionado con su color.
   const glow = new THREE.PointLight(color, 0, 5, 1.8);
@@ -104,6 +131,7 @@ export function createAstronaut(color: number, phase = 0): Astronaut {
   let paceTarget = 0;
   let pace = 0;
   let stride = phase;
+  const visorBase = visor.emissiveIntensity;
   return {
     group,
     pickables,
@@ -116,8 +144,14 @@ export function createAstronaut(color: number, phase = 0): Astronaut {
     setLamp(on) {
       lamp.emissiveIntensity = on ? 3 : 0;
     },
+    setGlint(amount) {
+      const a = Math.min(1, Math.max(0, amount));
+      glintMat.opacity = a * 0.9;
+      glintSprite.visible = a > 0.01;
+      visor.emissiveIntensity = visorBase + a * 0.5;
+    },
     update(dt, time, reducedMotion) {
-      focus = damp(focus, focusTarget, 9, dt);
+      focus =damp(focus, focusTarget, 9, dt);
       pace = damp(pace, paceTarget, 8, dt);
       body.position.z = focus * 0.9; // un paso al frente
       glow.intensity = focus * 9;
@@ -145,6 +179,7 @@ export function createAstronaut(color: number, phase = 0): Astronaut {
       head.rotation.x = 0.06 * Math.sin(time * 0.31 + phase);
     },
     dispose() {
+      glintTexture.dispose();
       geometries.forEach((g) => g.dispose());
       materials.forEach((m) => m.dispose());
     },

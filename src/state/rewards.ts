@@ -26,6 +26,7 @@ export interface DayNote {
   day: number;
   crew: CrewId;
   phrase: string; // clave i18n
+  mood: 'happy' | 'worried';
 }
 
 /** Puntos de experiencia: solo un número visual. */
@@ -35,6 +36,11 @@ export const harvest = signal<{ key: number; amount: number } | null>(null);
 export const dayNote = signal<DayNote | null>(null);
 export const milestone = signal<MilestoneId | null>(null);
 export const earned = signal<MilestoneId[]>([]);
+/** Tras ejecutar un día, la base reacciona unos instantes antes de volver al panel. */
+export const reacting = signal(false);
+/** Duración de la reacción (números que salen de los módulos y voz de la tripulación). */
+export const REACT_MS = 1900;
+let reactTimer: ReturnType<typeof setTimeout> | null = null;
 
 let counter = 0;
 
@@ -54,7 +60,8 @@ export function dayYields(snap: DaySnapshot, broken: Record<ModuleId, boolean>, 
   return items;
 }
 
-function moodOf(g: GameState): Record<CrewId, number> {
+/** Ánimo de cada tripulante de 0 a 100, según el recurso que cuida. */
+export function moodOf(g: GameState): Record<CrewId, number> {
   const d = defaultConfig.balance.difficulty[g.difficulty];
   return {
     valeria: g.lifeSupport,
@@ -62,6 +69,13 @@ function moodOf(g: GameState): Record<CrewId, number> {
     amaru: 100 - (g.dose / d.doseLimit) * 100,
     lucia: Object.values(g.modules).some((m) => m.broken) ? 0 : (g.battery / d.batteryCapacity) * 100,
   };
+}
+
+/** Gesto del retrato a partir del ánimo. */
+export function faceOf(value: number): 'happy' | 'neutral' | 'worried' {
+  if (value > 50) return 'happy';
+  if (value > 25) return 'neutral';
+  return 'worried';
 }
 
 function celebrate(id: MilestoneId): void {
@@ -98,6 +112,8 @@ export function startRewardsWatcher(): () => void {
       earned.value = [];
       floats.value = [];
       harvest.value = null;
+      dayNote.value = null;
+      reacting.value = false;
       return;
     }
     const days = g.history.length;
@@ -111,15 +127,25 @@ export function startRewardsWatcher(): () => void {
 
     floats.value = dayYields(snap, broken, g.difficulty);
     xp.value += 10;
+    reacting.value = true;
+    if (reactTimer) clearTimeout(reactTimer);
+    reactTimer = setTimeout(() => (reacting.value = false), REACT_MS);
 
     const greenhouseWorked = snap.plan.greenhouse > 0 && !snap.sheltered && !broken.greenhouse;
     if (greenhouseWorked) harvest.value = { key: ++counter, amount: snap.plan.greenhouse };
 
-    // Frase del día: habla quien está más preocupado; si todos están bien, se turnan.
+    // Voz del día: habla quien está preocupado; si todos están bien, se turnan y un día de cada
+    // dos hay silencio (una voz que habla siempre se vuelve ruido).
     const moods = moodOf(g);
     const worst = (Object.entries(moods) as [CrewId, number][]).sort((a, b) => a[1] - b[1])[0]!;
-    const speaker = worst[1] <= 25 ? worst[0] : CREW[snap.day % CREW.length]!.id;
-    dayNote.value = { key: ++counter, day: snap.day, crew: speaker, phrase: `crew.${speaker}.${worst[1] <= 25 && speaker === worst[0] ? 'worried' : 'good'}` };
+    if (worst[1] <= 25) {
+      dayNote.value = { key: ++counter, day: snap.day, crew: worst[0], phrase: `crew.${worst[0]}.worried`, mood: 'worried' };
+    } else if (snap.day % 2 === 1) {
+      const speaker = CREW[snap.day % CREW.length]!.id;
+      dayNote.value = { key: ++counter, day: snap.day, crew: speaker, phrase: `crew.${speaker}.good`, mood: 'happy' };
+    } else {
+      dayNote.value = null;
+    }
 
     // Hitos.
     const lastNight = Math.max(...defaultConfig.light.nightDays);
