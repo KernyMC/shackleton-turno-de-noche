@@ -34,5 +34,6 @@ Registro honesto de qué se hizo con ayuda de IA. Añade una línea por sesión 
 | 2026-11-14 | Claude Code (Anthropic) | Documentación y proceso: README en español e inglés, CREDITS, LICENSE, corrección de estados en sources.json, rúbrica, memoria del proyecto (STATUS, dominios, reglas, skills) y test guardián de textos | Pendiente de revisión del equipo |
 | 2026-11-14 | Claude Code (Anthropic) | Intro en cómic (5 viñetas SVG en código, textos ES/EN) y retos diarios: motor (`challenges.ts`, `challenges.json`), 10 minijuegos, sus textos y pruebas; planificación, implementación con subagentes y revisión automática de interfaz | Pendiente de revisión del equipo |
 | 2026-11-14 | Claude Code (Anthropic) | Veredicto del plan en el pie fijo, tutorial con foco oscurecido, contador vivo en las tarjetas de recursos, Tierra con nubes, terreno circular del cráter y arranque de calidad más ligero | Pendiente de revisión del equipo |
+| 2026-11-14 | Claude Code (Anthropic) | Cráter Shackleton en el terreno, cosecha que se recoge sola, contador sin recuadro e integración del modelo de astronauta de terceros (CC-BY, no generado con IA) con los colores de la tripulación | Pendiente de revisión del equipo |
 
 Si se usan modelos 3D o audio generados (por ejemplo Tripo o Suno), anotarlos aquí y en `CREDITS.md`.

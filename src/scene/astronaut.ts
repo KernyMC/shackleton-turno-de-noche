@@ -10,6 +10,8 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js';
+import { buildAstronautRig, loadAstronautModel } from './astronautModel';
+import type { AstronautRig, AstronautRigPose } from './astronautModel';
 
 /** Poses de trabajo y gestos (se mezclan con damp sobre la animación base). */
 export type AstronautPose = 'stand' | 'crouch' | 'reach' | 'carry' | 'inspect' | 'cheer' | 'slump';
@@ -361,6 +363,33 @@ export function createAstronaut(color: number, phase = 0): Astronaut {
   const HOP_SECONDS = 1.1;
   const HOP_HEIGHT = 0.4;
   const visorBase = visor.emissiveIntensity;
+
+  // Modelo 3D (si está instalado): sustituye al cuerpo dibujado por código, que queda oculto pero
+  // sigue sirviendo para el puntero y como respaldo. Se mueve con los mismos valores.
+  let rig: AstronautRig | null = null;
+  const rigPose: AstronautRigPose = { armRx: 0, armRz: 0, armLx: 0, armLz: 0, legR: 0, legL: 0, crouch: 0, headX: 0, headY: 0, headZ: 0 };
+  void loadAstronautModel().then((src) => {
+    if (!src || disposed) return;
+    rig = buildAstronautRig(src, color);
+    body.add(rig.root);
+    meshes.forEach((m) => (m.visible = false));
+    glintSprite.position.set(0.16, 0.14, 0.7);
+  });
+  const syncRig = (): void => {
+    if (!rig) return;
+    rig.setGlow(focus);
+    rigPose.armRx = arms[0]!.rotation.x;
+    rigPose.armRz = arms[0]!.rotation.z;
+    rigPose.armLx = arms[1]!.rotation.x;
+    rigPose.armLz = arms[1]!.rotation.z;
+    rigPose.legR = legs[0]!.rotation.x - 0.45 * pose.crouch;
+    rigPose.legL = legs[1]!.rotation.x - 0.45 * pose.crouch;
+    rigPose.crouch = pose.crouch;
+    rigPose.headX = head.rotation.x;
+    rigPose.headY = head.rotation.y;
+    rigPose.headZ = head.rotation.z;
+    rig.apply(rigPose);
+  };
   return {
     group,
     pickables,
@@ -428,6 +457,7 @@ export function createAstronaut(color: number, phase = 0): Astronaut {
         });
         body.position.y = -CROUCH_DROP * pose.crouch;
         body.rotation.set(pose.lean, 0, 0);
+        syncRig();
         return;
       }
       const walk = Math.min(1, pace);
@@ -462,11 +492,13 @@ export function createAstronaut(color: number, phase = 0): Astronaut {
       head.rotation.y = -body.rotation.y * 0.9 + 0.5 * glance * idle;
       head.rotation.x = -body.rotation.x * 0.8 + 0.05 * Math.sin(time * 0.31 + phase) + pose.headX;
       head.rotation.z = -body.rotation.z * 0.8;
+      syncRig();
     },
     dispose() {
       if (disposed) return;
       disposed = true;
       ownMaterials.forEach((m) => m.dispose());
+      rig?.dispose();
       release();
     },
   };

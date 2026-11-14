@@ -31,6 +31,8 @@ Tipografías, auto-alojadas con `@fontsource` (el juego no las pide a ningún se
 - Modelos 3D (`public/models/*.glb`: reciclador, invernadero, blindaje, taller, refugio, rover y módulo de aterrizaje): modelados con Blender mediante script (`scripts/blender/build_models.py`), con texturas generadas por código (`scripts/blender/textures.py`). Se tomaron como referencia visual imágenes conceptuales generadas con IA por el equipo (Gemini y otro generador de imágenes); las imágenes no se incluyen en el juego.
 - `public/models/experiments/habitat-ia.glb`: prueba generada con Z-Image Turbo (Alibaba Tongyi-MAI) y Hunyuan3D 2.1 (Tencent) en ComfyUI local, reducida en Blender. No se usa en el juego. Licencias por revisar antes de usarla en la entrega.
 
+Astronautas: «Little Astronaut» de Jelle Vermandere (https://sketchfab.com/3d-models/little-astronaut-12184db58b1f44c987537b5607c32098), licencia CC-BY 4.0 (http://creativecommons.org/licenses/by/4.0/). Cambios: el color de acento se sustituye por el de cada tripulante y la animación la hace el juego. Archivo: `public/models/astronaut.glb`.
+
 Otros: Todo modelo o audio añadido se registra aquí con origen y licencia.
 
 ## IA
