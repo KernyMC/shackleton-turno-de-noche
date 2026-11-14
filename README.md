@@ -102,6 +102,15 @@ El juego también los muestra dentro, en el panel «¿De dónde salen los datos?
 | CSA — Food production on the Moon | Datos de producción de comida en la Luna para la tarjeta del final (`public/data/food_facts.json`) | Real (Agencia Espacial Canadiense, socia del reto) | [asc-csa.gc.ca](https://www.asc-csa.gc.ca/eng/youth-educators/toolkits/food-production/) |
 | Retraso de la señal Tierra–Luna | La antena: la Tierra avisa de las tormentas 2 días antes; la ayuda explica que la señal tarda ~1,3 s a la Luna y 4–24 min a Marte | Física conocida; los 2 días de aviso son decisión del juego | sin enlace |
 
+## Deploy (Vercel) — producción actual
+
+Juego en línea: **https://shackleton-turno-de-noche.vercel.app**
+
+- Proyecto de Vercel `shackleton-turno-de-noche` (preset Astro, build `npm run build`).
+- El proxy `GET /api/spaceweather` es la función `api/spaceweather.ts` (misma lógica que la de Cloudflare). La CDN guarda la respuesta 1 hora (5 min si NASA falla).
+- La clave `NASA_API_KEY` está en *Settings → Environment Variables* del proyecto (Production y Preview). Nunca en el repo ni en el navegador.
+- Desplegar desde un árbol limpio: `npx vercel deploy --prod` (la carpeta `.vercel/` es local y está en `.gitignore`).
+
 ## Deploy (Cloudflare Pages)
 
 1. Cloudflare → Workers & Pages → Create → Pages → conectar este repo de GitHub.
