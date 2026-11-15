@@ -33,6 +33,8 @@ Tipografías, auto-alojadas con `@fontsource` (el juego no las pide a ningún se
 
 Astronautas: «Little Astronaut» de Jelle Vermandere (https://sketchfab.com/3d-models/little-astronaut-12184db58b1f44c987537b5607c32098), licencia CC-BY 4.0 (http://creativecommons.org/licenses/by/4.0/). Cambios: el color de acento se sustituye por el de cada tripulante y la animación la hace el juego. Archivo: `public/models/astronaut.glb`.
 
+Vídeo de victoria (`public/video/victoria-es.mp4`, `victoria-en.mp4`): aportado por el equipo Halo Sur; recodificado a 720p para la web. Si se generó con ayuda de IA, debe constar en `AI_USAGE.md`.
+
 Otros: Todo modelo o audio añadido se registra aquí con origen y licencia.
 
 ## IA
