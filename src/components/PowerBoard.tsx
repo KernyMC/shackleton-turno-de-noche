@@ -14,6 +14,8 @@ import type { GameState, ModuleId } from '../sim/types';
 import type { Verdict } from '../sim/verdict';
 import { unlockFlash } from '../state/acts';
 import { budget, focusModule, plan, preview, requestClean, requestRepair, resolving, setPlanValue } from '../state/store';
+import { emotionOf, moodOf, planEmotion } from '../state/rewards';
+import { resourceLevels } from '../sim/thresholds';
 import { CrewPortrait } from './CrewPortrait';
 import { EnergyFlow } from './EnergyFlow';
 import { num, signed } from './format';
@@ -300,12 +302,60 @@ function DustCard({ game: g }: { game: GameState }) {
   );
 }
 
+/**
+ * Recursos justo encima de las barras: Aire sobre el Reciclador, Comida sobre el Invernadero y la
+ * Batería al lado. Cada uno con su carita, su valor de hoy y cuánto cambiará con el plan actual,
+ * para que repartir y ver el resultado ocurra en el mismo sitio.
+ */
+function PlanResources({ game: g }: { game: GameState }) {
+  const pv = preview.value;
+  if (!pv) return null;
+  const capacity = defaultConfig.balance.difficulty[g.difficulty].batteryCapacity;
+  const moods = moodOf(g);
+  const after = resourceLevels({ ...g, lifeSupport: g.lifeSupport + pv.lifeSupport, food: g.food + pv.food, battery: pv.battery });
+  const items = [
+    { id: 'life', icon: 'life_support' as const, label: t('hud.life_support'), value: g.lifeSupport, max: 100, delta: pv.lifeSupport, crew: CREW.find((c) => c.id === 'valeria')!, face: planEmotion(emotionOf(moods.valeria), pv.lifeSupport, after.lifeSupport) },
+    { id: 'food', icon: 'food' as const, label: t('hud.food'), value: g.food, max: 100, delta: pv.food, crew: CREW.find((c) => c.id === 'mateo')!, face: planEmotion(emotionOf(moods.mateo), pv.food, after.food) },
+    { id: 'battery', icon: 'battery' as const, label: t('hud.battery'), value: g.battery, max: capacity, delta: pv.battery - g.battery, crew: CREW.find((c) => c.id === 'lucia')!, face: planEmotion(emotionOf(moods.lucia), pv.battery - g.battery, after.battery) },
+  ];
+  return (
+    <div class="pres" role="status" aria-live="polite" aria-label={t('pres.aria')}>
+      {items.map((it) => {
+        const d = Math.round(it.delta);
+        const now = Math.max(0, Math.min(100, (it.value / it.max) * 100));
+        const then = Math.max(0, Math.min(100, ((it.value + it.delta) / it.max) * 100));
+        return (
+          <div key={it.id} class={`pres__item pres--${it.id}${d > 0 ? ' pres__item--up' : d < 0 ? ' pres__item--down' : ''}`}>
+            <span class="pres__face"><CrewPortrait crew={it.crew.id} color={it.crew.css} size={34} emotion={it.face} /></span>
+            <span class="pres__name"><Icon name={it.icon} size={14} /> <span class="pres__label">{it.label}</span></span>
+            <span class="pres__value">
+              <b>{Math.round(it.value)}</b>
+              {d !== 0 && (
+                <span key={d} class="pres__delta">
+                  <span aria-hidden="true">{d > 0 ? '▲' : '▼'}</span> {signed(d)}
+                </span>
+              )}
+            </span>
+            <span class="pres__bar" aria-hidden="true">
+              <i class="pres__now" style={{ width: `${now}%` }} />
+              {Math.abs(then - now) >= 0.5 && (
+                <i class={`pres__ghost pres__ghost--${then > now ? 'up' : 'down'}`} style={{ left: `${Math.min(now, then)}%`, width: `${Math.abs(then - now)}%` }} />
+              )}
+            </span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 export function PowerBoard({ game: g, verdict, onClamped }: { game: GameState; verdict: Verdict; onClamped(): void }) {
   return (
     <>
       <ShareBar game={g} wasted={verdict.wasted} />
       <RepairCards game={g} />
       <DustCard game={g} />
+      <PlanResources game={g} />
       <div class="board" role="group" aria-label={t('board.aria')}>
         {MODULE_IDS.map((id) => (
           <Column key={id} id={id} game={g} onClamped={onClamped} />

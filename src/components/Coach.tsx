@@ -90,16 +90,16 @@ const FOCUS_MODULE: Partial<Record<TutorialStep, ModuleId>> = {
  * repartir energía, o la barra de arriba (radiación, día y energía) cuando la guía habla de ella.
  */
 const ALSO: Partial<Record<TutorialStep, string[]>> = {
-  power_recycler: ['.res--life'],
-  greenhouse: ['.res--food'],
-  execute: ['.resources'],
+  power_recycler: ['.pres--life'],
+  greenhouse: ['.pres--food'],
+  execute: ['.pres'],
   d2_flow: ['.topbar__dose', '.topbar__day'],
-  d2_pass: ['.resources', '.tablet__actions'],
-  d3_pass: ['.resources', '.tablet__actions'],
-  d4_pass: ['.resources', '.tablet__actions'],
-  d5_pass: ['.resources', '.tablet__actions'],
-  d3_forecast: ['.resources'],
-  d4_workshop: ['.res--battery'],
+  d2_pass: ['.pres', '.tablet__actions'],
+  d3_pass: ['.pres', '.tablet__actions'],
+  d4_pass: ['.pres', '.tablet__actions'],
+  d5_pass: ['.pres', '.tablet__actions'],
+  d3_forecast: ['.pres'],
+  d4_workshop: ['.pres--battery'],
 };
 const WARN_TARGET: Record<string, string> = {
   recycler: '.meter[data-module="recycler"]',

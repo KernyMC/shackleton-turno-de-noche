@@ -602,3 +602,39 @@ html .chl-card .btn.chl-sector-btn--also { border-color: var(--accent); border-s
 .chl-card { position: relative; }
 html .chl-card .btn.chl-practice-exit { position: absolute; top: 0.7rem; right: 0.8rem; min-height: 40px; padding: 0 0.8rem; font-size: 0.85rem; z-index: 2; }
 @media (max-width: 640px) { html .chl-card .btn.chl-practice-exit { position: static; justify-self: end; margin-bottom: 0.3rem; } }
+
+/* ============ Cables a las balizas: el cable se ve como un tubo continuo ============ */
+html .chl-cab-cell { position: relative; overflow: visible; background: #1d1f23; border-color: #2c2f35; cursor: crosshair; }
+html .chl-cab-cell--sel:not(.chl-cab-cell--node) { background: #22252a; }
+html .chl-cab-cell--p0 { --wire: #5ec8ff; }
+html .chl-cab-cell--p1 { --wire: #ffc247; }
+html .chl-cab-cell--p2 { --wire: #c79bff; }
+/* Conector: enchufe redondo con su letra. */
+html .chl-cab-cell--node { background: #1d1f23; border-color: #2c2f35; border-radius: 3px; border-width: 2px; outline: none; cursor: grab; }
+.chl-cab-plug {
+  position: relative; z-index: 2; display: grid; place-items: center; width: 74%; aspect-ratio: 1; border-radius: 50%;
+  background: var(--wire); border: 3px solid #0b0c0e; box-shadow: 0 3px 0 #000, inset 0 0 0 3px rgb(255 255 255 / 0.35);
+}
+html .chl-cab-cell--node.chl-cab-cell--sel .chl-cab-plug { box-shadow: 0 3px 0 #000, inset 0 0 0 3px rgb(255 255 255 / 0.35), 0 0 0 4px var(--text); }
+/* Tubo: una capa oscura (contorno) y otra de color encima; los tramos cruzan el hueco entre casillas. */
+.chl-cab-wire { position: absolute; inset: 0; pointer-events: none; z-index: 1; }
+.chl-cab-wire--p0 { --wire: #5ec8ff; }
+.chl-cab-wire--p1 { --wire: #ffc247; }
+.chl-cab-wire--p2 { --wire: #c79bff; }
+.chl-cab-arm, .chl-cab-hub { position: absolute; }
+.chl-cab-arm--edge, .chl-cab-hub--edge { background: #0b0c0e; --w: 48%; }
+.chl-cab-arm--core, .chl-cab-hub--core { background: var(--wire); --w: 32%; }
+.chl-cab-arm--u, .chl-cab-arm--d { left: calc(50% - var(--w) / 2); width: var(--w); }
+.chl-cab-arm--l, .chl-cab-arm--r { top: calc(50% - var(--w) / 2); height: var(--w); }
+.chl-cab-arm--u { top: -7px; bottom: 50%; }
+.chl-cab-arm--d { top: 50%; bottom: -7px; }
+.chl-cab-arm--l { left: -7px; right: 50%; }
+.chl-cab-arm--r { left: 50%; right: -7px; }
+.chl-cab-hub { left: calc(50% - var(--w) / 2); top: calc(50% - var(--w) / 2); width: var(--w); height: var(--w); border-radius: 50%; }
+/* Punta del cable que se está dibujando: late para que se vea por dónde seguir. */
+.chl-cab-hub--tip { box-shadow: 0 0 0 3px #0b0c0e, 0 0 0 6px var(--text); animation: chl-cab-tip 0.9s ease-in-out infinite; }
+@keyframes chl-cab-tip { 50% { transform: scale(1.25); } }
+/* Cable conectado: brillo fijo. */
+.chl-cab-wire--done .chl-cab-arm--core, .chl-cab-wire--done .chl-cab-hub--core { background: color-mix(in srgb, var(--wire) 78%, #fff); }
+html .chl-cab-pair--done { border-color: var(--ok, #7ddc9a); }
+@media (prefers-reduced-motion: reduce) { .chl-cab-hub--tip { animation: none; } }

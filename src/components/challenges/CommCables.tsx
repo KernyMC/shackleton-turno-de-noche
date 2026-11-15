@@ -1,20 +1,26 @@
-// Reto del día 8, «Cables a las balizas»: une 3 pares de nodos (Datos, Energía, Telemetría) sin cruzar cables.
+// Reto del día 8, «Cables a las balizas»: une 3 pares de conectores (Datos, Energía, Telemetría) sin cruzar cables.
+// Se juega arrastrando: se pulsa un conector (cualquiera de los dos de su pareja) y se desliza por las casillas
+// hasta el otro; el cable se dibuja como un tubo continuo. También vale tocar casilla a casilla y el teclado.
 // Params (challenges.json): size (lado de la cuadrícula), seconds, nodes (number[][]: un [x1,y1,x2,y2] por par,
 //   en el orden Datos, Energía, Telemetría). Los niveles de challenges.json tienen solución garantizada.
 // Si `nodes` falta se usa el nivel de 5×5 de abajo (también con solución).
 // Puntuación: pares conectados / 3.
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { t } from '../../i18n';
+import { playCarePlace } from '../../audio/sfx';
 import { Icon } from '../icons';
 import type { ChallengeGameProps } from './registry';
 import { numParam, TimeBar, useCountdown } from './shared';
 
 const PAIRS = ['data', 'energy', 'telem'] as const;
 type Pt = [number, number];
+type Dir = 'u' | 'd' | 'l' | 'r';
 const FALLBACK: number[][] = [[0, 0, 4, 0], [0, 4, 4, 4], [2, 0, 2, 2]];
 
 const same = (a: Pt, b: Pt): boolean => a[0] === b[0] && a[1] === b[1];
 const adjacent = (a: Pt, b: Pt): boolean => Math.abs(a[0] - b[0]) + Math.abs(a[1] - b[1]) === 1;
+/** Hacia dónde queda `b` visto desde `a` (casillas vecinas). */
+const dirTo = (a: Pt, b: Pt): Dir => (b[0] > a[0] ? 'r' : b[0] < a[0] ? 'l' : b[1] > a[1] ? 'd' : 'u');
 
 export function CommCables({ params, onDone }: ChallengeGameProps) {
   const size = Math.max(3, Math.round(numParam(params, 'size', 5)));
@@ -25,13 +31,22 @@ export function CommCables({ params, onDone }: ChallengeGameProps) {
     return [[n[0] ?? 0, n[1] ?? 0], [n[2] ?? 0, n[3] ?? 0]] as [Pt, Pt];
   });
 
+  // Cada cable es la lista de casillas por las que pasa. Empieza en uno de sus dos conectores (el que se pulse).
   const [paths, setPaths] = useState<Pt[][]>(() => nodes.map((n) => [n[0]]));
   const [sel, setSel] = useState(0);
   const [msg, setMsg] = useState('');
   const doneRef = useRef(false);
   const boardRef = useRef<HTMLDivElement>(null);
+  const pathsRef = useRef(paths);
+  pathsRef.current = paths;
+  const selRef = useRef(sel);
+  selRef.current = sel;
+  const dragging = useRef(false);
 
-  const connected = paths.map((p, i) => p.length > 1 && same(p[p.length - 1]!, nodes[i]![1]));
+  /** El conector al que tiene que llegar el cable `i`: el que no es su casilla de salida. */
+  const goalOf = (i: number, path: Pt[]): Pt => (same(path[0]!, nodes[i]![0]) ? nodes[i]![1] : nodes[i]![0]);
+  const isDone = (i: number, path: Pt[]): boolean => path.length > 1 && same(path[path.length - 1]!, goalOf(i, path));
+  const connected = paths.map((p, i) => isDone(i, p));
   const count = connected.filter(Boolean).length;
   const countRef = useRef(count);
   countRef.current = count;
@@ -50,68 +65,12 @@ export function CommCables({ params, onDone }: ChallengeGameProps) {
     return () => window.clearTimeout(id);
   }, [count]);
 
-  /** Qué hay en una casilla: nodo (par, 0|1), cable (par, índice) o nada. */
-  const owner = (p: Pt): { pair: number; node: boolean; idx: number } | null => {
+  /** Qué hay en una casilla: conector de un par, tramo de un cable, o nada. */
+  const ownerIn = (all: Pt[][], p: Pt): { pair: number; node: boolean } | null => {
     for (let i = 0; i < PAIRS.length; i++) {
-      if (same(nodes[i]![0], p) || same(nodes[i]![1], p)) return { pair: i, node: true, idx: -1 };
+      if (same(nodes[i]![0], p) || same(nodes[i]![1], p)) return { pair: i, node: true };
     }
-    for (let i = 0; i < paths.length; i++) {
-      const k = paths[i]!.findIndex((q) => same(q, p));
-      if (k >= 0) return { pair: i, node: false, idx: k };
-    }
-    return null;
-  };
-
-  const tap = (p: Pt): void => {
-    if (doneRef.current) return;
-    const o = owner(p);
-    const cur = paths[sel]!;
-    const last = cur[cur.length - 1]!;
-    // Casilla de mi cable: recorta hasta ahí.
-    const mine = cur.findIndex((q) => same(q, p));
-    if (mine >= 0) {
-      setPaths((a) => a.map((x, i) => (i === sel ? x.slice(0, mine + 1) : x)));
-      setMsg('');
-      return;
-    }
-    // Nodo o cable de otro par: lo selecciono si no puedo extender hacia allí.
-    if (o && o.pair !== sel) {
-      if (o.node && same(nodes[o.pair]![0], p)) {
-        setSel(o.pair);
-        setMsg('');
-      } else {
-        setMsg(t('challenge.cab.msg.busy'));
-      }
-      return;
-    }
-    if (connected[sel]) return;
-    if (!adjacent(last, p)) {
-      setMsg(t('challenge.cab.msg.far'));
-      return;
-    }
-    setPaths((a) => a.map((x, i) => (i === sel ? [...x, p] : x)));
-    setMsg('');
-  };
-
-  // ---- Dibujar arrastrando: se pulsa sobre un nodo o un cable y se desliza por las casillas ----
-  const pathsRef = useRef(paths);
-  pathsRef.current = paths;
-  const selRef = useRef(sel);
-  selRef.current = sel;
-  const dragging = useRef(false);
-
-  const cellAt = (x: number, y: number): Pt | null => {
-    const key = document.elementFromPoint(x, y)?.closest('[data-cell]')?.getAttribute('data-cell');
-    if (!key) return null;
-    const [cx, cy] = key.split(',').map(Number);
-    return [cx!, cy!];
-  };
-  const ownerIn = (all: Pt[][], p: Pt): { pair: number; node: boolean; start: boolean } | null => {
-    for (let i = 0; i < PAIRS.length; i++) {
-      if (same(nodes[i]![0], p)) return { pair: i, node: true, start: true };
-      if (same(nodes[i]![1], p)) return { pair: i, node: true, start: false };
-    }
-    for (let i = 0; i < all.length; i++) if (all[i]!.some((q) => same(q, p))) return { pair: i, node: false, start: false };
+    for (let i = 0; i < all.length; i++) if (all[i]!.some((q) => same(q, p))) return { pair: i, node: false };
     return null;
   };
   const setPath = (i: number, next: Pt[]): void => {
@@ -119,56 +78,94 @@ export function CommCables({ params, onDone }: ChallengeGameProps) {
     pathsRef.current = all;
     setPaths(all);
   };
+  const select = (i: number): void => {
+    selRef.current = i;
+    setSel(i);
+  };
+
   /** Lleva el cable elegido hasta la casilla p si es la siguiente (o retrocede si ya pasó por ella). */
-  const dragTo = (p: Pt): void => {
+  const extendTo = (p: Pt, speak: boolean): void => {
     const i = selRef.current;
     const cur = pathsRef.current[i]!;
     const last = cur[cur.length - 1]!;
     if (same(last, p)) return;
     const mine = cur.findIndex((q) => same(q, p));
     if (mine >= 0) return setPath(i, cur.slice(0, mine + 1));
-    if (cur.length > 1 && same(last, nodes[i]![1])) return; // ya llegó a su pareja
-    if (!adjacent(last, p)) return;
+    if (isDone(i, cur)) return;
+    if (!adjacent(last, p)) {
+      if (speak) setMsg(t('challenge.cab.msg.far'));
+      return;
+    }
     const o = ownerIn(pathsRef.current, p);
-    if (o && !(o.pair === i && o.node)) return; // ocupada por otro cable o por otro nodo
-    setPath(i, [...cur, p]);
+    if (o && !(o.pair === i && o.node)) {
+      if (speak) setMsg(t('challenge.cab.msg.busy'));
+      return;
+    }
+    const next = [...cur, p];
+    setPath(i, next);
     setMsg('');
+    if (isDone(i, next)) playCarePlace();
+  };
+
+  /** Se coge lo que haya en la casilla: un conector (el cable sale de ahí) o un tramo (se sigue desde ahí). */
+  const grab = (p: Pt): boolean => {
+    const o = ownerIn(pathsRef.current, p);
+    if (!o) return false;
+    select(o.pair);
+    const cur = pathsRef.current[o.pair]!;
+    if (o.node) {
+      // Conector donde ya termina el cable: no se toca. Cualquier otro conector: el cable vuelve a salir de él.
+      if (!(isDone(o.pair, cur) && same(cur[cur.length - 1]!, p))) setPath(o.pair, [p]);
+    } else {
+      setPath(o.pair, cur.slice(0, cur.findIndex((q) => same(q, p)) + 1));
+    }
+    setMsg('');
+    return true;
+  };
+
+  const cellAt = (x: number, y: number): Pt | null => {
+    const key = document.elementFromPoint(x, y)?.closest('[data-cell]')?.getAttribute('data-cell');
+    if (!key) return null;
+    const [cx, cy] = key.split(',').map(Number);
+    return [cx!, cy!];
   };
   const onBoardDown = (e: PointerEvent): void => {
     if (doneRef.current || (e.pointerType === 'mouse' && e.button !== 0)) return;
     const p = cellAt(e.clientX, e.clientY);
     if (!p) return;
-    const o = ownerIn(pathsRef.current, p);
-    if (o) {
-      // Se coge ese cable: desde su inicio se vuelve a dibujar; desde un tramo, se sigue desde ahí.
-      selRef.current = o.pair;
-      setSel(o.pair);
-      const cur = pathsRef.current[o.pair]!;
-      if (o.node && o.start) setPath(o.pair, [cur[0]!]);
-      else if (!o.node) setPath(o.pair, cur.slice(0, cur.findIndex((q) => same(q, p)) + 1));
-      else return; // nodo final: solo se selecciona
-    } else {
-      dragTo(p);
-    }
+    e.preventDefault(); // sin selección de texto ni arrastre nativo
+    if (!grab(p)) extendTo(p, true);
     dragging.current = true;
-    try {
-      (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-    } catch {
-      /* sin captura el arrastre sigue funcionando dentro del tablero */
-    }
   };
-  const onBoardMove = (e: PointerEvent): void => {
-    if (!dragging.current || doneRef.current) return;
-    const p = cellAt(e.clientX, e.clientY);
-    if (p) dragTo(p);
-  };
-  const onBoardUp = (): void => {
-    dragging.current = false;
+  // El movimiento se escucha en la ventana: así el arrastre no depende de capturar el puntero.
+  useEffect(() => {
+    const move = (e: PointerEvent): void => {
+      if (!dragging.current || doneRef.current) return;
+      const p = cellAt(e.clientX, e.clientY);
+      if (p) extendTo(p, false);
+    };
+    const up = (): void => {
+      dragging.current = false;
+    };
+    window.addEventListener('pointermove', move);
+    window.addEventListener('pointerup', up);
+    window.addEventListener('pointercancel', up);
+    return () => {
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', up);
+      window.removeEventListener('pointercancel', up);
+    };
+  }, []);
+
+  /** Teclado y lectores de pantalla: Enter o Espacio sobre una casilla. */
+  const tap = (p: Pt): void => {
+    if (doneRef.current) return;
+    if (!grab(p)) extendTo(p, true);
   };
 
   const clear = (): void => {
     if (doneRef.current) return;
-    setPaths((a) => a.map((x, i) => (i === sel ? [x[0]!] : x)));
+    setPath(selRef.current, [pathsRef.current[selRef.current]![0]!]);
     setMsg('');
   };
 
@@ -187,16 +184,29 @@ export function CommCables({ params, onDone }: ChallengeGameProps) {
   for (let y = 0; y < size; y++) {
     for (let x = 0; x < size; x++) {
       const p: Pt = [x, y];
-      const o = owner(p);
+      const o = ownerIn(paths, p);
       const pairName = o ? t(`challenge.cab.pair.${PAIRS[o.pair]}`) : '';
       const letter = o ? t(`challenge.cab.letter.${PAIRS[o.pair]}`) : '';
       const what = o ? (o.node ? ` ${t('challenge.cab.node', { name: pairName })}` : ` ${t('challenge.cab.on', { name: pairName })}`) : '';
+      // Tramos de cable que salen de esta casilla hacia sus vecinas del mismo cable.
+      const arms: Dir[] = [];
+      let wire = -1;
+      if (o) {
+        const path = paths[o.pair]!;
+        const k = path.findIndex((q) => same(q, p));
+        if (k >= 0) {
+          wire = o.pair;
+          if (k > 0) arms.push(dirTo(p, path[k - 1]!));
+          if (k < path.length - 1) arms.push(dirTo(p, path[k + 1]!));
+        }
+      }
+      const tip = wire >= 0 && !o!.node && same(paths[wire]![paths[wire]!.length - 1]!, p);
       cells.push(
         <button
           key={`${x},${y}`}
           type="button"
           data-cell={`${x},${y}`}
-          class={`chl-cab-cell${o ? ` chl-cab-cell--p${o.pair}` : ''}${o?.node ? ' chl-cab-cell--node' : ''}`}
+          class={`chl-cab-cell${o?.node ? ` chl-cab-cell--node chl-cab-cell--p${o.pair}` : ''}${o && o.pair === sel ? ' chl-cab-cell--sel' : ''}`}
           tabIndex={x === 0 && y === 0 ? 0 : -1}
           aria-label={t('challenge.cab.cell', { col: x + 1, row: y + 1, what })}
           onClick={(e) => {
@@ -204,7 +214,19 @@ export function CommCables({ params, onDone }: ChallengeGameProps) {
           }}
           onKeyDown={(e) => onKey(e as unknown as KeyboardEvent, x, y)}
         >
-          {o && <span class="chl-cab-cell__letter">{letter}</span>}
+          {wire >= 0 && (
+            <span class={`chl-cab-wire chl-cab-wire--p${wire}${connected[wire] ? ' chl-cab-wire--done' : ''}`} aria-hidden="true">
+              {arms.map((d) => (
+                <i key={`e${d}`} class={`chl-cab-arm chl-cab-arm--edge chl-cab-arm--${d}`} />
+              ))}
+              {!o!.node && <i class="chl-cab-hub chl-cab-hub--edge" />}
+              {arms.map((d) => (
+                <i key={`c${d}`} class={`chl-cab-arm chl-cab-arm--core chl-cab-arm--${d}`} />
+              ))}
+              {!o!.node && <i class={`chl-cab-hub chl-cab-hub--core${tip ? ' chl-cab-hub--tip' : ''}`} />}
+            </span>
+          )}
+          {o?.node && <span class="chl-cab-plug"><span class="chl-cab-cell__letter">{letter}</span></span>}
         </button>,
       );
     }
@@ -219,10 +241,10 @@ export function CommCables({ params, onDone }: ChallengeGameProps) {
           <button
             key={k}
             type="button"
-            class={`chl-cab-pair chl-cab-pair--p${i}${sel === i ? ' chl-cab-pair--sel' : ''}`}
+            class={`chl-cab-pair chl-cab-pair--p${i}${sel === i ? ' chl-cab-pair--sel' : ''}${connected[i] ? ' chl-cab-pair--done' : ''}`}
             aria-pressed={sel === i}
             aria-label={t('challenge.cab.select', { name: t(`challenge.cab.pair.${k}`) })}
-            onClick={() => setSel(i)}
+            onClick={() => select(i)}
           >
             <span class="chl-cab-pair__dot">{t(`challenge.cab.letter.${k}`)}</span>
             {t(`challenge.cab.pair.${k}`)}
@@ -242,9 +264,6 @@ export function CommCables({ params, onDone }: ChallengeGameProps) {
         role="group"
         aria-label={t('challenge.cab.board')}
         onPointerDown={onBoardDown}
-        onPointerMove={onBoardMove}
-        onPointerUp={onBoardUp}
-        onPointerCancel={onBoardUp}
         style={{ gridTemplateColumns: `repeat(${size}, 1fr)`, ['--chl-cols' as string]: size, ['--chl-rows' as string]: size }}
       >
         {cells}
