@@ -65,7 +65,7 @@ function Float({ item, index }: { item: FloatItem; index: number }) {
 /** Brote listo para cosechar: dibujo propio a color, como una ficha de juego. */
 function HarvestArt() {
   return (
-    <svg class="harvest__art" viewBox="0 0 48 48" width="46" height="46" aria-hidden="true">
+    <svg class="harvest__art celebrate__art" viewBox="0 0 48 48" aria-hidden="true">
       <ellipse cx="24" cy="40" rx="13" ry="4.5" fill="#6b5340" stroke="#0b0c0e" stroke-width="2" />
       <path d="M24 39V21" stroke="#2f7a2c" stroke-width="3.4" stroke-linecap="round" />
       <path d="M24 27C13.5 27 8 20 8 11.5c9.5 0 16 5 16 15.5Z" fill="#6cc45c" stroke="#0b0c0e" stroke-width="2" stroke-linejoin="round" />
@@ -173,7 +173,28 @@ function CrewVoice() {
   );
 }
 
-const MILESTONE_ICON = { first_harvest: 'food', first_night: 'moon', storm_safe: 'shield' } as const;
+/** Dibujo de cada hito: mismo trazo que la ficha de cosecha (color plano y contorno oscuro). */
+function MilestoneArt({ id }: { id: 'first_harvest' | 'first_night' | 'storm_safe' }) {
+  if (id === 'first_harvest') return <HarvestArt />;
+  if (id === 'first_night') {
+    return (
+      <svg class="celebrate__art" viewBox="0 0 48 48" aria-hidden="true">
+        <path d="M31 6.5a17.5 17.5 0 1 0 10.5 31A19.5 19.5 0 0 1 31 6.5Z" fill="#f4e7b8" stroke="#0b0c0e" stroke-width="2" stroke-linejoin="round" />
+        <circle cx="21" cy="21" r="2.6" fill="#d9c98f" />
+        <circle cx="27" cy="31" r="1.9" fill="#d9c98f" />
+        <path d="M38 9l1.3 3.2 3.2 1.3-3.2 1.3L38 18l-1.3-3.2-3.2-1.3 3.2-1.3Z" fill="#ffb347" stroke="#0b0c0e" stroke-width="1.4" stroke-linejoin="round" />
+        <path d="M9 8l.9 2.1 2.1.9-2.1.9L9 14l-.9-2.1L6 11l2.1-.9Z" fill="#8fe6f0" stroke="#0b0c0e" stroke-width="1.2" stroke-linejoin="round" />
+      </svg>
+    );
+  }
+  return (
+    <svg class="celebrate__art" viewBox="0 0 48 48" aria-hidden="true">
+      <path d="M24 4.5 40 10v12.5c0 10-6.6 17-16 21-9.4-4-16-11-16-21V10Z" fill="#b9a4ff" stroke="#0b0c0e" stroke-width="2" stroke-linejoin="round" />
+      <path d="M24 9.5 35.5 13.5v9c0 7.3-4.6 12.6-11.5 15.9Z" fill="#d6c9ff" />
+      <path d="M16 24.5l6 6 11-12" fill="none" stroke="#0b0c0e" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+    </svg>
+  );
+}
 
 function Celebration() {
   const id = milestone.value;
@@ -196,8 +217,8 @@ function Celebration() {
         </div>
       )}
       <div class="celebrate__card">
-        <span class="celebrate__badge" aria-hidden="true">
-          <Icon name={MILESTONE_ICON[id]} size={big ? 34 : 24} />
+        <span class={`celebrate__badge celebrate__badge--${id}`} aria-hidden="true">
+          <MilestoneArt id={id} />
         </span>
         <div>
           <p class="celebrate__kicker">{t('rewards.milestone')}</p>

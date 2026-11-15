@@ -457,3 +457,61 @@ html .chl-card .btn.chl-practice-item { display: grid; grid-template-columns: au
 .chl-practice-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 @media (max-width: 640px) { .chl-practice-list { grid-template-columns: 1fr; } }
 html .title__practice { margin-top: 0.6rem; min-height: 44px; padding: 0 1.2rem; }
+
+/* El reto puede abrirse desde la portada (texto alineado a la derecha): dentro siempre a la izquierda. */
+.chl-overlay { text-align: left; }
+
+/* ============ Rover al hielo con dibujos (día 2) ============ */
+.chl-rov-hud { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 1rem; }
+.chl-rov-gauge { display: inline-flex; align-items: center; gap: 0.35rem; }
+.chl-rov-gauge > svg { color: var(--accent); }
+.chl-rov-bar { width: 6.5rem; height: 14px; border-radius: 3px; background: var(--panel-deep); box-shadow: inset 0 0 0 2px var(--line); overflow: hidden; }
+.chl-rov-bar i { display: block; height: 100%; background: var(--accent); transition: width 220ms cubic-bezier(.2, 1.4, .4, 1); }
+.chl-rov-pips { display: inline-flex; gap: 3px; }
+.chl-rov-pips i { width: 14px; height: 14px; border-radius: 3px; background: var(--panel-deep); box-shadow: inset 0 0 0 2px var(--line); }
+.chl-rov-pips .chl-rov-pip--on { background: #b9a4ff; box-shadow: inset 0 0 0 2px #0b0c0e; }
+.chl-rov-pips .chl-rov-pip--hot { background: var(--danger, #ff5a4d); box-shadow: inset 0 0 0 2px #0b0c0e; }
+.chl-rov-goal { display: inline-flex; align-items: center; gap: 0.3rem; margin-left: auto; color: var(--text-dim); }
+.chl-rov-step { display: inline-flex; align-items: center; gap: 0.1rem; padding: 0.15rem 0.3rem; border-radius: var(--radius); border: 2px solid var(--line); opacity: 0.55; }
+.chl-rov-step--now { opacity: 1; border-color: var(--accent); animation: chl-rov-pulse 1.1s ease-in-out infinite; }
+.chl-rov-step--done { opacity: 1; border-color: var(--ok, #7ddc9a); color: var(--ok, #7ddc9a); }
+
+/* Casillas: suelo lunar al Sol (claro, cálido) o en sombra (oscuro). Sin letreros. */
+.chl-rov-grid .chl-cell { position: relative; overflow: visible; }
+.chl-rov-grid .chl-cell--sun { background: #6f6552; color: #ffd98a; border-color: #8a7d62; }
+.chl-rov-grid .chl-cell--shade { background: #101216; border-color: #23262c; }
+.chl-rov-grid .chl-cell--ice { background: #12313a; border-color: #4fd1e0; }
+.chl-rov-grid .chl-cell--base { background: #2a2010; border-color: var(--accent); }
+.chl-rov-grid .chl-cell--near { border-color: var(--text); cursor: pointer; }
+.chl-rov-grid .chl-cell--here { border-color: var(--text); box-shadow: inset 0 0 0 2px var(--accent); z-index: 2; }
+.chl-rov-grid .chl-cell--goal { animation: chl-rov-pulse 1.1s ease-in-out infinite; z-index: 1; }
+@keyframes chl-rov-pulse { 50% { box-shadow: 0 0 0 4px rgb(255 179 71 / 0.45); } }
+.chl-rov-arrow path { fill: var(--text); stroke: #0b0c0e; stroke-width: 1.5; stroke-linejoin: round; }
+.chl-rov-body { fill: #ece8df; stroke: #0b0c0e; stroke-width: 1.5; }
+.chl-rov-cab { fill: #4fd1e0; stroke: #0b0c0e; stroke-width: 1.5; }
+.chl-rov-mast { fill: none; stroke: #ece8df; stroke-width: 1.8; stroke-linecap: round; }
+.chl-rov-wheel { fill: #2a2b2e; stroke: #ece8df; stroke-width: 1.8; }
+.chl-rov-cargo, .chl-rov-ice__body { fill: #8fe6f0; stroke: #0b0c0e; stroke-width: 1.5; stroke-linejoin: round; }
+.chl-rov-ice__lines { fill: none; stroke: #e9fcff; stroke-width: 1.2; }
+.chl-rov-home { fill: var(--accent); stroke: #0b0c0e; stroke-width: 1.5; stroke-linejoin: round; }
+.chl-rov-door { fill: #2a2010; stroke: #0b0c0e; stroke-width: 1.5; }
+.chl-rov-car { animation: chl-rov-hop 220ms cubic-bezier(.2, 1.6, .4, 1); }
+@keyframes chl-rov-hop { from { transform: scale(0.7); } }
+.chl-rov-track { position: absolute; left: 50%; bottom: 3px; width: 46%; height: 4px; transform: translateX(-50%); border-radius: 2px; background: repeating-linear-gradient(90deg, rgb(255 255 255 / 0.45) 0 3px, transparent 3px 6px); }
+.chl-rov-pop { position: absolute; left: 50%; top: -6px; transform: translate(-50%, -100%); display: inline-flex; align-items: center; gap: 0.15rem; padding: 0.05rem 0.35rem; border-radius: var(--radius); border: 2px solid #0b0c0e; background: var(--danger, #ff5a4d); color: #0b0c0e; font-weight: 700; font-size: 0.85rem; white-space: nowrap; pointer-events: none; animation: chl-rov-float 900ms ease-out forwards; z-index: 3; }
+.chl-rov-pop--good { background: var(--ok, #7ddc9a); }
+@keyframes chl-rov-float { from { opacity: 0; transform: translate(-50%, -40%); } 20% { opacity: 1; } to { opacity: 0; transform: translate(-50%, -190%); } }
+.chl-rov-legend { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem 1.4rem; }
+.chl-rov-key { display: inline-flex; align-items: center; gap: 0.5rem; font-weight: 700; }
+.chl-rov-swatch { display: grid; place-items: center; width: 30px; height: 30px; border-radius: var(--radius); border: 2px solid; }
+.chl-rov-swatch--sun { background: #6f6552; color: #ffd98a; border-color: #8a7d62; }
+.chl-rov-swatch--shade { background: #101216; border-color: #3a3e45; }
+.chl-rov-plus, .chl-rov-minus { display: inline-flex; align-items: center; gap: 0.15rem; }
+.chl-rov-plus { color: var(--ok, #7ddc9a); }
+.chl-rov-minus { color: #ffc46b; }
+@media (prefers-reduced-motion: reduce) {
+  .chl-rov-step--now, .chl-rov-grid .chl-cell--goal, .chl-rov-car { animation: none; }
+  .chl-rov-pop { animation: none; opacity: 1; }
+  .chl-rov-bar i { transition: none; }
+}
+@media (max-width: 640px) { .chl-rov-bar { width: 4.2rem; } .chl-rov-goal { margin-left: 0; } }

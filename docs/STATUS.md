@@ -15,6 +15,9 @@
 
 - **14-nov, tarde (Kevin):** veredicto del plan en el pie fijo del panel; tutorial con foco oscurecido (panel + módulo en la maqueta); contador vivo y tramo fantasma en las tarjetas de recursos; ficha de cosecha ilustrada; Tierra con nubes; terreno circular con cresta de cráter; arranque de calidad más ligero. `hud` GO y `qa` APTO sobre el pie y el foco; el resto verificado con `__hudCheck()` y capturas (no por los agentes). **Sin desplegar.**
 
+- **14-nov, noche (Kevin):** demostración antes de cada minijuego; brazo robótico por ejes; chequeo de tripulación y rover con dibujos; botón «Minijuegos» en la portada (práctica); caritas con emociones; medallas de hitos; bloques tipo ladrillo; astronautas con modelo 3D (CC-BY, en CREDITS); cráter Shackleton. `qa` APTO (jugó retos de los días 2 a 16, tutorial, inglés). `hud` dio NO-GO por desborde de las tarjetas de recursos en 1024 y se corrigió ensanchándolas (comprobado con `__hudCheck()` en 1024, no repetido por el agente). Sin revisar por agentes: rediseño del rover y del chequeo, práctica, medallas. Retos 18, 24 y 30 sin jugar hoy.
+- **Propuestas pendientes de decisión del equipo** (expertos): reintento amable en retos fallados y poder saltar los días 18 y 24; ayuda por defecto en Cadete en retos de reflejos; módulos que se arman por piezas al desbloquearse; sonidos (falta el permiso *Sound Generation* de ElevenLabs).
+
 ## En curso — TODO SIN COMMIT (tareas H-01, H-02, H-03 del tablero)
 - **Intro en cómic** tras «Comenzar» (`IntroComic.tsx`, `comic.css`, paso `comic` en `Menu.tsx`): 5 viñetas SVG, historia realista 2048. Sustituye a la «historia de la IA».
 - **Retos diarios**: 10 minijuegos en los días 2, 4, 6, 8, 12, 14, 16, 18, 24 y 30 (`public/data/challenges.json`, `src/sim/challenges.ts`, `src/components/challenges/`, `challenge.css`). Premio y castigo desde el JSON; el Tutorial no tiene retos.

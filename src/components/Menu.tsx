@@ -18,6 +18,8 @@ import { sourcesOpen } from '../state/sources';
 import { helpOpen } from '../state/tutorial';
 import { CrewPortrait } from './CrewPortrait';
 import { IntroComic } from './IntroComic';
+import { PracticeMenu } from './challenges/PracticeMenu';
+import { practiceOpen } from '../state/practice';
 import { SunStatus } from './SunStatus';
 import '../styles/tutorial.css';
 
@@ -164,6 +166,10 @@ export function Menu() {
             <button ref={startButton} type="button" class="btn btn--primary title__start" onClick={toComic}>
               {t('title.start')}
             </button>
+            <button type="button" class="btn title__practice" onClick={() => (practiceOpen.value = true)}>
+              {t('practice.button')}
+            </button>
+            <PracticeMenu />
             <nav class="title__links" aria-label={t('crew.more')}>
               <button type="button" class="linkbtn" onClick={() => (helpOpen.value = true)}>
                 {t('help.button')}

@@ -1092,3 +1092,36 @@ html .meter__block span {
 /* Al encajar un bloque, rebota como una pieza que hace clic. */
 html .meter__block span { transition: height 160ms cubic-bezier(.2, 1.6, .4, 1); }
 @media (prefers-reduced-motion: reduce) { html .meter__block span { transition: none; } }
+
+/* ============ Hitos: medalla ilustrada (misma familia que la ficha de cosecha) ============ */
+html .harvest .harvest__art { width: 46px; height: 46px; }
+html .celebrate__badge {
+  width: 60px; height: 60px; flex: none; border-radius: 50%; background: var(--panel);
+  border: 3px solid var(--medal, var(--accent));
+  box-shadow: 0 4px 0 var(--medal-deep, var(--accent-deep)), inset 0 0 0 3px var(--panel-deep);
+}
+html .celebrate__badge .celebrate__art { width: 40px; height: 40px; display: block; }
+html .celebrate__badge--first_harvest { --medal: #7ccf6a; --medal-deep: #2f6b2b; }
+html .celebrate__badge--first_night { --medal: #f4e7b8; --medal-deep: #8a7d4c; }
+html .celebrate__badge--storm_safe { --medal: #b9a4ff; --medal-deep: #5a4aa0; }
+html .celebrate--big .celebrate__badge { width: 96px; height: 96px; box-shadow: 0 6px 0 var(--medal-deep, var(--accent-deep)), inset 0 0 0 4px var(--panel-deep); }
+html .celebrate--big .celebrate__badge .celebrate__art { width: 66px; height: 66px; }
+html .celebrate__card { gap: 0.9rem; padding: 0.6rem 1.2rem 0.75rem 0.7rem; border-color: var(--line); }
+html .celebrate__kicker { font-family: var(--font-display); font-weight: 700; font-size: 0.8rem; letter-spacing: 0.1em; }
+html .celebrate__title { font-family: var(--font-display); font-size: 1.35rem; text-transform: uppercase; letter-spacing: 0.02em; line-height: 1.1; }
+html .celebrate--big .celebrate__title { font-size: 2rem; }
+/* El hito no convive con la pista de la maqueta. */
+html .game:has(.celebrate) .scene__hint { display: none; }
+
+/* ============ Tarjetas de recursos: ancho para el retrato nuevo (revisión hud) ============ */
+html .hud .res { width: 13.6rem; }
+html .hud .res__name { overflow: hidden; text-overflow: ellipsis; }
+html .hud .hud__trend { margin-left: 0.35rem; }
+html .hud .res__foot { gap: 0.2rem; }
+@media (max-width: 1279px) {
+  html .hud .res { width: 12.4rem; }
+  html .hud .res__name { font-size: 0.92rem; letter-spacing: 0.01em; }
+}
+@media (max-width: 899px) {
+  html .hud .res { width: auto; }
+}
