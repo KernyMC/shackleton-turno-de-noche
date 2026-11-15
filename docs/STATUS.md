@@ -26,6 +26,7 @@
 - **A medias al cerrar:** un builder corregía `challenge.css`, `comic.css`, `IntroComic.tsx` (móvil de los días 16/18/24/30, colores del día 8, viñetas 3 y 5). No se sabe si terminó: revisar `git diff` de esos archivos.
 
 ## Siguiente
+0. **Supabase (15-nov, hecho y desplegado):** respaldo de datos (`src/data/loadData.ts`, `api/gamedata.ts`, `src/server/gamedata.ts`, migración en `supabase/`; ver `docs/domains/datos.md` §10). Tabla `game_data` creada en `hqaawcruqzjyzwdbixux` con los 10 JSON; variables en Vercel. **Tras cambiar un JSON de `public/data`, correr `npm run data:supabase`.** El servidor de dev lee `.env` solo al arrancar.
 1. Con el árbol quieto: `npm test && npm run check && npm run build && npm run simulate`.
 2. Volver a pasar `hud` (375×812 y 1280×720: días 8, 16, 18, 24, 30 y cómic; inglés) y `qa` rápido (día 24 con las dos elecciones, día 30 con movimiento reducido). Estilizar `chl-sector-fx*` y `chl-relay-nudge/up/down` si se ven mal.
 3. Si sale APTO: commit (motor + interfaz + textos juntos), marcar H-01..H-03 `hecha`, desplegar con `npx vercel deploy --prod --yes`. **Corte duro 05:00**: el reto que no esté verde se quita de `challenges.json`.

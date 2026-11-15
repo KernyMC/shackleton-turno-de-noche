@@ -42,3 +42,5 @@ Registro honesto de qué se hizo con ayuda de IA. Añade una línea por sesión 
 | 2026-11-15 | Claude Code (Anthropic) | Optimización de rendimiento de la escena 3D: medición con Playwright/Chrome, imágenes compartidas entre GLB, tope de 60 fps y astronauta sin animación sobrante | Pendiente de revisión del equipo |
 
 Si se usan modelos 3D o audio generados (por ejemplo Tripo o Suno), anotarlos aquí y en `CREDITS.md`.
+| 2026-11-15 | Claude Code (Anthropic) | Respaldo de los JSON de datos en Supabase vía Vercel Function `/api/gamedata`, con tests, migración SQL y script de copia | Pendiente de revisión del equipo |
+| 2026-11-15 | Claude Code (Anthropic) | Ficha del proyecto ES/EN en PDF (docs/entrega/Ficha_Proyecto_ES_EN.pdf): datos NASA con enlaces, repositorio y licencia, enlaces y declaración de IA, con la paleta y tipografía de las diapositivas | Pendiente de revisión del equipo |

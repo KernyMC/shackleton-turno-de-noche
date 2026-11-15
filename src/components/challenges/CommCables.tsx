@@ -115,9 +115,16 @@ export function CommCables({ params, onDone }: ChallengeGameProps) {
   const grab = (p: Pt): boolean => {
     const o = ownerIn(pathsRef.current, p);
     if (!o) return false;
+    const cur = pathsRef.current[o.pair]!;
+    // Tocar el conector de destino con la punta del cable al lado TERMINA el cable (teclado y toques
+    // casilla a casilla); antes lo cogía y el cable volvía a salir de ahí, borrando lo dibujado.
+    if (o.node && !isDone(o.pair, cur) && same(goalOf(o.pair, cur), p) && adjacent(cur[cur.length - 1]!, p)) {
+      select(o.pair);
+      extendTo(p, true);
+      return true;
+    }
     select(o.pair);
     playPick();
-    const cur = pathsRef.current[o.pair]!;
     if (o.node) {
       // Conector donde ya termina el cable: no se toca. Cualquier otro conector: el cable vuelve a salir de él.
       if (!(isDone(o.pair, cur) && same(cur[cur.length - 1]!, p))) setPath(o.pair, [p]);

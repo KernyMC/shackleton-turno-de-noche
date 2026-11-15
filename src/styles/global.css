@@ -79,8 +79,15 @@ b { font-family: var(--font-mono); }
 }
 .title__pitch { margin: 0.35rem 0 0.4rem; max-width: 26rem; color: var(--text); font-size: clamp(0.95rem, 1.6vw, 1.1rem); }
 .title__start { min-width: 15rem; min-height: 58px; font-size: 1.3rem; letter-spacing: 0.04em; box-shadow: 0 0 0 4px rgb(255 179 71 / 0.18); }
-.title__links { display: flex; gap: 0.6rem; align-items: center; color: var(--text-dim); }
+.title__links { display: flex; flex-wrap: wrap; gap: 0.2rem 0.6rem; align-items: center; color: var(--text-dim); }
+.title__links .linkbtn { white-space: nowrap; }
+/* En móvil los enlaces pasan a varias líneas: sin los puntos separadores, que quedarían sueltos al final de una línea. */
+@media (max-width: 600px) {
+  .title__links { justify-content: center; }
+  .title__links > span[aria-hidden="true"] { display: none; }
+}
 .title__footer { position: relative; z-index: 1; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.3rem 1rem; padding: 0.6rem clamp(1rem, 4vw, 3.5rem) 0.9rem; color: var(--text-dim); font-size: 0.75rem; }
+.title__footer[hidden] { display: none; }
 .title__crew { display: flex; gap: 0.5rem; justify-content: center; padding-top: 3rem; }
 .sun--compact { margin: 0; font-size: 0.8rem; color: var(--text-dim); display: flex; align-items: center; gap: 0.35rem; }
 .sun--compact .icon { color: var(--accent); }
@@ -446,7 +453,7 @@ b { font-family: var(--font-mono); }
   .topbar__tools { gap: 0.15rem; }
   .topbar__tools .iconbtn { width: 34px; height: 34px; }
 }
-@media (min-width: 900px) and (max-width: 1540px) {
+@media (min-width: 900px) and (max-width: 1720px) {
   .hud__plan { left: auto; right: var(--gutter); transform: none; }
 }
 

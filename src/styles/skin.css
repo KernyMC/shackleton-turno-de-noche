@@ -115,7 +115,7 @@ html .hud__plan {
 }
 html .hud__plan:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--accent-deep); }
 /* El botón centrado conserva su centrado al hundirse. */
-@media (min-width: 1541px), (max-width: 899px) {
+@media (min-width: 1721px), (max-width: 899px) {
   html .hud__plan:active { transform: translate(-50%, 3px); }
 }
 html .title__start { border-radius: var(--r-panel); box-shadow: 0 5px 0 var(--accent-deep), inset 0 2px 0 rgb(255 255 255 / 0.35); font-size: 1.5rem; }
@@ -148,6 +148,6 @@ html .hud__dot { border-radius: 1px; }
   html .btn:active:not(:disabled), html .iconbtn:active, html .option:active:not(:disabled), html .meter__steps button:active:not(:disabled) { transform: none; }
   html .hud__plan:active { transform: none; }
 }
-@media (prefers-reduced-motion: reduce) and (min-width: 1541px), (prefers-reduced-motion: reduce) and (max-width: 899px) {
+@media (prefers-reduced-motion: reduce) and (min-width: 1721px), (prefers-reduced-motion: reduce) and (max-width: 899px) {
   html .hud__plan:active { transform: translateX(-50%); }
 }

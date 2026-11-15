@@ -7,6 +7,7 @@ import { scoreToOutcome } from '../../sim/challenges';
 import type { ChallengeDef, ChallengeOutcome } from '../../sim/types';
 import { activeChallenge, completeChallenge, game } from '../../state/store';
 import { sourcesOpen } from '../../state/sources';
+import { loadData } from '../../data/loadData';
 import { playChallengeResult, playChallengeStart } from '../../audio/sfx';
 import { Icon } from '../icons';
 import { ChallengeDemo } from './ChallengeDemo';
@@ -31,9 +32,8 @@ function useSource(id: string): SourceInfo | null {
   const [src, setSrc] = useState<SourceInfo | null>(null);
   useEffect(() => {
     let alive = true;
-    fetch('/data/sources.json')
-      .then((r) => (r.ok ? r.json() : null))
-      .then((j: { sources?: Record<string, SourceInfo> } | null) => alive && setSrc(j?.sources?.[id] ?? null))
+    loadData<{ sources?: Record<string, SourceInfo> }>('sources')
+      .then((j) => alive && setSrc(j?.sources?.[id] ?? null))
       .catch(() => undefined);
     return () => {
       alive = false;

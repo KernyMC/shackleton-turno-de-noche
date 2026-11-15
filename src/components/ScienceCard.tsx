@@ -4,6 +4,7 @@
 import { useEffect, useState } from 'preact/hooks';
 import { lang, t } from '../i18n';
 import { num } from './format';
+import { loadData } from '../data/loadData';
 import '../styles/science.css';
 
 interface Fact {
@@ -19,14 +20,9 @@ interface Radiation {
 }
 type Origin = 'osdr' | 'csa' | 'radlab';
 
-async function load<T>(path: string): Promise<T | null> {
-  try {
-    const res = await fetch(path);
-    if (!res.ok) return null;
-    return (await res.json()) as T;
-  } catch {
-    return null;
-  }
+/** JSON del repo como fuente principal; si falla, copia en Supabase vía /api/gamedata. */
+function load<T>(path: string): Promise<T | null> {
+  return loadData<T>(path.replace(/^\/data\/|\.json$/g, ''));
 }
 
 interface Pick {

@@ -94,3 +94,9 @@ Lógica única en `src/server/spaceweather.ts` (`getSpaceWeather`, `fallbackResp
 - El mapeo de niveles está repetido como texto en 4 sitios (§4). El acierto de la CDN de Vercel no se distingue de `live`.
 - `moon_height.png`/`moon_color.jpg` no están en el repo (`optional-assets.json` → `terrain:false`); `food_facts.json` y `osdr_facts.json` se mantienen a mano, sin script ni comprobación automática de enlaces.
 - Pendiente del equipo (RUBRICA): repositorio público, ficha bilingüe en la plataforma, diapositivas y video.
+
+## 10. Respaldo en Supabase (15-nov)
+- Orden: `/data/<nombre>.json` → `/api/gamedata?name=<nombre>` (Vercel Function → tabla `public.game_data`) → `null`. Código: `src/data/loadData.ts`, `src/server/gamedata.ts`, `api/gamedata.ts`; servidor dev en `astro.config.mjs`.
+- Solo nombres de `GAMEDATA_NAMES` (un test exige que coincida con los archivos de `public/data`): **si añades un JSON, añádelo ahí y vuelve a correr `npm run data:supabase`**.
+- Tabla: `supabase/migrations/20261115000000_game_data.sql` (RLS, solo `select` público). Variables: `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY` (Vercel y `.env`), `SUPABASE_SECRET_KEY` solo para el script local.
+- El motor (`src/sim/config.ts`) no usa el respaldo: va empaquetado. En DEV, `__dataOrigin` dice de dónde salió cada archivo.

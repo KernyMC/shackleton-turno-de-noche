@@ -45,11 +45,35 @@ function spaceWeatherDevApi() {
   };
 }
 
+/**
+ * Sirve GET /api/gamedata?name=... en `npm run dev` (respaldo de public/data en Supabase).
+ * Misma lógica que la función de Vercel (api/gamedata.ts).
+ * @returns {import('vite').Plugin}
+ */
+function gameDataDevApi() {
+  return {
+    name: 'gamedata-dev-api',
+    configureServer(server) {
+      server.middlewares.use('/api/gamedata', async (req, res) => {
+        const { getGameData, gameDataHeaders } = await server.ssrLoadModule('/src/server/gamedata.ts');
+        const name = new URL(req.url ?? '', 'http://localhost').searchParams.get('name');
+        const result = await getGameData({
+          name,
+          url: process.env.SUPABASE_URL,
+          key: process.env.SUPABASE_PUBLISHABLE_KEY,
+        });
+        res.writeHead(result.status, gameDataHeaders(result));
+        res.end(JSON.stringify(result.body));
+      });
+    },
+  };
+}
+
 // https://astro.build/config
 export default defineConfig({
   integrations: [preact()],
   vite: {
-    plugins: [spaceWeatherDevApi()],
+    plugins: [spaceWeatherDevApi(), gameDataDevApi()],
     // Three.js (~640 KB) va en su propio archivo y se carga después del menú: no bloquea el primer render.
     build: { chunkSizeWarningLimit: 700 },
   },

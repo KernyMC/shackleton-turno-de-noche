@@ -120,6 +120,16 @@ export function hudCheck(): {
     const r = el.getBoundingClientRect();
     if (r.right < 0 || r.bottom < 0 || r.left > W || r.top > H) return; // fuera de vista por scroll interno
     const label = nameOf(el) || `<${el.tagName.toLowerCase()} class="${el.className}">`;
+    // Un botón cortado por el borde de la pantalla, aunque no esté en un bloque de BLOCKS (p. ej. la fila
+    // de enlaces de la portada). No cuenta si vive en un contenedor con scroll horizontal (se llega desplazando).
+    if (r.right > W + 1 || r.left < -1) {
+      let hScroll = false;
+      for (let a = el.parentElement; a && a !== document.body; a = a.parentElement) {
+        const ox = getComputedStyle(a).overflowX;
+        if (ox === 'auto' || ox === 'scroll') hScroll = true;
+      }
+      if (!hScroll) offscreen.push(`botón cortado por el borde (${Math.round(r.left)} → ${Math.round(r.right)} de ${W}): ${label}`);
+    }
     if (!nameOf(el)) buttons.push(`sin nombre accesible: ${label}`);
     if (el.tagName === 'BUTTON' && (r.width < minTap || r.height < minTap)) {
       buttons.push(`pequeño (${Math.round(r.width)}×${Math.round(r.height)}, mínimo ${minTap}): ${label}`);

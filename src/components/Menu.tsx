@@ -197,7 +197,8 @@ export function Menu() {
             </nav>
             <SunStatus compact />
           </div>
-          <footer class="title__footer">
+          {/* Con la lista de minijuegos abierta el pie se oculta: en móvil tapaba «Volver a la portada». */}
+          <footer class="title__footer" hidden={practiceOpen.value}>
             <span>{t('app.disclaimer')}</span>
             <span>{t('title.team')}</span>
           </footer>

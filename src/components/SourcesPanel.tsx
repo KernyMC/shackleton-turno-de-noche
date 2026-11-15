@@ -4,6 +4,7 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { lang, t } from '../i18n';
 import { sourcesOpen } from '../state/sources';
+import { loadData } from '../data/loadData';
 import { Icon } from './icons';
 import type { IconName } from './icons';
 import '../styles/sources.css';
@@ -42,9 +43,8 @@ async function exists(path: string): Promise<boolean> {
 }
 
 async function load(): Promise<Source[]> {
-  const res = await fetch('/data/sources.json');
-  if (!res.ok) throw new Error(String(res.status));
-  const json = (await res.json()) as { sources: Record<string, Source> };
+  const json = await loadData<{ sources: Record<string, Source> }>('sources');
+  if (!json) throw new Error('sources');
   const list = await Promise.all(
     Object.values(json.sources).map(async (s) => {
       if (!s.requires_files || !s.status_without_files) return s;
