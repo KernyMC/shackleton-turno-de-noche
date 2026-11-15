@@ -10,6 +10,7 @@ import { defaultConfig } from '../../sim/config';
 import { CREW, crewName } from '../../data/crew';
 import type { CrewId } from '../../data/crew';
 import { CrewPortrait } from '../CrewPortrait';
+import { playCarePlace } from '../../audio/sfx';
 import { Icon } from '../icons';
 import type { IconName } from '../icons';
 import type { ChallengeGameProps } from './registry';
@@ -70,6 +71,7 @@ export function BiomedCheck({ params, onDone }: ChallengeGameProps) {
   const give = (who: CrewId): void => {
     if (done || !care || left <= 0) return;
     if (given.some((g) => g.who === who && g.care === care)) return;
+    playCarePlace();
     setGiven([...given, { who, care }]);
     setCare(null);
   };

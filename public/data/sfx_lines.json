@@ -2,11 +2,113 @@
   "_nota": "Efectos de sonido generados con IA (ElevenLabs) por scripts/generate-sfx.mjs. Se generan una vez y se guardan en public/audio/sfx/. Nunca se llama a la API durante la partida.",
   "model": "text-to-sound-effects (POST /v1/sound-generation)",
   "effects": [
-    { "id": "repair_clank", "duration": 1.0, "influence": 0.5, "prompt": "A single dry metallic wrench hit on metal, cartoon style, short and punchy, no voice, no music" },
-    { "id": "repair_shuank", "duration": 1.2, "influence": 0.5, "prompt": "Quick ratchet screwing sound ending with a bright metallic shing, cartoon style, no voice, no music" },
-    { "id": "repair_done", "duration": 1.0, "influence": 0.5, "prompt": "Short cheerful confirmation chime, metallic little bell plus a soft power-up, friendly, no voice" },
-    { "id": "alarm_breakdown", "duration": 2.0, "influence": 0.5, "prompt": "Two-tone spaceship alarm repeated three times, gentle and not shrill, suitable for children, no voice" },
-    { "id": "storm_alert", "duration": 2.0, "influence": 0.5, "prompt": "Rising radiation warning alert, tense but soft, sci-fi, no voice" },
-    { "id": "energy_flow", "duration": 1.5, "influence": 0.5, "prompt": "Soft electric hum that rises in pitch, energy flowing through a machine, sci-fi, no voice" }
+    {
+      "id": "repair_clank",
+      "duration": 1,
+      "influence": 0.5,
+      "prompt": "A single dry metallic wrench hit on metal, cartoon style, short and punchy, no voice, no music"
+    },
+    {
+      "id": "repair_shuank",
+      "duration": 1.2,
+      "influence": 0.5,
+      "prompt": "Quick ratchet screwing sound ending with a bright metallic shing, cartoon style, no voice, no music"
+    },
+    {
+      "id": "repair_done",
+      "duration": 1,
+      "influence": 0.5,
+      "prompt": "Short cheerful confirmation chime, metallic little bell plus a soft power-up, friendly, no voice"
+    },
+    {
+      "id": "alarm_breakdown",
+      "duration": 2,
+      "influence": 0.5,
+      "prompt": "Two-tone spaceship alarm repeated three times, gentle and not shrill, suitable for children, no voice"
+    },
+    {
+      "id": "storm_alert",
+      "duration": 2,
+      "influence": 0.5,
+      "prompt": "Rising radiation warning alert, tense but soft, sci-fi, no voice"
+    },
+    {
+      "id": "energy_flow",
+      "duration": 1.5,
+      "influence": 0.5,
+      "prompt": "Soft electric hum that rises in pitch, energy flowing through a machine, sci-fi, no voice"
+    },
+    {
+      "id": "block_click",
+      "duration": 0.5,
+      "influence": 0.6,
+      "prompt": "A single plastic toy brick snapping into place, short satisfying click, no voice, no music"
+    },
+    {
+      "id": "day_commit",
+      "duration": 1,
+      "influence": 0.5,
+      "prompt": "A big chunky console button press followed by a short soft whoosh, satisfying, sci-fi, no voice, no music"
+    },
+    {
+      "id": "harvest_collect",
+      "duration": 0.8,
+      "influence": 0.5,
+      "prompt": "Bright cartoon pop followed by a tiny sparkle chime, cheerful, no voice, no music"
+    },
+    {
+      "id": "day_done",
+      "duration": 0.8,
+      "influence": 0.5,
+      "prompt": "Two soft ascending marimba notes, gentle confirmation, no voice"
+    },
+    {
+      "id": "milestone",
+      "duration": 1.8,
+      "influence": 0.5,
+      "prompt": "Short joyful fanfare with bells and a sparkle, video game achievement, friendly for children, no voice"
+    },
+    {
+      "id": "challenge_start",
+      "duration": 1.2,
+      "influence": 0.5,
+      "prompt": "Playful game start jingle, three quick rising notes, arcade style, friendly, no voice"
+    },
+    {
+      "id": "challenge_win",
+      "duration": 2,
+      "influence": 0.5,
+      "prompt": "Happy short victory jingle with chimes, cartoon video game, friendly for children, no voice"
+    },
+    {
+      "id": "challenge_partial",
+      "duration": 1.2,
+      "influence": 0.5,
+      "prompt": "Gentle neutral two-note chime, an okay result, soft and warm, no voice"
+    },
+    {
+      "id": "challenge_fail",
+      "duration": 1.2,
+      "influence": 0.5,
+      "prompt": "Soft descending cartoon boop, try-again feeling, gentle and not sad, no voice"
+    },
+    {
+      "id": "rover_step",
+      "duration": 0.5,
+      "influence": 0.6,
+      "prompt": "Small electric toy rover wheels rolling one short step, soft, no voice, no music"
+    },
+    {
+      "id": "arm_grab",
+      "duration": 0.8,
+      "influence": 0.5,
+      "prompt": "Robotic claw servo closing with a soft clamp, short, cartoon sci-fi, no voice, no music"
+    },
+    {
+      "id": "care_place",
+      "duration": 0.5,
+      "influence": 0.6,
+      "prompt": "Soft cute rubbery sticker pop, very short, no voice, no music"
+    }
   ]
 }

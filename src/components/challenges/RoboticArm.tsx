@@ -8,6 +8,7 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { t } from '../../i18n';
 import { defaultConfig } from '../../sim/config';
+import { playArmGrab } from '../../audio/sfx';
 import { Icon } from '../icons';
 import type { ChallengeGameProps } from './registry';
 import { numParam, TimeBar, useCountdown } from './shared';
@@ -135,6 +136,7 @@ export function RoboticArm({ params, assist, onDone }: ChallengeGameProps) {
   const grab = (): void => {
     const r = runRef.current;
     if (r.end) return;
+    playArmGrab();
     const used = r.used + 1;
     let next: Run = { ...r, used };
     if (hit) next = { ...next, touched: true, msg: t('challenge.arm.msg.blocked') };

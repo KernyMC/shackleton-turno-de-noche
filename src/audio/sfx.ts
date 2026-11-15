@@ -65,13 +65,15 @@ function tone(freq: number, start: number, duration: number, volume = 0.06, type
 
 /** Un bloque de energía: clic seco, más agudo cuanto más lleno. */
 export function playTick(fill = 0.5): void {
-  tone(900 + fill * 500, 0, 0.045, 0.035, 'square');
+  playSample('block_click', () => tone(900 + fill * 500, 0, 0.045, 0.035, 'square'), 0.45);
 }
 
 /** Ejecutar el día: golpe grave de confirmación. */
 export function playCommit(): void {
-  tone(150, 0, 0.22, 0.09, 'sine', 70);
-  tone(420, 0.02, 0.09, 0.03, 'triangle');
+  playSample('day_commit', () => {
+    tone(150, 0, 0.22, 0.09, 'sine', 70);
+    tone(420, 0.02, 0.09, 0.03, 'triangle');
+  });
 }
 
 /** Cada módulo que rinde: una nota de un acorde según el recurso. */
@@ -82,19 +84,61 @@ export function playYield(kind: keyof typeof MODULE_NOTE): void {
 
 /** Recoger la cosecha: dos notas ascendentes. */
 export function playCollect(): void {
-  tone(660, 0, 0.12);
-  tone(990, 0.08, 0.18);
+  playSample('harvest_collect', () => {
+    tone(660, 0, 0.12);
+    tone(990, 0.08, 0.18);
+  });
 }
 
 /** Día completado: confirmación suave. */
 export function playDayDone(): void {
-  tone(523, 0, 0.14, 0.04);
-  tone(784, 0.1, 0.22, 0.04);
+  playSample('day_done', () => {
+    tone(523, 0, 0.14, 0.04);
+    tone(784, 0.1, 0.22, 0.04);
+  }, 0.5);
 }
 
 /** Hito: acorde ascendente. */
 export function playMilestone(): void {
-  [523, 659, 784, 1047].forEach((f, i) => tone(f, i * 0.09, 0.35, 0.045, 'triangle'));
+  playSample('milestone', () => [523, 659, 784, 1047].forEach((f, i) => tone(f, i * 0.09, 0.35, 0.045, 'triangle')));
+}
+
+// ---------- Minijuegos ----------
+/** Empieza un reto: tres notas que suben. */
+export function playChallengeStart(): void {
+  playSample('challenge_start', () => [392, 523, 659].forEach((f, i) => tone(f, i * 0.08, 0.16, 0.045, 'triangle')));
+}
+
+/** Resultado de un reto: fanfarria, dos notas neutras o un «otra vez será» suave (nunca triste). */
+export function playChallengeResult(outcome: 'perfect' | 'partial' | 'failed' | 'skipped'): void {
+  if (outcome === 'perfect') {
+    playSample('challenge_win', () => [523, 659, 784, 1047, 1319].forEach((f, i) => tone(f, i * 0.08, 0.3, 0.045, 'triangle')));
+  } else if (outcome === 'partial') {
+    playSample('challenge_partial', () => {
+      tone(587, 0, 0.16, 0.04, 'triangle');
+      tone(659, 0.12, 0.24, 0.04, 'triangle');
+    });
+  } else if (outcome === 'failed') {
+    playSample('challenge_fail', () => tone(440, 0, 0.3, 0.045, 'sine', 300));
+  }
+}
+
+/** El rover avanza una casilla. */
+export function playRoverStep(): void {
+  playSample('rover_step', () => tone(220, 0, 0.07, 0.04, 'square', 260), 0.4);
+}
+
+/** El brazo cierra la pinza. */
+export function playArmGrab(): void {
+  playSample('arm_grab', () => {
+    tone(320, 0, 0.12, 0.05, 'sawtooth', 180);
+    tone(900, 0.12, 0.05, 0.03, 'square');
+  });
+}
+
+/** Una ficha de cuidado se pega a un tripulante. */
+export function playCarePlace(): void {
+  playSample('care_place', () => tone(520, 0, 0.09, 0.05, 'sine', 780), 0.5);
 }
 
 // Muestras generadas con IA (scripts/generate-sfx.mjs), guardadas en public/audio/sfx/.

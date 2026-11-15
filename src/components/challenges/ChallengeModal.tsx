@@ -7,6 +7,7 @@ import { scoreToOutcome } from '../../sim/challenges';
 import type { ChallengeDef, ChallengeOutcome } from '../../sim/types';
 import { activeChallenge, completeChallenge, game } from '../../state/store';
 import { sourcesOpen } from '../../state/sources';
+import { playChallengeResult, playChallengeStart } from '../../audio/sfx';
 import { Icon } from '../icons';
 import { ChallengeDemo } from './ChallengeDemo';
 import { registry } from './registry';
@@ -73,7 +74,10 @@ export function Challenge({ def, assist, onFinish }: { def: ChallengeDef; assist
     return () => opener?.focus?.();
   }, []);
   useEffect(() => {
-    if (step === 'result') resultAt.current = performance.now();
+    if (step === 'result') {
+      resultAt.current = performance.now();
+      playChallengeResult(scoreToOutcome(score));
+    } else if (step === 'play') playChallengeStart();
     const target = step === 'play' ? headRef.current : primaryRef.current ?? headRef.current;
     target?.focus();
   }, [step]);
