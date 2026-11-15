@@ -67,15 +67,15 @@ const TARGET: Partial<Record<TutorialStep, string>> = {
   greenhouse: '.meter[data-module="greenhouse"]',
   execute: '.tablet__actions',
   d2_flow: '.eflow',
-  d2_pass: '.btn--execute',
+  d2_pass: '.board',
   d3_harvest: '.tablet',
   d3_forecast: '.forecast',
-  d3_pass: '.btn--execute',
+  d3_pass: '.board',
   d4_dust: '.tablet',
   d4_workshop: '.meter[data-module="workshop"]',
-  d4_pass: '.btn--execute',
+  d4_pass: '.board',
   d5_goal: '.act-pill',
-  d5_pass: '.btn--execute',
+  d5_pass: '.board',
 };
 /** Módulo de la maqueta que se ilumina junto con lo del panel. */
 const FOCUS_MODULE: Partial<Record<TutorialStep, ModuleId>> = {
@@ -94,7 +94,10 @@ const ALSO: Partial<Record<TutorialStep, string[]>> = {
   greenhouse: ['.res--food'],
   execute: ['.resources'],
   d2_flow: ['.topbar__dose', '.topbar__day'],
-  d2_pass: ['.resources'],
+  d2_pass: ['.resources', '.tablet__actions'],
+  d3_pass: ['.resources', '.tablet__actions'],
+  d4_pass: ['.resources', '.tablet__actions'],
+  d5_pass: ['.resources', '.tablet__actions'],
   d3_forecast: ['.resources'],
   d4_workshop: ['.res--battery'],
 };
