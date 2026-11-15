@@ -5,7 +5,7 @@
 
 **Última actualización:** 2026-11-14 (sábado, 16:30) · **Fase:** hackathon, víspera de la entrega ·
 **Entrega:** domingo 15-nov a las **09:00** (auditoría 09:30, pitch 11:00; ver `docs/RUBRICA.md`) ·
-**Producción:** https://shackleton-turno-de-noche.vercel.app (commit `cd70142`: v4 Paso 1, modo Tutorial y piel de juego. **No incluye** el cómic ni los retos).
+**Producción:** https://shackleton-turno-de-noche.vercel.app (15-nov, commit `fb27b7b`: todo lo de main, con cómic, retos, vídeo de intro y respaldo Supabase en `/api/gamedata`). Desplegar con `npx vercel deploy --prod --yes`; `.vercelignore` deja fuera `video/` (renders de más de 100 MB).
 
 ## Hecho
 - Juego completo y jugable: motor de 30 días, maqueta 3D, panel de energía, eventos, tripulación, final con cinemática; ES/EN; proxy de clima espacial con datos reales de NASA DONKI.
