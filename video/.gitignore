@@ -1,0 +1,14 @@
+node_modules
+dist
+.DS_Store
+.env
+
+# Ignore the output video from Git but not videos you import into src/.
+out
+
+# Clips grabados del juego (≈265 MB, se regeneran con capture/run.mjs) y capturas de revisión
+public/clips
+capture/shots
+capture/review
+capture/tmp
+capture/*.log
