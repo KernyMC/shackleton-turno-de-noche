@@ -8,7 +8,9 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { crewById } from '../data/crew';
 import type { CrewId } from '../data/crew';
-import { t } from '../i18n';
+import { lang, t } from '../i18n';
+import { preloadClip } from '../state/introPreload';
+import { gameMode, TUTORIAL_DAYS } from '../state/mode';
 import { defaultConfig } from '../sim/config';
 import { getLight } from '../sim/engine';
 import { resourceLevels } from '../sim/thresholds';
@@ -375,6 +377,11 @@ function Resources({ g, moods }: { g: GameState; moods: Record<CrewId, number> }
 
 export function Hud() {
   const g = game.value;
+  // El vídeo de victoria se descarga un poco antes de hacer falta, para que arranque al instante.
+  const nearEnd = !!g && (g.day >= defaultConfig.balance.days - 2 || (gameMode.value === 'tutorial' && g.day >= TUTORIAL_DAYS - 1));
+  useEffect(() => {
+    if (nearEnd) preloadClip('victoria', lang.value);
+  }, [nearEnd, lang.value]);
   if (!g) return null;
   const moods = moodOf(g);
   return (

@@ -18,6 +18,7 @@ import { sourcesOpen } from '../state/sources';
 import { helpOpen } from '../state/tutorial';
 import { CrewPortrait } from './CrewPortrait';
 import { IntroVideo } from './IntroVideo';
+import { preloadIntro } from '../state/introPreload';
 import { PracticeMenu } from './challenges/PracticeMenu';
 import { practiceOpen } from '../state/practice';
 import { SunStatus } from './SunStatus';
@@ -109,6 +110,12 @@ export function Menu() {
   }, []);
 
   useEffect(() => world.current?.setCrewFocus(step === 'crew' ? focused : null), [focused, step]);
+  // La intro en vídeo se descarga mientras se mira la portada: al pulsar «Comenzar» arranca al instante.
+  useEffect(() => {
+    const l = lang.value;
+    const id = window.setTimeout(() => preloadIntro(l), 1200);
+    return () => window.clearTimeout(id);
+  }, [lang.value]);
   useEffect(() => startButton.current?.focus(), [step]);
 
   const toCrew = (): void => {

@@ -11,6 +11,7 @@ import { exitToMenu, game, restart, rewindTo, startGame } from '../state/store';
 import { crewById, crewName } from '../data/crew';
 import type { CrewId } from '../data/crew';
 import { CrewPortrait } from './CrewPortrait';
+import { ClipVideo } from './ClipVideo';
 import { DebriefCinematic } from './DebriefCinematic';
 import { num } from './format';
 import { ScienceCard } from './ScienceCard';
@@ -147,7 +148,12 @@ export function Debrief() {
   const g = game.value;
   const result = g?.result;
   const [copied, setCopied] = useState(false);
+  // Al ganar, primero el vídeo de victoria (se puede saltar); después, el resumen de siempre.
+  const [watched, setWatched] = useState(false);
   if (!g || !result) return null;
+  if (result.outcome === 'win' && !watched) {
+    return <ClipVideo name="victoria" label={t('clip.victory')} onDone={() => setWatched(true)} />;
+  }
 
   const review = reviewMission(g);
   const won = result.outcome === 'win';

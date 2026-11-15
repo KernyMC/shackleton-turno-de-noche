@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from 'preact/hooks';
 import { muted } from '../audio/sfx';
 import { lang, t } from '../i18n';
 import { introVideoOpen } from '../state/intro';
+import { introSrc } from '../state/introPreload';
 import { IntroComic } from './IntroComic';
 import { Icon } from './icons';
 import '../styles/introvideo.css';
@@ -17,6 +18,9 @@ export function IntroVideo({ onDone, onBack }: { onDone: () => void; onBack: () 
   /** El navegador no dejó arrancar solo: se muestra un botón grande para reproducir. */
   const [blocked, setBlocked] = useState(false);
   const l = lang.value;
+  // Dirección fija mientras dura la intro: la copia precargada si ya llegó, o la de red.
+  const src = useRef({ l, url: introSrc(l) });
+  if (src.current.l !== l) src.current = { l, url: introSrc(l) };
 
   useEffect(() => {
     introVideoOpen.value = !failed;
@@ -67,7 +71,7 @@ export function IntroVideo({ onDone, onBack }: { onDone: () => void; onBack: () 
         ref={video}
         key={l}
         class="introvid__video"
-        src={`/video/intro-${l}.mp4`}
+        src={src.current.url}
         poster={`/video/intro-${l}.jpg`}
         playsInline
         preload="auto"

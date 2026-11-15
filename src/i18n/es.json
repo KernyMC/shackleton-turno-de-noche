@@ -928,5 +928,7 @@
   "intro.title": "Intro de la misión",
   "intro.skip": "Saltar intro",
   "intro.play": "Ver la intro",
-  "intro.watch": "Ver la intro"
+  "intro.watch": "Ver la intro",
+  "clip.skip": "Saltar vídeo",
+  "clip.victory": "Vídeo de victoria"
 }

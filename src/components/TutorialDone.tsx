@@ -1,11 +1,12 @@
 // Tarjeta «¡Tutorial completado!»: sale al cerrar el día 5 del modo Tutorial (o al saltarlo).
 // Resume lo aprendido en tres íconos y ofrece empezar la misión, repetir o salir al menú.
 // Espera a que terminen los avisos de fin de día para no montarse encima de ellos.
-import { useEffect, useRef } from 'preact/hooks';
+import { useEffect, useRef, useState } from 'preact/hooks';
 import { t } from '../i18n';
 import { dayDone, milestone, reacting } from '../state/rewards';
-import { exitToMenu, resolving } from '../state/store';
-import { startNormal, startTutorial } from '../state/mode';
+import { exitToMenu, game, resolving } from '../state/store';
+import { startNormal, startTutorial, TUTORIAL_DAYS } from '../state/mode';
+import { ClipVideo } from './ClipVideo';
 import { Icon } from './icons';
 import type { IconName } from './icons';
 import '../styles/tutorial.css';
@@ -19,10 +20,15 @@ const LEARNED: [IconName, string][] = [
 export function TutorialDone() {
   const primary = useRef<HTMLButtonElement>(null);
   const waiting = dayDone.value !== null || milestone.value !== null || reacting.value || resolving.value;
+  // Vídeo de victoria solo si se jugaron los días del tutorial; si se saltó la guía, directo a la tarjeta.
+  const finished = (game.value?.day ?? 0) > TUTORIAL_DAYS;
+  const [watched, setWatched] = useState(false);
+  const clip = finished && !watched;
   useEffect(() => {
-    if (!waiting) primary.current?.focus();
-  }, [waiting]);
+    if (!waiting && !clip) primary.current?.focus();
+  }, [waiting, clip]);
   if (waiting) return null;
+  if (clip) return <ClipVideo name="victoria" label={t('clip.victory')} onDone={() => setWatched(true)} />;
 
   // Tab se queda dentro de la tarjeta.
   const onKey = (e: KeyboardEvent): void => {
