@@ -9,7 +9,6 @@ import { CREW, crewFullName } from '../data/crew';
 import { t } from '../i18n';
 import { defaultConfig } from '../sim/config';
 import { isUnlocked } from '../sim/acts';
-import { getLight } from '../sim/engine';
 import { MODULE_IDS } from '../sim/types';
 import type { GameState, ModuleId } from '../sim/types';
 import type { Verdict } from '../sim/verdict';
@@ -201,16 +200,24 @@ function ShareBar({ game: g, wasted }: { game: GameState; wasted: number }) {
   );
 }
 
-const STAMP: Record<Verdict['level'], IconName> = { safe: 'check', tight: 'alert', critical: 'alert' };
-
 /** Veredicto del plan: sello de color + una línea con lo que pasará hoy. Vive en el pie fijo del panel. */
 export function Forecast({ verdict }: { verdict: Verdict }) {
   const p = preview.value;
   const word = verdict.reason === 'blackout' ? 'tablet.verdict.blackout' : `tablet.verdict.${verdict.level}`;
   return (
     <div class={`forecast forecast--${verdict.level}`} role="status" aria-live="polite">
-      <div class="forecast__stamp">
-        <Icon name={STAMP[verdict.level]} size={20} />
+      {/* El sello se vuelve a estampar (rebote) cada vez que cambia el veredicto. */}
+      <div class="forecast__stamp" key={word}>
+        <svg class="forecast__face" viewBox="0 0 32 32" aria-hidden="true">
+          <circle cx="16" cy="16" r="13" />
+          {verdict.level === 'safe' ? (
+            <path d="M10 13.5q2-3 4 0M18 13.5q2-3 4 0M9.5 18.5q6.5 7 13 0" />
+          ) : verdict.level === 'tight' ? (
+            <path d="M11 13v2M21 13v2M10.5 21h11" />
+          ) : (
+            <path d="M9.5 11.5l4 2M22.5 11.5l-4 2M11 14.5v1.5M21 14.5v1.5M10.5 22.5q5.5-5 11 0" />
+          )}
+        </svg>
         <span>{t(word)}</span>
       </div>
       {p && (
@@ -293,34 +300,6 @@ function DustCard({ game: g }: { game: GameState }) {
   );
 }
 
-/** Pronóstico de Sol: hoy y los próximos días, para decidir cuánto guardar. */
-function SunForecast({ game: g }: { game: GameState }) {
-  const total = defaultConfig.balance.days;
-  const days = Array.from({ length: 6 }, (_, i) => g.day + i).filter((d) => d <= total);
-  return (
-    <div class="sunfc" role="group" aria-label={t('sunfc.title')}>
-      <p class="sunfc__title">{t('sunfc.title')}</p>
-      <ol class="sunfc__days">
-        {days.map((d) => {
-          const light = getLight(d, g.difficulty);
-          const dark = light < 0.1;
-          const text = t(dark ? 'sunfc.dark' : 'sunfc.light', { pct: Math.round(light * 100) });
-          return (
-            <li key={d} class={`sunfc__day${d === g.day ? ' sunfc__day--today' : ''}${dark ? ' sunfc__day--dark' : ''}`} title={text}>
-              <span class="sunfc__bar" aria-hidden="true">
-                <span style={{ height: `${Math.max(6, light * 100)}%` }} />
-              </span>
-              <Icon name={dark ? 'moon' : 'sun'} size={13} />
-              <span class="sunfc__label">{d === g.day ? t('sunfc.today') : t('sunfc.day', { dia: d })}</span>
-              <span class="sr-only">{text}</span>
-            </li>
-          );
-        })}
-      </ol>
-    </div>
-  );
-}
-
 export function PowerBoard({ game: g, verdict, onClamped }: { game: GameState; verdict: Verdict; onClamped(): void }) {
   return (
     <>
@@ -332,7 +311,6 @@ export function PowerBoard({ game: g, verdict, onClamped }: { game: GameState; v
           <Column key={id} id={id} game={g} onClamped={onClamped} />
         ))}
       </div>
-      <SunForecast game={g} />
     </>
   );
 }

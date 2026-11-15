@@ -85,6 +85,19 @@ const FOCUS_MODULE: Partial<Record<TutorialStep, ModuleId>> = {
   d3_harvest: 'greenhouse',
   d4_workshop: 'workshop',
 };
+/**
+ * Lo que además se ilumina en cada paso, fuera del panel: la tarjeta del recurso que cambia al
+ * repartir energía, o la barra de arriba (radiación, día y energía) cuando la guía habla de ella.
+ */
+const ALSO: Partial<Record<TutorialStep, string[]>> = {
+  power_recycler: ['.res--life'],
+  greenhouse: ['.res--food'],
+  execute: ['.resources'],
+  d2_flow: ['.topbar__dose', '.topbar__day'],
+  d2_pass: ['.resources'],
+  d3_forecast: ['.resources'],
+  d4_workshop: ['.res--battery'],
+};
 const WARN_TARGET: Record<string, string> = {
   recycler: '.meter[data-module="recycler"]',
   greenhouse: '.meter[data-module="greenhouse"]',
@@ -113,7 +126,7 @@ function Bubble({ step }: { step: TutorialStep }) {
   }, []);
   return (
     <>
-      <Focus selector={tabletOpen.value ? target : undefined} module={FOCUS_MODULE[step] ?? null} />
+      <Focus selector={tabletOpen.value ? target : undefined} module={FOCUS_MODULE[step] ?? null} also={warn ? undefined : ALSO[step]} />
       <div class="coach" role="status" aria-live="polite" style={{ '--crew': speaker.css }} key={step}>
         <span class="coach__portrait" aria-hidden="true">
           <CrewPortrait crew={speaker.id} color={speaker.css} size={48} mood="happy" />
@@ -240,7 +253,8 @@ const MODULE_HOLE = 84;
  * Foco de la pista: oscurece la pantalla y deja a la vista lo señalado, que puede ser a la vez
  * un elemento del panel y un módulo de la maqueta. Lo que no existe en pantalla no se dibuja.
  */
-function Focus({ selector, module }: { selector?: string; module: ModuleId | null }) {
+function Focus({ selector, module, also }: { selector?: string; module: ModuleId | null; also?: string[] }) {
+  const alsoKey = (also ?? []).join('|');
   const [holes, setHoles] = useState<Hole[]>([]);
   useEffect(() => {
     const measure = (): void => {
@@ -261,6 +275,11 @@ function Focus({ selector, module }: { selector?: string; module: ModuleId | nul
         const bottom = Math.min(r.bottom, foot?.top ?? H, clip?.bottom ?? H, H);
         if (right - left > 16 && bottom - top > 16) next.push({ x: left - 4, y: top - 4, w: right - left + 8, h: bottom - top + 8, round: false });
       }
+      // Huecos extra (tarjetas de recursos, barra de arriba): solo si se ven y hay un hueco principal.
+      for (const sel of alsoKey ? alsoKey.split('|') : []) {
+        const b = document.querySelector(sel)?.getBoundingClientRect();
+        if (b && b.width > 8 && b.height > 8 && b.bottom > 0 && b.top < H) next.push({ x: b.left - 4, y: b.top - 4, w: b.width + 8, h: b.height + 8, round: false });
+      }
       const p = module ? sceneBridge.project?.(module) : null;
       if (p) {
         const R = Math.min(MODULE_HOLE, Math.min(W, H) * 0.16);
@@ -275,7 +294,10 @@ function Focus({ selector, module }: { selector?: string; module: ModuleId | nul
       if (round) {
         const coachH = document.querySelector('.coach')?.getBoundingClientRect().height ?? 130;
         const below = round.y + round.h + 14;
-        const top = below + coachH < H - 12 ? below : Math.max(8, round.y - 14 - coachH);
+        let top = below + coachH < H - 12 ? below : Math.max(8, round.y - 14 - coachH);
+        // Tampoco tapa las tarjetas iluminadas de abajo: si las pisaría, sube por encima del módulo.
+        const lowHole = next.filter((h) => !h.round && h.y > H / 2 && h.x < W / 2).reduce((m, h) => Math.min(m, h.y), H);
+        if (top + coachH > lowHole - 10) top = Math.max(8, Math.min(round.y - 14 - coachH, lowHole - 14 - coachH));
         rootStyle.setProperty('--coach-top', `${Math.round(top)}px`);
       } else rootStyle.removeProperty('--coach-top');
       setHoles((prev) => (JSON.stringify(prev) === JSON.stringify(next) ? prev : next));
@@ -291,7 +313,7 @@ function Focus({ selector, module }: { selector?: string; module: ModuleId | nul
       window.removeEventListener('resize', measure);
       document.documentElement.style.removeProperty('--coach-top');
     };
-  }, [selector, module]);
+  }, [selector, module, alsoKey]);
   if (holes.length === 0) return null;
   const n = (v: number): string => v.toFixed(1);
   // Pantalla completa con agujeros (regla par-impar): rectángulos para el panel, círculo para el módulo.

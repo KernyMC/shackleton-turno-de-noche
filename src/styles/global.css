@@ -1125,3 +1125,23 @@ html .hud .res__foot { gap: 0.2rem; }
 @media (max-width: 899px) {
   html .hud .res { width: auto; }
 }
+
+/* ============ Sello del plan: grande, de color lleno y con carita; se estampa al cambiar ============ */
+html .tablet__actions .forecast { padding: 0.4rem 0.55rem; gap: 0.7rem; border-color: var(--line); }
+html .tablet__actions .forecast__stamp {
+  --seal: var(--ok); gap: 0.4rem; padding: 0.3rem 0.7rem 0.3rem 0.35rem; border-radius: 6px;
+  background: var(--seal); color: #0b0c0e; border: 2px solid #0b0c0e; box-shadow: 0 3px 0 #000;
+  font-size: 1.2rem; letter-spacing: 0.03em; transform: rotate(-2deg);
+  animation: forecast-thump 300ms cubic-bezier(.2, 1.5, .4, 1);
+}
+html .tablet__actions .forecast--tight .forecast__stamp { --seal: var(--warn); }
+html .tablet__actions .forecast--critical .forecast__stamp { --seal: var(--danger); }
+html .forecast__face { width: 30px; height: 30px; flex: none; }
+html .forecast__face circle { fill: #fff8e0; stroke: #0b0c0e; stroke-width: 2; }
+html .forecast__face path { fill: none; stroke: #0b0c0e; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+@keyframes forecast-thump { from { transform: rotate(-9deg) scale(1.55); opacity: 0; } 60% { transform: rotate(-1deg) scale(0.96); opacity: 1; } }
+@media (max-width: 899px) {
+  html .tablet__actions .forecast__stamp { font-size: 0.95rem; padding: 0.2rem 0.5rem 0.2rem 0.25rem; }
+  html .forecast__face { width: 24px; height: 24px; }
+}
+@media (prefers-reduced-motion: reduce) { html .tablet__actions .forecast__stamp { animation: none; } }
