@@ -592,3 +592,8 @@ html .chl-card .btn.chl-bio-token:disabled { cursor: default; opacity: 0.45; bor
 /* Radar de sectores: el botón elegido es uno solo; lo que el escudo cubre de más se marca suave. */
 html .chl-card .btn.chl-sector-btn--on { border-color: var(--accent); background: var(--accent); color: #1a1206; text-decoration: none; }
 html .chl-card .btn.chl-sector-btn--also { border-color: var(--accent); border-style: dashed; background: var(--panel-deep); color: var(--accent); }
+
+/* Cables: se dibujan arrastrando sobre el tablero. */
+.chl-cab-board { touch-action: none; user-select: none; -webkit-user-select: none; }
+.chl-cab-cell { cursor: crosshair; }
+.chl-cab-cell--node { cursor: grab; }

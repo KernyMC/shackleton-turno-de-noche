@@ -93,6 +93,79 @@ export function CommCables({ params, onDone }: ChallengeGameProps) {
     setMsg('');
   };
 
+  // ---- Dibujar arrastrando: se pulsa sobre un nodo o un cable y se desliza por las casillas ----
+  const pathsRef = useRef(paths);
+  pathsRef.current = paths;
+  const selRef = useRef(sel);
+  selRef.current = sel;
+  const dragging = useRef(false);
+
+  const cellAt = (x: number, y: number): Pt | null => {
+    const key = document.elementFromPoint(x, y)?.closest('[data-cell]')?.getAttribute('data-cell');
+    if (!key) return null;
+    const [cx, cy] = key.split(',').map(Number);
+    return [cx!, cy!];
+  };
+  const ownerIn = (all: Pt[][], p: Pt): { pair: number; node: boolean; start: boolean } | null => {
+    for (let i = 0; i < PAIRS.length; i++) {
+      if (same(nodes[i]![0], p)) return { pair: i, node: true, start: true };
+      if (same(nodes[i]![1], p)) return { pair: i, node: true, start: false };
+    }
+    for (let i = 0; i < all.length; i++) if (all[i]!.some((q) => same(q, p))) return { pair: i, node: false, start: false };
+    return null;
+  };
+  const setPath = (i: number, next: Pt[]): void => {
+    const all = pathsRef.current.map((x, j) => (j === i ? next : x));
+    pathsRef.current = all;
+    setPaths(all);
+  };
+  /** Lleva el cable elegido hasta la casilla p si es la siguiente (o retrocede si ya pasó por ella). */
+  const dragTo = (p: Pt): void => {
+    const i = selRef.current;
+    const cur = pathsRef.current[i]!;
+    const last = cur[cur.length - 1]!;
+    if (same(last, p)) return;
+    const mine = cur.findIndex((q) => same(q, p));
+    if (mine >= 0) return setPath(i, cur.slice(0, mine + 1));
+    if (cur.length > 1 && same(last, nodes[i]![1])) return; // ya llegó a su pareja
+    if (!adjacent(last, p)) return;
+    const o = ownerIn(pathsRef.current, p);
+    if (o && !(o.pair === i && o.node)) return; // ocupada por otro cable o por otro nodo
+    setPath(i, [...cur, p]);
+    setMsg('');
+  };
+  const onBoardDown = (e: PointerEvent): void => {
+    if (doneRef.current || (e.pointerType === 'mouse' && e.button !== 0)) return;
+    const p = cellAt(e.clientX, e.clientY);
+    if (!p) return;
+    const o = ownerIn(pathsRef.current, p);
+    if (o) {
+      // Se coge ese cable: desde su inicio se vuelve a dibujar; desde un tramo, se sigue desde ahí.
+      selRef.current = o.pair;
+      setSel(o.pair);
+      const cur = pathsRef.current[o.pair]!;
+      if (o.node && o.start) setPath(o.pair, [cur[0]!]);
+      else if (!o.node) setPath(o.pair, cur.slice(0, cur.findIndex((q) => same(q, p)) + 1));
+      else return; // nodo final: solo se selecciona
+    } else {
+      dragTo(p);
+    }
+    dragging.current = true;
+    try {
+      (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    } catch {
+      /* sin captura el arrastre sigue funcionando dentro del tablero */
+    }
+  };
+  const onBoardMove = (e: PointerEvent): void => {
+    if (!dragging.current || doneRef.current) return;
+    const p = cellAt(e.clientX, e.clientY);
+    if (p) dragTo(p);
+  };
+  const onBoardUp = (): void => {
+    dragging.current = false;
+  };
+
   const clear = (): void => {
     if (doneRef.current) return;
     setPaths((a) => a.map((x, i) => (i === sel ? [x[0]!] : x)));
@@ -126,7 +199,9 @@ export function CommCables({ params, onDone }: ChallengeGameProps) {
           class={`chl-cab-cell${o ? ` chl-cab-cell--p${o.pair}` : ''}${o?.node ? ' chl-cab-cell--node' : ''}`}
           tabIndex={x === 0 && y === 0 ? 0 : -1}
           aria-label={t('challenge.cab.cell', { col: x + 1, row: y + 1, what })}
-          onClick={() => tap(p)}
+          onClick={(e) => {
+            if ((e as MouseEvent).detail === 0) tap(p);
+          }}
           onKeyDown={(e) => onKey(e as unknown as KeyboardEvent, x, y)}
         >
           {o && <span class="chl-cab-cell__letter">{letter}</span>}
@@ -166,6 +241,10 @@ export function CommCables({ params, onDone }: ChallengeGameProps) {
         class="chl-cab-board"
         role="group"
         aria-label={t('challenge.cab.board')}
+        onPointerDown={onBoardDown}
+        onPointerMove={onBoardMove}
+        onPointerUp={onBoardUp}
+        onPointerCancel={onBoardUp}
         style={{ gridTemplateColumns: `repeat(${size}, 1fr)`, ['--chl-cols' as string]: size, ['--chl-rows' as string]: size }}
       >
         {cells}
