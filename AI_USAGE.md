@@ -39,5 +39,6 @@ Registro honesto de qué se hizo con ayuda de IA. Añade una línea por sesión 
 | 2026-11-14 | Claude Code (Anthropic) · Suno | Música de fondo: 8 pistas generadas por el equipo con Suno; integración por estado del juego, fundidos y control de volumen escritos con Claude Code | Pendiente de revisión del equipo |
 | 2026-11-14 | Claude (Anthropic) | Vídeos de la intro en español e inglés (27 s), hechos por el equipo con Claude; integrados en el juego con Claude Code (intro en vídeo, «Saltar intro», «Ver la intro») | Pendiente de revisión del equipo |
 | 2026-11-14 | Claude Code (Anthropic) · Remotion | Vídeo de demostración de 30 s (ES/EN, horizontal y vertical) en `video/`: grabación automática de partidas reales con Playwright, montaje con Remotion usando la skill oficial `remotion-dev/skills`, rótulos y guion escritos con Claude Code; música del juego (Suno) | Pendiente de revisión del equipo |
+| 2026-11-15 | Claude Code (Anthropic) | Optimización de rendimiento de la escena 3D: medición con Playwright/Chrome, imágenes compartidas entre GLB, tope de 60 fps y astronauta sin animación sobrante | Pendiente de revisión del equipo |
 
 Si se usan modelos 3D o audio generados (por ejemplo Tripo o Suno), anotarlos aquí y en `CREDITS.md`.

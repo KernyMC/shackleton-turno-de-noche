@@ -207,6 +207,8 @@ const DENSITY: Record<Tier, { dust: number; stars: number }> = {
 /** Modo ahorro: tras esto sin interacción (y fuera de la presentación) se limita a ~30 fps. */
 const SAVER_AFTER_MS = 6000;
 const SAVER_FRAME_MS = 28;
+/** Tope de fotogramas: en pantallas de 90/120/144 Hz no se dibuja más de ~60 veces por segundo (mitad de trabajo en tablets y portátiles de alta frecuencia). */
+const MAX_FRAME_MS = 1000 / 60;
 /** El hover (rayo contra los módulos) se resuelve como mucho a esta cadencia. */
 const HOVER_MS = 60;
 /** Mirar al cielo: la Tierra queda a esta fracción del medio campo de visión sobre el centro (algo sobre el centro, libre de la barra y la meta, con el cráter debajo). */
@@ -757,8 +759,11 @@ export function createWorld(container: HTMLElement, cb: WorldCallbacks): World {
     const now = performance.now();
     // Modo ahorro: en reposo (sin interacción, sin presentación ni vuelo) basta con ~30 fps; la cámara orbita muy despacio.
     const saver = !introMode && !fly && !drag && now - lastActivity > SAVER_AFTER_MS;
-    if (saver && now - lastFrameAt < SAVER_FRAME_MS) return;
-    lastFrameAt = now;
+    const since = now - lastFrameAt;
+    if (saver && since < SAVER_FRAME_MS) return;
+    // Limitador a 60 fps con arrastre del resto: a 90 Hz alterna y promedia ~60; a 60 Hz no salta ninguno.
+    if (since < MAX_FRAME_MS - 1.5) return;
+    lastFrameAt = !saver && since < MAX_FRAME_MS * 2 ? now - Math.max(0, since - MAX_FRAME_MS) : now;
     if (import.meta.env.DEV) Object.assign(window, { __renderer: renderer, __scene: scene });
     timer.update();
     const rawDt = timer.getDelta();

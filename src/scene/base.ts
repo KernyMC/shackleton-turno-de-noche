@@ -8,6 +8,7 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import type { GLTF } from 'three/addons/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
+import { sharedImages } from './sharedImages';
 import { CREW } from '../data/crew';
 import type { ModuleId } from '../sim/types';
 import { optionalAssets } from './assets';
@@ -394,7 +395,7 @@ export function createBase(heightAt: (x: number, z: number) => number = () => 0)
   let disposed = false;
   const loadModels = async (): Promise<string[]> => {
     if (typeof document === 'undefined') return [];
-    const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
+    const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder).register(sharedImages);
     const loaded: string[] = [];
     const declared = (await optionalAssets()).models;
     // Todas las descargas arrancan a la vez; luego se colocan en orden (antes iban de una en una).
