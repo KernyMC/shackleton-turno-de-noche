@@ -1,0 +1,7 @@
+# Lo que no se sube a Vercel: el juego se construye allí desde el código.
+# video/ es el proyecto Remotion del vídeo de demo (renders de cientos de MB); el juego usa public/video.
+video/
+dist/
+.astro/
+.env
+.env.*
