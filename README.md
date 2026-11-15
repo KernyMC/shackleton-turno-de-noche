@@ -27,6 +27,35 @@ Reto: *Build a Junior Astronaut Mission Trainer*. Público: niñas y niños de 7
 La partida se divide en **5 actos** que desbloquean las mecánicas de a una, y cada evento ofrece
 **dos opciones válidas con costos distintos**: ninguna decisión es gratis.
 
+## Cómo se juega
+
+1. **Historia en cómic** (5 viñetas, se puede saltar): año 2048, el cráter Shackleton, la tripulación y la tormenta que corta la comunicación. Va rotulada «Historia de ficción · datos reales».
+2. **Tres modos**: *Tutorial* (5 días guiados; la pantalla se oscurece y solo queda iluminado lo que hay que tocar), *Cadete* (con margen para aprender) y *Comandante* (el reto completo).
+3. **Cada día**: repartes la energía con bloques, ves al instante cómo cambiará cada recurso y pasas el día. La tripulación reacciona con caritas: contenta, tranquila, preocupada o asustada.
+4. **Diez retos** repartidos en los 30 días (tabla de abajo). Antes de cada uno hay una demostración animada de cómo se juega; el reloj no corre hasta que empiezas.
+5. **Final**: si resistes hasta el día 30 llega la nave de relevo. Si no, la misión se aborta y el juego explica qué pasó y cómo lo resolvería una misión real.
+
+Desde la portada, el botón **Minijuegos** abre los diez retos sueltos, sin partida ni premios, para practicar o para enseñarlos.
+
+### Los diez retos
+
+| Día | Reto | Qué se hace | Qué deja |
+|---|---|---|---|
+| 2 | Rover al hielo | Llevar el rover al hielo y volver, eligiendo entre casillas al Sol y en sombra | El Sol da energía pero trae radiación; la sombra protege pero gasta batería |
+| 4 | Antenas de clima espacial | Ajustar las antenas hasta que la onda coincide con la señal | Con buenas antenas, el aviso de tormenta llega antes |
+| 6 | Fugas en los túneles | Encontrar tres fugas con las pistas del detector | Sin fugas, el aire se queda dentro |
+| 8 | Cables a las balizas | Unir tres pares de conectores sin cruzar los cables | Planear el camino antes de empezar |
+| 12 | Brazo robótico | Girar hombro y codo para coger una muestra sin tocar rocas | Los brazos robóticos trabajan fuera para que nadie tenga que salir |
+| 14 | Chequeo de la tripulación | Dar el cuidado correcto a quien lo necesita | En una misión se vigila la salud de cada persona |
+| 16 | Muro de regolito | Recoger montones de regolito y armar el muro ladrillo a ladrillo | Una capa gruesa de regolito frena la radiación |
+| 18 | Lluvia de micrometeoritos | Girar el escudo hacia donde avisa el radar | Varias capas finas frenan mejor que una gruesa |
+| 24 | Gran tormenta solar | Decidir qué apagar y colocar el muro del refugio | Ahorrar energía a tiempo protege a la tripulación |
+| 30 | Llega la nave de relevo | Fijar las cuatro barras para el acoplamiento | Un acoplamiento se hace despacio y en equipo |
+
+Los retos son **ficción de juego**: sus premios y castigos son decisiones de diseño
+(`public/data/challenges.json`, estado `game_balance`). El dato científico que acompaña a cada uno
+enlaza con su fuente en el panel «¿De dónde salen los datos?».
+
 ## Datos de NASA y de agencias aliadas
 
 El juego muestra sus fuentes dentro, en el panel **«¿De dónde salen los datos?»** (portada y barra
@@ -57,12 +86,13 @@ tormenta real del nivel que corresponde a cada acto, sin modificar sus datos.
 - **Proxy propio** `/api/spaceweather` (función de Vercel) para el clima espacial en vivo: la clave de NASA nunca llega al navegador y, si falla, el juego usa los datos guardados.
 - **Calidad adaptativa**: baja la resolución y los efectos si el equipo va lento.
 - **Accesible**: todo se puede hacer con teclado y desde el panel (sin 3D), el estado nunca se dice solo con color, y respeta «reducir movimiento».
+- **Pensado para leer poco**: demostración animada antes de cada reto, dibujos en vez de letreros, frases cortas en español e inglés.
 
 ```
 src/sim/         motor del juego: reglas, actos, eventos, avance rápido (con tests)
 src/state/       store (signals): puente entre motor, interfaz y escena
 src/scene/       maqueta 3D de la base (Three.js)
-src/components/  interfaz (visor, panel de energía, eventos, tripulación, final)
+src/components/  interfaz (visor, panel de energía, eventos, tripulación, cómic, retos, final)
 src/i18n/        textos en español e inglés
 public/data/     balance y datos de NASA en JSON
 api/             proxy de clima espacial (Vercel)
@@ -97,10 +127,20 @@ Abre http://localhost:4321.
 Variables de entorno: copia `.env.example` a `.env` (no se sube a git). `NASA_API_KEY` es opcional
 (clave gratuita de https://api.nasa.gov); sin ella el juego usa los datos guardados.
 
+## Qué sigue
+
+Borrador de hoja de ruta del equipo, sin fechas comprometidas:
+
+- Probarlo con más niñas y niños de 7 a 12 años y ajustar la dificultad con lo que se observe.
+- Una guía corta para docentes: qué decisión real de misión trabaja cada día y cada reto.
+- Terreno real del polo sur (CGI Moon Kit) incluido en la demo, no solo como opción.
+- Más idiomas y una versión instalable que funcione sin conexión desde el primer momento.
+
 ## Transparencia
 
 - **Uso de IA:** declarado en [AI_USAGE.md](AI_USAGE.md). El código se desarrolló con asistencia de IA, dirigida y revisada por el equipo.
-- **Créditos y fuentes:** [CREDITS.md](CREDITS.md). Sin logos de NASA.
+- **Créditos y fuentes:** [CREDITS.md](CREDITS.md). Sin logos de NASA. El modelo 3D de los astronautas es «Little Astronaut» de Jelle Vermandere (CC-BY 4.0), con los colores cambiados.
+- **Qué es dato y qué no:** las tormentas, las dosis de referencia y la foto de la Tierra son reales. El terreno, el cráter dibujado, las nubes de la Tierra, la historia y los números de balance son del juego.
 - **Decisiones de diseño:** [DECISIONES.md](DECISIONES.md).
 - **Licencia:** [MIT](LICENSE). Los datos e imágenes de NASA y agencias aliadas conservan sus propios términos.
 

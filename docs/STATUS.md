@@ -36,7 +36,7 @@
 - **ElevenLabs**: la clave no tiene el permiso *Sound Generation*; suenan efectos sintetizados.
 
 ## Problemas conocidos
-- README ES/EN y `docs/RUBRICA.md` aún no mencionan el cómic ni los retos.
+- `docs/RUBRICA.md` aún no menciona el cómic ni los retos (los README ES/EN sí, desde el 14-nov por la noche; su «Qué sigue» es un borrador de hoja de ruta que el equipo debe validar).
 - Glosario de 4 conceptos (noche lunar, dosimetría, regolito, sombra permanente) no hecho.
 - `hud` no revisó la mayoría de los retos en inglés ni en 1600×900 / 1024×700; nadie probó sin WebGL ni una partida Comandante completa con retos.
 - `qa` vio una vez la escena en negro con calidad `low` tras muchos reinicios (sin confirmar).

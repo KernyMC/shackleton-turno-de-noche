@@ -27,6 +27,35 @@ Challenge: *Build a Junior Astronaut Mission Trainer*. Audience: kids aged 7 to 
 The game is split into **5 acts** that unlock the mechanics one at a time, and every event offers
 **two valid options with different costs**: no choice is free.
 
+## How it plays
+
+1. **Comic-strip story** (5 panels, skippable): the year 2048, Shackleton crater, the crew, and the storm that cuts off communication. It is labelled "Fiction story · real data".
+2. **Three modes**: *Tutorial* (5 guided days; the screen dims and only what you must tap stays lit), *Cadet* (room to learn) and *Commander* (the full challenge).
+3. **Every day**: you share out energy with blocks, see at once how each resource will change, and play the day. The crew reacts with faces: happy, calm, worried or scared.
+4. **Ten challenges** spread over the 30 days (table below). Each one starts with an animated demo of how to play; the clock does not run until you begin.
+5. **Ending**: hold out until day 30 and the relief ship arrives. If not, the mission is aborted and the game explains what happened and how a real mission would handle it.
+
+On the title screen, the **Minigames** button opens the ten challenges on their own, with no game in progress and no rewards, to practise or to show them.
+
+### The ten challenges
+
+| Day | Challenge | What you do | What it leaves |
+|---|---|---|---|
+| 2 | Rover to the ice | Drive the rover to the ice and back, choosing between sunlit and shaded squares | The Sun gives energy but brings radiation; shade protects but drains the battery |
+| 4 | Space weather antennas | Tune the antennas until your wave matches the signal | With good antennas the storm warning arrives earlier |
+| 6 | Leaks in the tunnels | Find three leaks using the detector's clues | With no leaks, the air stays inside |
+| 8 | Cables to the beacons | Join three pairs of connectors without crossing cables | Plan the path before you start |
+| 12 | Robotic arm | Turn shoulder and elbow to pick up a sample without touching rocks | Robotic arms work outside so nobody has to go out |
+| 14 | Crew check-up | Give the right care to whoever needs it | On a mission, everyone's health is watched |
+| 16 | Regolith wall | Collect regolith piles and build the wall brick by brick | A thick layer of regolith slows radiation |
+| 18 | Micrometeorite shower | Turn the shield to where the radar warns | Several thin layers stop a grain better than one thick layer |
+| 24 | Great solar storm | Decide what to switch off and place the shelter wall | Saving power in time protects the crew |
+| 30 | The relief ship arrives | Lock the four bars for docking | Docking is done slowly and as a team |
+
+The challenges are **game fiction**: their rewards and penalties are design decisions
+(`public/data/challenges.json`, status `game_balance`). The science fact shown with each one links
+to its source in the "Where does the data come from?" panel.
+
 ## NASA and partner-agency data
 
 The game shows its sources in-game, in the **"Where does the data come from?"** panel (title
@@ -57,12 +86,13 @@ the level that fits each act, without changing its data.
 - **Own proxy** `/api/spaceweather` (Vercel function) for live space weather: the NASA key never reaches the browser and, if it fails, the game uses the stored data.
 - **Adaptive quality**: lowers resolution and effects on slow devices.
 - **Accessible**: everything can be done with the keyboard and from the panel (without 3D), state is never shown by color alone, and "reduce motion" is respected.
+- **Built for little reading**: an animated demo before each challenge, drawings instead of labels, short sentences in Spanish and English.
 
 ```
 src/sim/         game engine: rules, acts, events, fast-forward (with tests)
 src/state/       store (signals): bridge between engine, interface and scene
 src/scene/       3D model of the base (Three.js)
-src/components/  interface (HUD, energy panel, events, crew, ending)
+src/components/  interface (HUD, energy panel, events, crew, comic, challenges, ending)
 src/i18n/        texts in Spanish and English
 public/data/     balance and NASA data as JSON
 api/             space-weather proxy (Vercel)
@@ -97,9 +127,19 @@ Open http://localhost:4321.
 Environment variables: copy `.env.example` to `.env` (never committed). `NASA_API_KEY` is
 optional (free key from https://api.nasa.gov); without it the game uses the stored data.
 
+## What comes next
+
+Draft team roadmap, with no committed dates:
+
+- Test it with more children aged 7 to 12 and tune the difficulty from what we observe.
+- A short guide for teachers: which real mission trade-off each day and each challenge works on.
+- Real south-pole terrain (CGI Moon Kit) included in the demo, not only as an option.
+- More languages and an installable version that works offline from the first moment.
+
 ## Transparency
 
 - **Use of AI:** declared in [AI_USAGE.md](AI_USAGE.md). The code was developed with AI assistance, directed and reviewed by the team.
-- **Credits and sources:** [CREDITS.md](CREDITS.md). No NASA logos are used.
+- **Credits and sources:** [CREDITS.md](CREDITS.md). No NASA logos are used. The astronauts' 3D model is "Little Astronaut" by Jelle Vermandere (CC-BY 4.0), recolored.
+- **What is data and what is not:** the storms, the reference doses and the photo of Earth are real. The terrain, the drawn crater, the clouds on Earth, the story and the balance numbers belong to the game.
 - **Design decisions:** [DECISIONES.md](DECISIONES.md) (in Spanish).
 - **License:** [MIT](LICENSE). Data and imagery from NASA and partner agencies keep their own terms.
