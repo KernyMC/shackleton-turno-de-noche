@@ -7,6 +7,9 @@ import { t } from '../i18n';
 import { defaultConfig } from '../sim/config';
 import type { GameState } from '../sim/types';
 import { planVerdict } from '../sim/verdict';
+import type { Verdict } from '../sim/verdict';
+import { isUnlocked, maxEnergyFor } from '../sim/acts';
+import type { Plan } from '../sim/types';
 import {
   applyPreset,
   budget,
@@ -37,7 +40,38 @@ function commit(): void {
   if (executeDay()) playCommit();
 }
 
+/** Tiempo que el botón espera la segunda pulsación antes de volver a su estado normal. */
+const RISK_MS = 5000;
+
+/**
+ * ¿El peligro del plan tiene arreglo hoy? Sí si queda energía sin repartir y el módulo que ayuda
+ * admite más (o, en un apagón, si se puede gastar menos). Si no hay nada que hacer, no se molesta.
+ */
+function riskFixable(g: GameState, verdict: Verdict, current: Plan, available: number): boolean {
+  const total = current.recycler + current.greenhouse + current.shield + current.workshop;
+  const spare = available - total >= 1;
+  const room = (id: 'recycler' | 'greenhouse' | 'shield'): boolean =>
+    isUnlocked(g, id) && !g.modules[id].broken && current[id] < maxEnergyFor(g, id);
+  switch (verdict.reason) {
+    case 'blackout':
+      return total > 0;
+    case 'life_support':
+      return spare && room('recycler');
+    case 'food':
+      return spare && room('greenhouse');
+    case 'dose':
+      return spare && room('shield');
+    default:
+      return false;
+  }
+}
+
 function Planner({ game: g }: { game: GameState }) {
+  // Segunda pulsación para un plan peligroso que se puede arreglar: una vez por día, sin ventanas.
+  const [armedDay, setArmedDay] = useState<number | null>(null);
+  const [askedDay, setAskedDay] = useState<number | null>(null);
+  const riskTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => () => void (riskTimer.current && clearTimeout(riskTimer.current)), []);
   const [notice, setNotice] = useState<string | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const b = budget.value;
@@ -49,6 +83,28 @@ function Planner({ game: g }: { game: GameState }) {
   const capacity = defaultConfig.balance.difficulty[g.difficulty].batteryCapacity;
 
   useEffect(() => () => void (timer.current && clearTimeout(timer.current)), []);
+
+  const risky = verdict.level !== 'safe' && verdict.reason !== null;
+  const fixable = risky && riskFixable(g, verdict, plan.value, b?.available ?? 0);
+  // Sin arreglo hoy: o no queda energía (aguanta), o el módulo ya está al máximo (vas bien, sigue mañana).
+  const total = plan.value.recycler + plan.value.greenhouse + plan.value.shield + plan.value.workshop;
+  const noSpare = (b?.available ?? 0) - total < 1;
+  const advice = risky ? t(fixable ? `advice.${verdict.reason}` : noSpare || verdict.reason === 'blackout' ? 'advice.stuck' : 'advice.keep') : null;
+  // La pregunta solo sigue en pie mientras el plan siga siendo peligroso y con arreglo.
+  const armed = armedDay === g.day && verdict.level === 'critical' && fixable;
+  const run = (): void => {
+    if (resolving.value) return;
+    const mustAsk = verdict.level === 'critical' && fixable && askedDay !== g.day && gameMode.value !== 'tutorial';
+    if (mustAsk && !armed) {
+      setArmedDay(g.day);
+      if (riskTimer.current) clearTimeout(riskTimer.current);
+      riskTimer.current = setTimeout(() => setArmedDay(null), RISK_MS);
+      return;
+    }
+    if (armed) setAskedDay(g.day);
+    setArmedDay(null);
+    commit();
+  };
 
   const flash = (key: string): void => {
     setNotice(key);
@@ -78,10 +134,10 @@ function Planner({ game: g }: { game: GameState }) {
       </p>
 
       <div class="tablet__actions">
-        <Forecast verdict={verdict} />
-        <button type="button" class="btn btn--primary btn--execute" disabled={resolving.value} onClick={commit}>
-          <svg width="18" height="18" viewBox="0 0 20 20" aria-hidden="true"><path d="M6 4l10 6-10 6Z" fill="currentColor" /></svg>
-          {resolving.value ? t('tablet.resolving') : t('tablet.execute', { dia: g.day })}
+        <Forecast verdict={verdict} advice={advice} />
+        <button type="button" class={`btn btn--primary btn--execute${armed ? ' btn--risk' : ''}`} disabled={resolving.value} onClick={run}>
+          {armed ? <Icon name="alert" size={20} /> : <svg width="18" height="18" viewBox="0 0 20 20" aria-hidden="true"><path d="M6 4l10 6-10 6Z" fill="currentColor" /></svg>}
+          {resolving.value ? t('tablet.resolving') : armed ? t('tablet.confirm_risk') : t('tablet.execute', { dia: g.day })}
         </button>
         {gameMode.value !== 'tutorial' && !(firstRun.value && g.day <= 2) && !resolving.value && !fastForwarding.value && g.phase === 'planning' && (
           <button
@@ -166,7 +222,8 @@ export function Tablet() {
       // Enter ejecuta el día salvo que el foco esté en un botón o desplegable, que ya usan Enter.
       if (target.tagName !== 'BUTTON' && target.tagName !== 'SUMMARY') {
         e.preventDefault();
-        commit();
+        // Enter hace lo mismo que el botón (incluida la segunda pulsación de un plan peligroso).
+        dialog.current?.querySelector<HTMLButtonElement>('.btn--execute')?.click();
       }
       return;
     }

@@ -913,5 +913,12 @@
   "night.empty": "Casi sin batería. Hoy la base aguanta en mínimo. Quedan {left} noches.",
   "night.empty.last": "Casi sin batería. Aguanta: mañana vuelve el Sol.",
   "night.save": "Guardar hoy: solo aire y agua",
-  "night.share": "Repartir la ración de hoy"
+  "night.share": "Repartir la ración de hoy",
+  "advice.life_support": "El aire quedará muy bajo. Dale más al Reciclador.",
+  "advice.food": "La comida quedará muy baja. Dale más al Invernadero.",
+  "advice.blackout": "No alcanza la energía. Baja algún módulo.",
+  "advice.dose": "Mucha radiación. Dale energía al Blindaje.",
+  "advice.stuck": "Hoy no hay energía para más. Aguanta: mañana será mejor.",
+  "tablet.confirm_risk": "¿Seguro? Pulsa otra vez",
+  "advice.keep": "Ya le das todo lo que admite. Mañana seguirá subiendo."
 }

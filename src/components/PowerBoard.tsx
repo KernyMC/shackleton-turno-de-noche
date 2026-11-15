@@ -204,7 +204,7 @@ function ShareBar({ game: g, wasted }: { game: GameState; wasted: number }) {
 }
 
 /** Veredicto del plan: sello de color + una línea con lo que pasará hoy. Vive en el pie fijo del panel. */
-export function Forecast({ verdict }: { verdict: Verdict }) {
+export function Forecast({ verdict, advice }: { verdict: Verdict; advice?: string | null }) {
   const p = preview.value;
   const word = verdict.reason === 'blackout' ? 'tablet.verdict.blackout' : `tablet.verdict.${verdict.level}`;
   return (
@@ -223,10 +223,16 @@ export function Forecast({ verdict }: { verdict: Verdict }) {
         </svg>
         <span>{t(word)}</span>
       </div>
-      {p && (
-        <p class="forecast__words">
-          {t('board.after_today', { aire: signed(p.lifeSupport), comida: signed(p.food), bateria: num(p.battery, 0) })}
+      {advice ? (
+        <p class="forecast__words forecast__advice">
+          <Icon name="alert" size={18} /> <span>{advice}</span>
         </p>
+      ) : (
+        p && (
+          <p class="forecast__words">
+            {t('board.after_today', { aire: signed(p.lifeSupport), comida: signed(p.food), bateria: num(p.battery, 0) })}
+          </p>
+        )
       )}
     </div>
   );

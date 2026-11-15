@@ -913,5 +913,12 @@
   "night.empty": "Almost no battery. Today the base runs on minimum. {left} nights left.",
   "night.empty.last": "Almost no battery. Hold on: the Sun is back tomorrow.",
   "night.save": "Save today: only air and water",
-  "night.share": "Share out today's ration"
+  "night.share": "Share out today's ration",
+  "advice.life_support": "Air will be very low. Give more to the Recycler.",
+  "advice.food": "Food will be very low. Give more to the Greenhouse.",
+  "advice.blackout": "Not enough energy. Lower a module.",
+  "advice.dose": "Too much radiation. Power the Shield.",
+  "advice.stuck": "No more energy today. Hold on: tomorrow will be better.",
+  "tablet.confirm_risk": "Sure? Press again",
+  "advice.keep": "You are giving it all it can take. It will keep rising tomorrow."
 }
