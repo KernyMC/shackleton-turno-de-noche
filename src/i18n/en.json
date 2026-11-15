@@ -901,5 +901,17 @@
   "challenge.bio.ready": "Ready. Press Confirm, or tap a card to take it back.",
   "challenge.bio.give_to": "Give the care to {name}",
   "challenge.bio.remove": "Remove {care} from {name}",
-  "pres.aria": "How each resource will end up with this plan"
+  "pres.aria": "How each resource will end up with this plan",
+  "night.aria": "Lunar night",
+  "night.soon": "{n} days until night",
+  "night.soon.one": "Night begins tomorrow",
+  "night.now": "Night {n} of {total}",
+  "night.battery": "Battery: {n} of {max}",
+  "night.soon.tip": "There will be {total} days with no Sun. Fill the battery: it is all you will have.",
+  "night.soon.full": "Battery full! All set for {total} days with no Sun.",
+  "night.ration": "You can use {n} each night. {left} left.",
+  "night.empty": "Almost no battery. Today the base runs on minimum. {left} nights left.",
+  "night.empty.last": "Almost no battery. Hold on: the Sun is back tomorrow.",
+  "night.save": "Save today: only air and water",
+  "night.share": "Share out today's ration"
 }

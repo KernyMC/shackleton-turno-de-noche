@@ -166,3 +166,9 @@ Capa aparte de los eventos: NO pasan por `scheduleEvents` ni consumen tiradas. D
 - Store: `challengesEnabled` (false en Tutorial, lo fija `mode.ts`), `activeChallenge {def, assist}`, `completeChallenge(outcome, optionId?)`. `executeDay` abre el reto en vez de correr el día; al completarlo aplica efectos, reajusta el plan si quedó inválido y corre el día. Con el reto abierto no se puede planificar, reparar ni avanzar rápido; `startGame`/`rewindTo`/`exitToMenu` lo cierran.
 - Estrategias: `Strategy.challenge` (prudente: sorteo con `simWeights`; reciclador: salta o falla; aleatoria: al azar) y `repairs` (la prudente pide reparar lo averiado). `playGame` resuelve el reto antes de `runDay`; `simulate` muestra la columna `retos`.
 - Si cambias: un efecto nuevo → `types.ts`, `applyChallenge`, `shared.tsx` (`effectLine`), textos `challenge.effect.*`, test · números de `challenges.json` → `npm run simulate` y `npm test` · un reto nuevo → entrada en el JSON + componente en `registry.ts` + textos (`i18n.test.ts` los exige).
+
+## Ayuda de la noche lunar (`src/sim/night.ts`)
+- `nightInfo(state)` → `null` lejos de la noche; `phase: 'soon'` cuando entra en los próximos `balance.fastForward.nightLookahead` días; `phase: 'night'` con `nightIndex`, `nightTotal`, `nightsLeft` y `ration`.
+- `ration` = suelo de (batería − `baseConsumption` × noches que quedan) / noches que quedan, sin pasar de la energía de hoy. Es conservadora: no cuenta la poca luz de la noche (`nightLightBonus`).
+- `nightRationPlan(state)` reparte la ración entre Reciclador e Invernadero en proporción a `maxEnergyFor`; pasa por `fitPlan`. La usa la acción `applyNightRation` del store.
+- No cambia reglas ni números. Si cambias `nightDays`, `baseConsumption` o `nightLookahead`, revisa `night.test.ts`.

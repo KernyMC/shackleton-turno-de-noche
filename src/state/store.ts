@@ -19,6 +19,7 @@ import {
   validatePlan,
 } from '../sim/engine';
 import { fastForwardStep, REPEAT_ORDER } from '../sim/fastForward';
+import { nightRationPlan } from '../sim/night';
 import type { StopReason } from '../sim/fastForward';
 import { anyResourceLow } from '../sim/thresholds';
 import { MODULE_IDS } from '../sim/types';
@@ -214,6 +215,15 @@ export function setPlanValue(id: ModuleId, value: number): boolean {
   const final = Math.min(wanted, room);
   if (final !== plan.value[id]) plan.value = { ...plan.value, [id]: final };
   return final < wanted;
+}
+
+/** Pone el plan de hoy con la ración de la noche lunar (aire y comida). Devuelve true si se aplicó. */
+export function applyNightRation(): boolean {
+  const g = game.value;
+  if (!g || g.phase !== 'planning' || resolving.value || fastForwarding.value) return false;
+  plan.value = nightRationPlan(g);
+  reserveWorkshop(g);
+  return true;
 }
 
 /** Aplica un plan rápido. Devuelve true si hubo que ajustarlo a la energía de hoy. */

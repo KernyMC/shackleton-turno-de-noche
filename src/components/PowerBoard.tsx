@@ -13,7 +13,8 @@ import { MODULE_IDS } from '../sim/types';
 import type { GameState, ModuleId } from '../sim/types';
 import type { Verdict } from '../sim/verdict';
 import { unlockFlash } from '../state/acts';
-import { budget, focusModule, plan, preview, requestClean, requestRepair, resolving, setPlanValue } from '../state/store';
+import { applyNightRation, applyPreset, budget, focusModule, plan, preview, requestClean, requestRepair, resolving, setPlanValue } from '../state/store';
+import { nightInfo } from '../sim/night';
 import { emotionOf, moodOf, planEmotion } from '../state/rewards';
 import { resourceLevels } from '../sim/thresholds';
 import { CrewPortrait } from './CrewPortrait';
@@ -303,6 +304,56 @@ function DustCard({ game: g }: { game: GameState }) {
 }
 
 /**
+ * Noche lunar: dos días antes dice que hay que llegar con la batería llena y ofrece guardar; cada
+ * noche dice cuántas quedan, cuánta batería hay y cuánto se puede gastar, y reparte esa ración con
+ * un botón. Así el jugador sabe qué puede hacer en vez de pasar los días a ciegas.
+ */
+function NightCard({ game: g }: { game: GameState }) {
+  if (g.phase !== 'planning') return null;
+  const info = nightInfo(g);
+  if (!info) return null;
+  const capacity = defaultConfig.balance.difficulty[g.difficulty].batteryCapacity;
+  const battery = Math.round(g.battery);
+  const pct = Math.max(0, Math.min(100, (g.battery / capacity) * 100));
+  const busy = resolving.value;
+  return (
+    <div class={`nightc nightc--${info.phase}`} role="group" aria-label={t('night.aria')}>
+      <span class="nightc__moon" aria-hidden="true"><Icon name="moon" size={26} /></span>
+      <div class="nightc__body">
+        <p class="nightc__title">
+          {info.phase === 'soon'
+            ? t(info.daysUntil === 1 ? 'night.soon.one' : 'night.soon', { n: info.daysUntil })
+            : t('night.now', { n: info.nightIndex, total: info.nightTotal })}
+        </p>
+        <div class="nightc__meter" role="img" aria-label={t('night.battery', { n: battery, max: capacity })}>
+          <Icon name="battery" size={18} />
+          <span class="nightc__bar"><i style={{ width: `${pct}%` }} /></span>
+          <b>{battery}</b>
+          <span class="nightc__max">/ {capacity}</span>
+        </div>
+        <p class="nightc__tip">
+          {info.phase === 'soon'
+            ? t(pct >= 95 ? 'night.soon.full' : 'night.soon.tip', { total: info.nightTotal })
+            : info.ration > 0
+              ? t('night.ration', { n: info.ration, left: info.nightsLeft })
+              : t(info.nightsLeft === 1 ? 'night.empty.last' : 'night.empty', { left: info.nightsLeft })}
+        </p>
+      </div>
+      {info.phase === 'soon' && pct < 95 && (
+        <button type="button" class="btn btn--small nightc__go" disabled={busy} onClick={() => applyPreset('saving')}>
+          {t('night.save')}
+        </button>
+      )}
+      {info.phase === 'night' && info.ration > 0 && (
+        <button type="button" class="btn btn--small nightc__go" disabled={busy} onClick={() => applyNightRation()}>
+          {t('night.share')}
+        </button>
+      )}
+    </div>
+  );
+}
+
+/**
  * Recursos justo encima de las barras: Aire sobre el Reciclador, Comida sobre el Invernadero y la
  * Batería al lado. Cada uno con su carita, su valor de hoy y cuánto cambiará con el plan actual,
  * para que repartir y ver el resultado ocurra en el mismo sitio.
@@ -355,6 +406,7 @@ export function PowerBoard({ game: g, verdict, onClamped }: { game: GameState; v
       <ShareBar game={g} wasted={verdict.wasted} />
       <RepairCards game={g} />
       <DustCard game={g} />
+      <NightCard game={g} />
       <PlanResources game={g} />
       <div class="board" role="group" aria-label={t('board.aria')}>
         {MODULE_IDS.map((id) => (

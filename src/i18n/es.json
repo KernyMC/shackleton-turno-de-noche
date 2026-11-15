@@ -901,5 +901,17 @@
   "challenge.bio.ready": "Listo. Pulsa Confirmar, o toca una ficha para quitarla.",
   "challenge.bio.give_to": "Dar el cuidado a {name}",
   "challenge.bio.remove": "Quitar {care} a {name}",
-  "pres.aria": "Cómo quedará cada recurso con este plan"
+  "pres.aria": "Cómo quedará cada recurso con este plan",
+  "night.aria": "Noche lunar",
+  "night.soon": "Faltan {n} días para la noche",
+  "night.soon.one": "Mañana empieza la noche",
+  "night.now": "Noche {n} de {total}",
+  "night.battery": "Batería: {n} de {max}",
+  "night.soon.tip": "Serán {total} días sin Sol. Llena la batería: es todo lo que tendrás.",
+  "night.soon.full": "¡Batería llena! Todo listo para {total} días sin Sol.",
+  "night.ration": "Puedes usar {n} cada noche. Quedan {left}.",
+  "night.empty": "Casi sin batería. Hoy la base aguanta en mínimo. Quedan {left} noches.",
+  "night.empty.last": "Casi sin batería. Aguanta: mañana vuelve el Sol.",
+  "night.save": "Guardar hoy: solo aire y agua",
+  "night.share": "Repartir la ración de hoy"
 }

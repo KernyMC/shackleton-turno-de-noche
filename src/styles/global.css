@@ -1228,3 +1228,24 @@ html .pres--life .pres__face .portrait, html .pres--food .pres__face .portrait {
 @media (max-width: 899px) {
   html .pres--life, html .pres--food { grid-template-areas: 'value' 'bar'; }
 }
+
+/* ============ Noche lunar: tarjeta de preparación y de ración ============ */
+html .nightc {
+  display: grid; grid-template-columns: auto 1fr; gap: 0.3rem 0.6rem; align-items: center; margin: 0.6rem 0 0.2rem; padding: 0.5rem 0.6rem;
+  background: #171a26; border: 2px solid #8fa0d8; border-radius: var(--r-panel); box-shadow: 0 3px 0 #000;
+}
+html .nightc__moon { display: grid; place-items: center; width: 42px; height: 42px; border-radius: 50%; background: #f4e7b8; color: #0b0c0e; border: 2px solid #0b0c0e; }
+html .nightc__body { display: grid; gap: 0.2rem; min-width: 0; }
+html .nightc__title { margin: 0; font-family: var(--font-display); font-weight: 700; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 0.03em; }
+html .nightc__meter { display: flex; align-items: center; gap: 0.35rem; }
+html .nightc__meter .icon { color: var(--accent); flex: none; }
+html .nightc__bar { flex: 1; height: 12px; border-radius: 2px; background: #000; box-shadow: inset 0 0 0 2px var(--line); overflow: hidden; }
+html .nightc__bar i { display: block; height: 100%; background: var(--accent); transition: width 250ms; }
+html .nightc__max { color: var(--text-dim); font-size: 0.8rem; }
+html .nightc__tip { margin: 0; font-size: 0.9rem; line-height: 1.25; }
+html .nightc__go {
+  grid-column: 1 / -1; min-height: 46px; justify-content: center; background: var(--accent); color: #1a1206; border-color: var(--accent-deep);
+  box-shadow: 0 4px 0 var(--accent-deep), inset 0 2px 0 rgb(255 255 255 / 0.35);
+}
+html .nightc__go:active:not(:disabled) { box-shadow: 0 1px 0 var(--accent-deep); }
+@media (prefers-reduced-motion: reduce) { html .nightc__bar i { transition: none; } }
