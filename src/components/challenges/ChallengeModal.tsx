@@ -125,6 +125,11 @@ export function Challenge({ def, assist, onFinish }: { def: ChallengeDef; assist
         aria-modal="true"
         aria-labelledby="chl-title"
       >
+        {onFinish && step !== 'mission' && (
+          <button type="button" class="btn btn--ghost chl-practice-exit" onClick={onFinish}>
+            {t('practice.back')}
+          </button>
+        )}
         <p class="chl-kicker">{t('challenge.kicker', { n: def.day })}</p>
         <h2 id="chl-title" class="chl-title" tabIndex={-1} ref={headRef}>
           {step === 'result' ? t(`challenge.outcome.${outcome}`) : t(`challenge.${def.id}.title`)}

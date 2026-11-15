@@ -597,3 +597,8 @@ html .chl-card .btn.chl-sector-btn--also { border-color: var(--accent); border-s
 .chl-cab-board { touch-action: none; user-select: none; -webkit-user-select: none; }
 .chl-cab-cell { cursor: crosshair; }
 .chl-cab-cell--node { cursor: grab; }
+
+/* Práctica: siempre se puede volver a la lista. */
+.chl-card { position: relative; }
+html .chl-card .btn.chl-practice-exit { position: absolute; top: 0.7rem; right: 0.8rem; min-height: 40px; padding: 0 0.8rem; font-size: 0.85rem; z-index: 2; }
+@media (max-width: 640px) { html .chl-card .btn.chl-practice-exit { position: static; justify-self: end; margin-bottom: 0.3rem; } }
