@@ -203,8 +203,9 @@ export function SectorDefense({ params, assist, onDone, howKey, theme, arcBonus 
             <button
               key={i}
               type="button"
-              class={`btn chl-sector-btn${covered.includes(i) ? ' chl-sector-btn--on' : ''}`}
-              aria-pressed={covered.includes(i)}
+              // Solo el sector elegido queda marcado; los que el escudo cubre de más van con borde suave.
+              class={`btn chl-sector-btn${i === ((center % n) + n) % n ? ' chl-sector-btn--on' : covered.includes(i) ? ' chl-sector-btn--also' : ''}`}
+              aria-pressed={i === ((center % n) + n) % n}
               aria-label={t('challenge.sector.btn', { n: i + 1 })}
               onClick={() => move(i)}
             >
