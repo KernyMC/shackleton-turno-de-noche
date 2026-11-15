@@ -17,13 +17,14 @@ export function PracticeMenu() {
   useEffect(() => {
     if (open && !def) first.current?.focus();
   }, [open, def]);
-  if (!open) return null;
+  // Los hooks van siempre antes de cualquier return (si no, cambia su número entre renders).
   useEffect(() => {
-    practiceChallenge.value = def?.id ?? null;
+    practiceChallenge.value = open ? (def?.id ?? null) : null;
     return () => {
       practiceChallenge.value = null;
     };
-  }, [def]);
+  }, [def, open]);
+  if (!open) return null;
 
   if (def) return <Challenge key={def.id} def={def} assist={0} onFinish={() => setDef(null)} />;
 
