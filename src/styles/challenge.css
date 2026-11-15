@@ -515,3 +515,76 @@ html .title__practice { margin-top: 0.6rem; min-height: 44px; padding: 0 1.2rem;
   .chl-rov-bar i { transition: none; }
 }
 @media (max-width: 640px) { .chl-rov-bar { width: 4.2rem; } .chl-rov-goal { margin-left: 0; } }
+
+/* ============ Muro de regolito con dibujos (día 16) ============ */
+.chl-trench-board { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 0.8rem 1.6rem; }
+html .chl-trench-grid { width: 15.5rem; grid-auto-rows: 40px; gap: 3px; background: #101216; }
+html .chl-trench-cell { background: #4a463d; border-color: #5d584c; overflow: visible; }
+html .chl-trench-cell--rock { background: #2a2c31; border-color: #3a3e45; }
+html .chl-trench-cell--pile { background: #5a4a2a; border-color: var(--accent); }
+html .chl-trench-cell--got, html .chl-trench-cell--past { background: #3a372f; }
+html .chl-trench-cell--start { background: #2a2010; border-color: var(--accent); }
+html .chl-trench-cell--empty:disabled { opacity: 0.9; }
+html .chl-trench-cell--near { border-color: var(--text); cursor: pointer; }
+html .chl-trench-cell--here { border-color: var(--text); box-shadow: inset 0 0 0 2px var(--accent); z-index: 2; }
+.chl-trench-art { width: 82%; height: 88%; display: block; }
+.chl-trench-art--pile { animation: chl-trench-bob 1.4s ease-in-out infinite; }
+html .chl-trench-rock { fill: #8a8d94; stroke: #0b0c0e; stroke-width: 2; stroke-linejoin: round; }
+.chl-trench-rock__line { fill: none; stroke: #0b0c0e; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; opacity: 0.55; }
+html .chl-trench-pile { fill: #e2b46a; stroke: #0b0c0e; stroke-width: 2; stroke-linejoin: round; }
+.chl-trench-pile__dot { fill: #8a6a2c; }
+html .chl-trench-rover { fill: #ece8df; stroke: #0b0c0e; stroke-width: 2; }
+.chl-trench-cab { fill: #4fd1e0; stroke: #0b0c0e; stroke-width: 1.6; }
+html .chl-trench-track { fill: #2a2b2e; stroke: #0b0c0e; stroke-width: 1.6; }
+.chl-trench-scoop { fill: var(--accent); stroke: #0b0c0e; stroke-width: 2; stroke-linejoin: round; }
+.chl-trench-bot { animation: chl-trench-in 220ms cubic-bezier(.2, 1.6, .4, 1); }
+.chl-trench-bot--bump { animation: chl-trench-shake 320ms ease-in-out; }
+.chl-trench-go { display: grid; place-items: center; color: var(--text); opacity: 0.9; }
+@keyframes chl-trench-bob { 50% { transform: translateY(-2px); } }
+@keyframes chl-trench-in { from { transform: scale(0.7); } }
+@keyframes chl-trench-shake { 20% { transform: translateX(-4px) rotate(-6deg); } 50% { transform: translateX(4px) rotate(6deg); } 80% { transform: translateX(-2px); } }
+
+/* El muro que se va armando: un ladrillo por montón recogido. */
+.chl-trench-side { display: grid; justify-items: center; gap: 0.25rem; }
+.chl-trench-wall { width: 11rem; height: auto; }
+.chl-trench-dome { fill: #ece8df; stroke: #0b0c0e; stroke-width: 2.5; stroke-linejoin: round; }
+.chl-trench-dome__door { fill: #4fd1e0; stroke: #0b0c0e; stroke-width: 2.5; }
+.chl-trench-floor { stroke: var(--text-dim); stroke-width: 2.5; stroke-linecap: round; }
+.chl-trench-brick rect { fill: rgb(0 0 0 / 0.25); stroke: var(--text-dim); stroke-width: 1.8; stroke-dasharray: 4 3; }
+.chl-trench-brick--on rect { fill: #e2b46a; stroke: #0b0c0e; stroke-width: 2.2; stroke-dasharray: none; }
+.chl-trench-brick--on circle { fill: #f0cc8e; stroke: #0b0c0e; stroke-width: 1.8; }
+.chl-trench-brick--on { animation: chl-trench-drop 320ms cubic-bezier(.2, 1.5, .4, 1); transform-box: fill-box; transform-origin: center; }
+@keyframes chl-trench-drop { from { transform: translateY(-26px) scale(0.8); opacity: 0; } }
+.chl-trench-count { margin: 0; font-size: 1rem; }
+.chl-trench-count b { font-size: 1.6rem; color: var(--accent); }
+.chl-trench-lives { margin: 0; display: inline-flex; gap: 0.3rem; }
+.chl-trench-life { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--line); color: var(--text-dim); opacity: 0.45; }
+.chl-trench-life--on { opacity: 1; background: var(--panel-2); border-color: var(--accent); color: var(--accent); }
+html .chl-trench-pad { width: 15.5rem; }
+html .chl-card .btn.chl-trench-btn { min-height: 52px; }
+html .chl-trench-btn svg { width: 28px; height: 28px; }
+@media (max-width: 640px) {
+  .chl-trench-board { gap: 0.4rem 0.8rem; }
+  .chl-trench-wall { width: 7rem; }
+  html .chl-trench-grid, html .chl-trench-pad { width: min(100%, 13.5rem); }
+  .chl-trench-side { grid-auto-flow: row; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .chl-trench-art--pile, .chl-trench-bot, .chl-trench-bot--bump, .chl-trench-brick--on { animation: none; }
+}
+
+/* ---- Chequeo: arrastrar y soltar ---- */
+html .chl-card .btn.chl-bio-token { touch-action: none; cursor: grab; user-select: none; -webkit-user-select: none; }
+html .chl-card .btn.chl-bio-token:active { cursor: grabbing; }
+html .chl-card .btn.chl-bio-token:disabled { cursor: default; opacity: 0.45; border-style: solid; }
+.chl-bio-ghost {
+  position: fixed; z-index: 200; display: grid; place-items: center; width: 56px; height: 56px; margin: -28px 0 0 -28px;
+  border-radius: 50%; border: 3px solid #0b0c0e; background: var(--tok); color: #0b0c0e; box-shadow: 0 6px 0 rgb(0 0 0 / 0.6);
+  pointer-events: none; transform: rotate(-6deg) scale(1.08);
+}
+.chl-bio-card { transition: transform 120ms, border-color 120ms; }
+.chl-bio-card--over { border-color: var(--text); background: var(--panel-deep); transform: translateY(-4px); }
+.chl-bio-slot { width: 46px; height: 40px; border-radius: 999px; border: 2px dashed var(--line); }
+.chl-bio-card--target .chl-bio-slot { border-color: var(--accent); animation: chl-rov-pulse 1.1s ease-in-out infinite; }
+.chl-bio-card--over .chl-bio-slot { border-style: solid; border-color: var(--text); }
+@media (prefers-reduced-motion: reduce) { .chl-bio-card { transition: none; } .chl-bio-card--over { transform: none; } .chl-bio-card--target .chl-bio-slot { animation: none; } }

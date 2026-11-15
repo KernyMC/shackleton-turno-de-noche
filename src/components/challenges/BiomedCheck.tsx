@@ -68,12 +68,52 @@ export function BiomedCheck({ params, onDone }: ChallengeGameProps) {
   const left = slotsN - given.length;
   const ready = left === 0;
 
-  const give = (who: CrewId): void => {
-    if (done || !care || left <= 0) return;
-    if (given.some((g) => g.who === who && g.care === care)) return;
+  const give = (who: CrewId, what: Care | null = care): void => {
+    if (done || !what || left <= 0) return;
+    if (given.some((g) => g.who === who && g.care === what)) return;
     playCarePlace();
-    setGiven([...given, { who, care }]);
+    setGiven([...given, { who, care: what }]);
     setCare(null);
+  };
+
+  // Arrastrar una ficha hasta un tripulante. Si casi no se mueve, cuenta como toque (selecciona la ficha).
+  const [drag, setDrag] = useState<{ care: Care; x: number; y: number; over: CrewId | null } | null>(null);
+  const dragRef = useRef<{ care: Care; x0: number; y0: number; moved: boolean } | null>(null);
+  const crewAt = (x: number, y: number): CrewId | null => {
+    const el = document.elementFromPoint(x, y)?.closest('[data-crew]');
+    return (el?.getAttribute('data-crew') as CrewId | null) ?? null;
+  };
+  const onTokenDown = (k: Care, e: PointerEvent): void => {
+    if (done || left <= 0 || (e.pointerType === 'mouse' && e.button !== 0)) return;
+    dragRef.current = { care: k, x0: e.clientX, y0: e.clientY, moved: false };
+    try {
+      (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    } catch {
+      /* sin captura el arrastre sigue funcionando mientras el puntero no salga de la ficha */
+    }
+  };
+  const onTokenMove = (e: PointerEvent): void => {
+    const d = dragRef.current;
+    if (!d) return;
+    if (!d.moved && Math.hypot(e.clientX - d.x0, e.clientY - d.y0) < 8) return;
+    d.moved = true;
+    setDrag({ care: d.care, x: e.clientX, y: e.clientY, over: crewAt(e.clientX, e.clientY) });
+  };
+  const onTokenUp = (e: PointerEvent): void => {
+    const d = dragRef.current;
+    dragRef.current = null;
+    setDrag(null);
+    if (!d) return;
+    if (!d.moved) {
+      setCare((c) => (c === d.care ? null : d.care));
+      return;
+    }
+    const who = crewAt(e.clientX, e.clientY);
+    if (who) give(who, d.care);
+  };
+  const onTokenCancel = (): void => {
+    dragRef.current = null;
+    setDrag(null);
   };
   const take = (i: number): void => {
     if (done) return;
@@ -119,7 +159,16 @@ export function BiomedCheck({ params, onDone }: ChallengeGameProps) {
             aria-pressed={care === k}
             aria-label={t(`challenge.bio.care.${k}`)}
             disabled={!!done || left <= 0}
-            onClick={() => setCare(care === k ? null : k)}
+            onPointerDown={(e) => onTokenDown(k, e)}
+            onPointerMove={onTokenMove}
+            onPointerUp={onTokenUp}
+            onPointerCancel={onTokenCancel}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                setCare(care === k ? null : k);
+              }
+            }}
           >
             <span class="chl-bio-token__icon"><Icon name={CARE_ICON[k]} size={30} /></span>
             <span class="chl-bio-token__name">{t(`challenge.bio.short.${k}`)}</span>
@@ -138,7 +187,11 @@ export function BiomedCheck({ params, onDone }: ChallengeGameProps) {
           const troubled = INDS.some((ind) => isBad(ind, values[ind][i]!));
           const helped = done ? mine.some((g) => done[g.j]) : false;
           return (
-            <li key={c.id} class={`chl-bio-card${care && !done ? ' chl-bio-card--target' : ''}`}>
+            <li
+              key={c.id}
+              data-crew={c.id}
+              class={`chl-bio-card${(care || drag) && !done ? ' chl-bio-card--target' : ''}${drag?.over === c.id ? ' chl-bio-card--over' : ''}`}
+            >
               <button
                 type="button"
                 class="chl-bio-pick"
@@ -188,11 +241,18 @@ export function BiomedCheck({ params, onDone }: ChallengeGameProps) {
                     {done ? <Icon name={done[g.j] ? 'check' : 'info'} size={16} /> : <Icon name="close" size={14} />}
                   </button>
                 ))}
+                {!done && left > 0 && mine.length === 0 && <span class="chl-bio-slot" aria-hidden="true" />}
               </div>
             </li>
           );
         })}
       </ul>
+
+      {drag && (
+        <span class={`chl-bio-ghost chl-bio-token--${drag.care}`} style={{ left: `${drag.x}px`, top: `${drag.y}px` }} aria-hidden="true">
+          <Icon name={CARE_ICON[drag.care]} size={30} />
+        </span>
+      )}
 
       <div class="chl-actions">
         <button type="button" class="btn btn--primary" disabled={!ready || !!done} onClick={confirm}>

@@ -271,3 +271,195 @@
   .chd-stage { max-height: 34dvh; }
   .chd-tile { min-height: 4.6rem; }
 }
+
+/* ---- Muro de regolito (fotograma final: robot arriba, montones recogidos, dos ladrillos puestos) ---- */
+.chd-tr-cell { fill: #4a463d; stroke: #5d584c; stroke-width: 2; }
+.chd-tr-cell--rock { fill: #2a2c31; stroke: #3a3e45; }
+.chd-tr-rock { fill: #8a8d94; stroke: var(--chd-edge); stroke-width: 2; stroke-linejoin: round; }
+.chd-tr-pile { fill: #e2b46a; stroke: var(--chd-edge); stroke-width: 2; stroke-linejoin: round; opacity: 0; }
+.chd-tr-dome { fill: var(--text); stroke: var(--chd-edge); stroke-width: 2.5; stroke-linejoin: round; }
+.chd-tr-slot { fill: rgb(0 0 0 / 0.25); stroke: var(--text-dim); stroke-width: 1.8; stroke-dasharray: 4 3; }
+.chd-tr-brick rect { fill: #e2b46a; stroke: var(--chd-edge); stroke-width: 2.2; }
+.chd-tr-brick circle { fill: #f0cc8e; stroke: var(--chd-edge); stroke-width: 1.8; }
+.chd-tr-scoop { fill: var(--accent); stroke: var(--chd-edge); stroke-width: 2; stroke-linejoin: round; }
+.chd-tr-track { fill: #2a2b2e; stroke: var(--chd-edge); stroke-width: 1.6; }
+.chd-tr-arrow { fill: none; stroke: var(--text); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.chd-tr-bot { transform: translate(140px, 26px); }
+.chd-hand--trench { transform: translate(140px, 154px); }
+@media (prefers-reduced-motion: no-preference) {
+  .chd-tr-bot, .chd-tr-pile, .chd-tr-brick, .chd-tr-ok, .chd-tr-flash {
+    animation-duration: var(--chd-t); animation-iteration-count: infinite; animation-fill-mode: both; animation-timing-function: ease-in-out;
+  }
+  .chd-hand--trench { animation-name: chd-h-trench; }
+  .chd-tr-bot { animation-name: chd-tr-bot; }
+  .chd-tr-pile--a { animation-name: chd-tr-pile-a; }
+  .chd-tr-pile--b { animation-name: chd-tr-pile-b; }
+  .chd-tr-brick--a { animation-name: chd-tr-brick-a; }
+  .chd-tr-brick--b { animation-name: chd-tr-brick-b; }
+  .chd-tr-ok { animation-name: chd-tr-ok; }
+  .chd-tr-flash--l { animation-name: chd-tr-flash-l; }
+  .chd-tr-flash--r { animation-name: chd-tr-flash-r; }
+}
+@keyframes chd-h-trench {
+  0% { transform: translate(100px, 196px); }
+  9%, 15% { transform: translate(60px, 154px); }
+  37%, 43% { transform: translate(140px, 154px); }
+  52%, 58% { transform: translate(128px, 172px); }
+  65%, 71% { transform: translate(140px, 154px); }
+  88%, 100% { transform: translate(180px, 196px); }
+}
+@keyframes chd-tr-bot {
+  0%, 13% { transform: translate(100px, 116px); }
+  19%, 41% { transform: translate(60px, 86px); }
+  47%, 69% { transform: translate(100px, 56px); }
+  75%, 94% { transform: translate(140px, 26px); }
+  100% { transform: translate(100px, 116px); }
+}
+@keyframes chd-tr-pile-a { 0%, 17% { opacity: 1; } 20%, 96% { opacity: 0; } 100% { opacity: 1; } }
+@keyframes chd-tr-pile-b { 0%, 73% { opacity: 1; } 76%, 96% { opacity: 0; } 100% { opacity: 1; } }
+@keyframes chd-tr-brick-a { 0%, 19% { opacity: 0; transform: translateY(-18px); } 24%, 95% { opacity: 1; transform: none; } 100% { opacity: 0; } }
+@keyframes chd-tr-brick-b { 0%, 75% { opacity: 0; transform: translateY(-18px); } 80%, 95% { opacity: 1; transform: none; } 100% { opacity: 0; } }
+@keyframes chd-tr-ok { 0%, 80% { opacity: 0; transform: scale(0.4); } 84% { opacity: 1; transform: scale(1.2); } 88%, 95% { opacity: 1; transform: scale(1); } 100% { opacity: 0; } }
+@keyframes chd-tr-flash-l { 0%, 9% { fill: var(--panel-2); } 11%, 15% { fill: var(--accent); } 18%, 100% { fill: var(--panel-2); } }
+@keyframes chd-tr-flash-r { 0%, 37% { fill: var(--panel-2); } 39%, 43% { fill: var(--accent); } 46%, 65% { fill: var(--panel-2); } 67%, 71% { fill: var(--accent); } 74%, 100% { fill: var(--panel-2); } }
+
+/* ================= Chequeo de la tripulación ================= */
+.chd-bio-tok { stroke: var(--chd-edge); stroke-width: 2.5; }
+.chd-bio-tok--rest { fill: #b9a4ff; }
+.chd-bio-tok--water { fill: var(--chd-cy); }
+.chd-bio-tok--rad { fill: var(--accent); }
+.chd-bio-ico { fill: var(--chd-edge); }
+.chd-bio-ico--line { fill: none; stroke: var(--chd-edge); stroke-width: 4; stroke-linecap: round; }
+.chd-bio-card { fill: var(--panel-2); stroke: var(--line); stroke-width: 2; }
+.chd-bio-card--need { stroke: var(--accent); }
+.chd-bio-suit { stroke: var(--chd-edge); stroke-width: 2; }
+.chd-bio-helmet { fill: var(--text); stroke: var(--chd-edge); stroke-width: 2; }
+.chd-bio-visor { fill: #17191d; }
+.chd-bio-eye { fill: #ffe9b0; }
+.chd-bio-mouth { fill: none; stroke: #ffe9b0; stroke-width: 2.2; stroke-linecap: round; }
+.chd-bio-mouth--sad { opacity: 0; }
+.chd-bio-pip { fill: var(--panel-deep); stroke: var(--line); stroke-width: 1.2; }
+.chd-bio-pip--on { fill: #8a8d94; }
+.chd-bio-pip--bad { fill: var(--accent); stroke: var(--chd-edge); }
+.chd-bio-alert { fill: var(--accent); stroke: var(--chd-edge); stroke-width: 2; stroke-linejoin: round; }
+.chd-hand--biomed { transform: translate(160px, 100px); }
+
+/* ================= Radar de sectores ================= */
+.chd-sd-ring { fill: none; stroke: var(--line); stroke-width: 2.5; }
+.chd-sd-lines { fill: none; stroke: var(--line); stroke-width: 2; }
+.chd-sd-core { fill: var(--panel-2); stroke: var(--text); stroke-width: 2; }
+.chd-sd-warn { fill: rgb(255 179 71 / 0.3); stroke: var(--accent); stroke-width: 2; }
+.chd-sd-arc { fill: none; stroke: var(--chd-cy); stroke-width: 9; stroke-linecap: round; }
+.chd-sd-shield { transform-origin: 110px 72px; }
+.chd-sd-rock { opacity: 0; }
+.chd-hand--micro { transform: translate(185px, 152px); }
+.chd-hand--storm { transform: translate(245px, 152px); }
+
+/* ================= Gran tormenta ================= */
+.chd-st-opt--pick { stroke: var(--accent); }
+.chd-st-leaf { fill: none; stroke: #7ccf6a; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.chd-st-off { stroke: var(--danger, #ff5a4d); stroke-width: 4; stroke-linecap: round; }
+.chd-st-bat { fill: none; stroke: var(--accent); stroke-width: 3; }
+
+/* ================= Nave de relevo ================= */
+.chd-rl-track { fill: var(--panel-deep); stroke: var(--ok); stroke-width: 2.5; }
+.chd-rl-zone { fill: rgb(125 220 154 / 0.35); stroke: var(--ok); stroke-width: 2; }
+.chd-rl-cur { fill: var(--accent); stroke: var(--chd-edge); stroke-width: 2; }
+.chd-rl-lock { fill: none; stroke: var(--text); stroke-width: 2.2; stroke-linejoin: round; stroke-linecap: round; }
+.chd-hand--relay { transform: translate(242px, 142px); }
+
+@media (prefers-reduced-motion: no-preference) {
+  .chd-bio-flash, .chd-bio-chip, .chd-bio-mouth--sad, .chd-bio-mouth--glad, .chd-bio-ok,
+  .chd-sd-shield, .chd-sd-rock, .chd-sd-ok, .chd-sd-warn, .chd-sd-flash, .chd-st-opt--pick,
+  .chd-rl-cur, .chd-rl-track, .chd-rl-btn, .chd-rl-ok {
+    animation-duration: var(--chd-t); animation-iteration-count: infinite; animation-fill-mode: both; animation-timing-function: ease-in-out;
+  }
+  .chd-hand--biomed { animation-name: chd-h-biomed; }
+  .chd-bio-flash { animation-name: chd-bio-flash; }
+  .chd-bio-chip { animation-name: chd-bio-chip; transform-box: fill-box; transform-origin: center; }
+  .chd-bio-mouth--sad { animation-name: chd-bio-sad; }
+  .chd-bio-mouth--glad { animation-name: chd-bio-glad; }
+  .chd-bio-ok { animation-name: chd-late-ok; }
+
+  .chd-hand--micro { animation-name: chd-h-micro; }
+  .chd-hand--storm { animation-name: chd-h-storm; }
+  .chd-sd-shield--micro { animation-name: chd-sd-micro; }
+  .chd-sd-shield--storm { animation-name: chd-sd-storm; }
+  .chd-sd-rock { animation-name: chd-sd-rock; }
+  .chd-sd-ok { animation-name: chd-late-ok; }
+  .chd-sd-warn { animation-name: chd-sd-warn; }
+  .chd-sd-flash--micro { animation-name: chd-sd-flash-micro; }
+  .chd-sd-flash--storm { animation-name: chd-sd-flash-storm; }
+  .chd-st-opt--pick { animation-name: chd-st-pick; }
+
+  .chd-hand--relay { animation-name: chd-h-relay; }
+  .chd-rl-cur--a { animation-name: chd-rl-a; }
+  .chd-rl-cur--b { animation-name: chd-rl-b; }
+  .chd-rl-cur--c { animation-name: chd-rl-c; }
+  .chd-rl-cur--d { animation-name: chd-rl-d; }
+  .chd-rl-track--a { animation-name: chd-rl-fix-a; }
+  .chd-rl-track--b { animation-name: chd-rl-fix-b; }
+  .chd-rl-track--c { animation-name: chd-rl-fix-c; }
+  .chd-rl-track--d { animation-name: chd-rl-fix-d; }
+  .chd-rl-btn--a { animation-name: chd-rl-btn-a; }
+  .chd-rl-btn--b { animation-name: chd-rl-btn-b; }
+  .chd-rl-btn--c { animation-name: chd-rl-btn-c; }
+  .chd-rl-btn--d { animation-name: chd-rl-btn-d; }
+  .chd-rl-ok { animation-name: chd-late-ok; }
+}
+/* Marca de verificación que aparece al final del bucle. */
+@keyframes chd-late-ok { 0%, 80% { opacity: 0; transform: scale(0.4); } 84% { opacity: 1; transform: scale(1.2); } 88%, 95% { opacity: 1; transform: scale(1); } 100% { opacity: 0; } }
+
+@keyframes chd-h-biomed {
+  0% { transform: translate(160px, 200px); }
+  12%, 20% { transform: translate(112px, 30px); }
+  42%, 52% { transform: translate(160px, 100px); }
+  76%, 100% { transform: translate(230px, 200px); }
+}
+@keyframes chd-bio-flash { 0%, 13% { stroke: var(--chd-edge); stroke-width: 2.5; } 15%, 44% { stroke: var(--text); stroke-width: 5; } 48%, 100% { stroke: var(--chd-edge); stroke-width: 2.5; } }
+@keyframes chd-bio-chip { 0%, 45% { opacity: 0; transform: scale(0.3); } 50% { opacity: 1; transform: scale(1.25); } 55%, 95% { opacity: 1; transform: scale(1); } 100% { opacity: 0; } }
+@keyframes chd-bio-sad { 0%, 50% { opacity: 1; } 54%, 96% { opacity: 0; } 100% { opacity: 1; } }
+@keyframes chd-bio-glad { 0%, 50% { opacity: 0; } 54%, 96% { opacity: 1; } 100% { opacity: 0; } }
+
+@keyframes chd-h-micro {
+  0% { transform: translate(185px, 200px); }
+  10%, 16% { transform: translate(185px, 152px); }
+  22%, 26% { transform: translate(190px, 168px); }
+  30%, 36% { transform: translate(185px, 152px); }
+  60%, 100% { transform: translate(240px, 200px); }
+}
+@keyframes chd-sd-micro { 0%, 14% { transform: rotate(-120deg); } 19%, 34% { transform: rotate(-60deg); } 39%, 96% { transform: rotate(0deg); } 100% { transform: rotate(-120deg); } }
+@keyframes chd-sd-flash-micro { 0%, 10% { fill: var(--panel-2); } 12%, 16% { fill: var(--accent); } 19%, 30% { fill: var(--panel-2); } 32%, 36% { fill: var(--accent); } 39%, 100% { fill: var(--panel-2); } }
+@keyframes chd-sd-rock { 0%, 44% { opacity: 0; transform: translate(34px, -58px); } 48% { opacity: 1; transform: translate(34px, -58px); } 68% { opacity: 1; transform: none; } 74%, 100% { opacity: 0; transform: none; } }
+@keyframes chd-sd-warn { 0%, 70% { opacity: 1; } 8%, 24%, 40%, 56% { opacity: 0.35; } 16%, 32%, 48%, 64% { opacity: 1; } 76%, 100% { opacity: 0; } }
+
+@keyframes chd-h-storm {
+  0% { transform: translate(60px, 200px); }
+  8%, 15% { transform: translate(60px, 56px); }
+  28%, 35% { transform: translate(245px, 152px); }
+  60%, 100% { transform: translate(300px, 200px); }
+}
+@keyframes chd-st-pick { 0%, 9% { fill: var(--panel-2); } 11%, 96% { fill: #2a2010; } 100% { fill: var(--panel-2); } }
+@keyframes chd-sd-storm { 0%, 33% { transform: rotate(-60deg); } 38%, 96% { transform: rotate(0deg); } 100% { transform: rotate(-60deg); } }
+@keyframes chd-sd-flash-storm { 0%, 28% { fill: var(--panel-2); } 30%, 35% { fill: var(--accent); } 38%, 100% { fill: var(--panel-2); } }
+
+@keyframes chd-h-relay {
+  0% { transform: translate(62px, 200px); }
+  12%, 18% { transform: translate(62px, 142px); }
+  28%, 34% { transform: translate(122px, 142px); }
+  44%, 50% { transform: translate(182px, 142px); }
+  60%, 66% { transform: translate(242px, 142px); }
+  82%, 100% { transform: translate(290px, 200px); }
+}
+@keyframes chd-rl-a { 0% { transform: translateY(-36px); } 7% { transform: translateY(44px); } 14%, 96% { transform: none; } 100% { transform: translateY(-36px); } }
+@keyframes chd-rl-b { 0% { transform: translateY(60px); } 10% { transform: translateY(-16px); } 20% { transform: translateY(60px); } 30%, 96% { transform: none; } 100% { transform: translateY(60px); } }
+@keyframes chd-rl-c { 0% { transform: translateY(-56px); } 12% { transform: translateY(24px); } 24% { transform: translateY(-56px); } 36% { transform: translateY(24px); } 46%, 96% { transform: none; } 100% { transform: translateY(-56px); } }
+@keyframes chd-rl-d { 0% { transform: translateY(52px); } 10% { transform: translateY(-28px); } 20% { transform: translateY(52px); } 30% { transform: translateY(-28px); } 40% { transform: translateY(52px); } 50% { transform: translateY(-28px); } 62%, 96% { transform: none; } 100% { transform: translateY(52px); } }
+@keyframes chd-rl-fix-a { 0%, 14% { stroke: var(--line); } 17%, 96% { stroke: var(--ok); } 100% { stroke: var(--line); } }
+@keyframes chd-rl-fix-b { 0%, 30% { stroke: var(--line); } 33%, 96% { stroke: var(--ok); } 100% { stroke: var(--line); } }
+@keyframes chd-rl-fix-c { 0%, 46% { stroke: var(--line); } 49%, 96% { stroke: var(--ok); } 100% { stroke: var(--line); } }
+@keyframes chd-rl-fix-d { 0%, 62% { stroke: var(--line); } 65%, 96% { stroke: var(--ok); } 100% { stroke: var(--line); } }
+@keyframes chd-rl-btn-a { 0%, 12% { fill: var(--panel-2); } 14%, 18% { fill: var(--accent); } 21%, 100% { fill: var(--panel-2); } }
+@keyframes chd-rl-btn-b { 0%, 28% { fill: var(--panel-2); } 30%, 34% { fill: var(--accent); } 37%, 100% { fill: var(--panel-2); } }
+@keyframes chd-rl-btn-c { 0%, 44% { fill: var(--panel-2); } 46%, 50% { fill: var(--accent); } 53%, 100% { fill: var(--panel-2); } }
+@keyframes chd-rl-btn-d { 0%, 60% { fill: var(--panel-2); } 62%, 66% { fill: var(--accent); } 69%, 100% { fill: var(--panel-2); } }
