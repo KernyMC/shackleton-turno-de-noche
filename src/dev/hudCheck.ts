@@ -31,6 +31,7 @@ const BLOCKS = [
   '[class*="actpill"], .act-pill',
   '[class*="ffbar"], .ff-bar',
   '.act-toast',
+  '.musicctl__panel',
 ];
 
 /** Pares que SÍ pueden tocarse: uno vive dentro del otro. */
@@ -81,6 +82,10 @@ export function hudCheck(): {
   // ni como botón tapado lo que queda fuera de él; sí se revisa todo lo de dentro.
   const modal = document.querySelector('.chl-overlay, .comic-page');
   const insideModal = (el: Element): boolean => !!modal && (modal === el || modal.contains(el));
+  // Un panel emergente que el jugador acaba de abrir (volumen de música) tapa lo de debajo POR DISEÑO
+  // mientras está abierto: no cuenta como solape ni como botón tapado; sí se revisa que no se salga.
+  const POPOVER = '.musicctl__panel';
+  const isPopover = (el: Element | null): boolean => !!el?.closest(POPOVER);
 
   const overlaps: string[] = [];
   for (let i = 0; i < boxes.length; i++) {
@@ -89,6 +94,7 @@ export function hudCheck(): {
       const b = boxes[j]!;
       if (a.el === b.el || a.el.contains(b.el) || b.el.contains(a.el)) continue;
       if (modal && insideModal(a.el) !== insideModal(b.el)) continue;
+      if (isPopover(a.el) !== isPopover(b.el)) continue;
       if (NESTED.some(([p, c]) => (a.sel === p && b.sel === c) || (b.sel === p && a.sel === c))) continue;
       const px = area(a.r, b.r);
       if (px > 24) overlaps.push(`${a.sel} ✕ ${b.sel} (${px} px²)`);
@@ -130,7 +136,7 @@ export function hudCheck(): {
       if (cy < ar.top || cy > ar.bottom) scrolledOut = true;
       break;
     }
-    if (top && top !== el && !el.contains(top) && !top.contains(el) && !underFooter && !scrolledOut) {
+    if (top && top !== el && !el.contains(top) && !top.contains(el) && !underFooter && !scrolledOut && !(isPopover(top) && !isPopover(el))) {
       const who = top.closest('[class]')?.className?.toString().split(' ')[0] ?? top.tagName.toLowerCase();
       buttons.push(`tapado por .${who}: ${label}`);
     }

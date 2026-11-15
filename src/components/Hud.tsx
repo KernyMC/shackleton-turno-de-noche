@@ -15,6 +15,7 @@ import { resourceLevels } from '../sim/thresholds';
 import type { AlertLevel } from '../sim/thresholds';
 import type { GameState, LogEntry } from '../sim/types';
 import { muted, toggleMute } from '../audio/sfx';
+import { MusicControl } from './MusicControl';
 import { emotionOf, faceOf, moodOf, planEmotion } from '../state/rewards';
 import type { Emotion } from '../state/rewards';
 import { exitToMenu, game, preview, resolving, skyView, tabletOpen, toggleTablet } from '../state/store';
@@ -270,6 +271,7 @@ function Tools() {
       >
         <Icon name={muted.value ? 'mute' : 'sound'} size={18} />
       </button>
+      <MusicControl />
       <button
         type="button"
         class={`iconbtn${crewOpen.value ? ' iconbtn--on' : ''}`}

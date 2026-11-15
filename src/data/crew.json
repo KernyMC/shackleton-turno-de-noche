@@ -1,9 +1,9 @@
 {
   "_nota": "Para poner los nombres del equipo, cambia SOLO este archivo (name = nombre corto, fullName = nombre completo). Foto opcional: deja el archivo en public/crew/<id>.png (512x512) y agrega el id en la lista `crew` de public/optional-assets.json; o pon otra ruta en `photo`.",
   "members": [
-    { "id": "valeria", "name": "Valeria", "fullName": "Valeria Andrade", "module": "recycler", "color": "#4fd1e0", "roleIcon": "lungs", "photo": null },
-    { "id": "mateo", "name": "Mateo", "fullName": "Mateo Quishpe", "module": "greenhouse", "color": "#7ccf6a", "roleIcon": "greenhouse", "photo": null },
-    { "id": "amaru", "name": "Amaru", "fullName": "Amaru Tene", "module": "shield", "color": "#ffb347", "roleIcon": "dose", "photo": null },
-    { "id": "lucia", "name": "Lucía", "fullName": "Lucía Herrera", "module": "workshop", "color": "#ff7a3d", "roleIcon": "workshop", "photo": null }
+    { "id": "valeria", "name": "Eduardo", "fullName": "Eduardo", "module": "recycler", "color": "#4fd1e0", "roleIcon": "lungs", "photo": null },
+    { "id": "mateo", "name": "Christopher", "fullName": "Christopher", "module": "greenhouse", "color": "#7ccf6a", "roleIcon": "greenhouse", "photo": null },
+    { "id": "amaru", "name": "Kevin", "fullName": "Kevin", "module": "shield", "color": "#ffb347", "roleIcon": "dose", "photo": null },
+    { "id": "lucia", "name": "Vanessa", "fullName": "Vanessa", "module": "workshop", "color": "#ff7a3d", "roleIcon": "workshop", "photo": null }
   ]
 }

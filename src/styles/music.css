@@ -1,0 +1,23 @@
+/* Control de volumen de la música (MusicControl.tsx). Piel «Consola de misión Apolo»:
+   panel opaco, borde de 2 px, sombra dura, rótulo en Barlow Condensed y número en B612. */
+.musicctl { position: relative; display: inline-flex; }
+/* Va en <body> con posición fija (portal); MusicControl.tsx calcula top/bottom y right. Encima de la tablet. */
+.musicctl__panel {
+  position: fixed; z-index: 150;
+  width: 240px; padding: 0.65rem 0.75rem 0.75rem;
+  background: var(--panel); border: 2px solid var(--line); border-radius: var(--r-panel);
+  box-shadow: 0 4px 0 rgb(0 0 0 / 0.85), inset 0 1px 0 rgb(255 255 255 / 0.08);
+  color: var(--text); text-align: left;
+}
+.musicctl__label {
+  display: flex; align-items: center; gap: 0.4rem; margin-bottom: 0.5rem;
+  font-family: var(--font-display); font-weight: 700; font-size: 1rem; text-transform: uppercase; letter-spacing: 0.04em;
+}
+.musicctl__value { margin-left: auto; font-family: var(--font-mono); font-size: 0.9rem; color: var(--accent); text-transform: none; letter-spacing: 0; white-space: nowrap; }
+.musicctl__range { width: 100%; height: 32px; margin: 0; accent-color: var(--accent); cursor: pointer; background: transparent; }
+.musicctl__range:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.musicctl__note { margin: 0.45rem 0 0; font-size: 0.8rem; color: var(--text-dim); }
+@media (max-width: 480px) {
+  .musicctl__panel { width: min(240px, calc(100vw - 32px)); }
+  .musicctl__range { height: 40px; }
+}

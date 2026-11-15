@@ -20,6 +20,7 @@ export type IconName =
   | 'exit'
   | 'sound'
   | 'mute'
+  | 'music'
   | 'sky'
   | 'info'
   | 'data'
@@ -135,6 +136,14 @@ const PATHS: Record<IconName, JSX.Element> = {
     <>
       <path d="M3.5 7.5h3l4-3.5v12l-4-3.5h-3Z" />
       <path d="M13.5 8l4 4M17.5 8l-4 4" />
+    </>
+  ),
+  // Dos corcheas unidas (música).
+  music: (
+    <>
+      <path d="M7.5 14.5V4.5l9-2v10" />
+      <circle cx="5.5" cy="14.5" r="2" />
+      <circle cx="14.5" cy="12.5" r="2" />
     </>
   ),
   // Estrella de cuatro puntas (mirar el cielo).

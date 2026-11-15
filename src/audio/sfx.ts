@@ -34,7 +34,7 @@ function audio(): AudioContext | null {
   }
 }
 
-/** Contexto de audio compartido (lo usa el ambiente). Quien lo pida decide si respeta mute y pestaña oculta. */
+/** Contexto de audio compartido (lo usa la música). Quien lo pida decide si respeta mute y pestaña oculta. */
 export function sharedContext(): AudioContext | null {
   if (typeof window === 'undefined') return null;
   try {

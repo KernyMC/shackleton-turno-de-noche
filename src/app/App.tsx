@@ -14,7 +14,7 @@ import { Rewards } from '../components/Rewards';
 import { StormWarning } from '../components/StormWarning';
 import { startActsWatcher } from '../state/acts';
 import { startRewardsWatcher } from '../state/rewards';
-import { startAmbient } from '../audio/ambient';
+import { startMusic } from '../audio/music';
 import { startSoundWatcher } from '../audio/watch';
 import { Menu } from '../components/Menu';
 import { Tablet } from '../components/Tablet';
@@ -62,7 +62,7 @@ export default function App() {
   useEffect(() => startRewardsWatcher(), []);
   useEffect(() => startSoundWatcher(), []);
   useEffect(() => startActsWatcher(), []);
-  useEffect(() => startAmbient(), []);
+  useEffect(() => startMusic(), []);
   // El Loader vive fuera de las pantallas para no desmontarse al cambiar de una a otra.
   return (
     <>

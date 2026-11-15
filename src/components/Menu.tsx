@@ -22,6 +22,7 @@ import { PracticeMenu } from './challenges/PracticeMenu';
 import { practiceOpen } from '../state/practice';
 import { SunStatus } from './SunStatus';
 import '../styles/tutorial.css';
+import { MusicControl } from './MusicControl';
 
 /** Duración de la secuencia de entrada (caminar + vuelo de cámara). */
 const ENTER_MS = 3600;
@@ -180,6 +181,8 @@ export function Menu() {
               </button>
               <span aria-hidden="true">·</span>
               <LanguageButton />
+              <span aria-hidden="true">·</span>
+              <MusicControl variant="link" />
             </nav>
             <SunStatus compact />
           </div>

@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'preact/hooks';
 import { t } from '../../i18n';
 import { defaultConfig } from '../../sim/config';
 import type { ChallengeDef } from '../../sim/types';
-import { practiceOpen } from '../../state/practice';
+import { practiceChallenge, practiceOpen } from '../../state/practice';
 import { Icon } from '../icons';
 import { Challenge } from './ChallengeModal';
 import { registry } from './registry';
@@ -18,6 +18,13 @@ export function PracticeMenu() {
     if (open && !def) first.current?.focus();
   }, [open, def]);
   if (!open) return null;
+  useEffect(() => {
+    practiceChallenge.value = def?.id ?? null;
+    return () => {
+      practiceChallenge.value = null;
+    };
+  }, [def]);
+
   if (def) return <Challenge key={def.id} def={def} assist={0} onFinish={() => setDef(null)} />;
 
   const list = defaultConfig.challenges.list.filter((c) => registry[c.id]);

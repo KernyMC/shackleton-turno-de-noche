@@ -37,6 +37,8 @@ Otros: Todo modelo o audio añadido se registra aquí con origen y licencia.
 
 ## IA
 Efectos de sonido generados con IA (ElevenLabs), una sola vez con `npm run sfx`; el juego no llama a su API.
+
+Música de fondo generada con IA (Suno) por el equipo Halo Sur: 8 pistas en `public/audio/music/` (main, day, night, storm, minigames, question, victory, lost), normalizadas y comprimidas con ffmpeg. Uso según los términos de Suno de la cuenta con la que se generaron.
 Desarrollado con ayuda de Claude Code (Anthropic). Ver `AI_USAGE.md`.
 
 ## Aviso
