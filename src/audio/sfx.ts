@@ -233,3 +233,149 @@ export function playRepairDone(): void {
 export function playEnergyFlow(): void {
   playSample('energy_flow', () => tone(110, 0, 1.2, 0.05, 'sawtooth', 330), 0.5);
 }
+
+// ---------- Botones + y − del plan de energía ----------
+// Escala pentatónica de Do (dos octavas): suene la nota que suene, nunca desafina con la anterior.
+const PENTA = [523, 587, 659, 784, 880, 1047, 1175, 1319, 1568, 1760, 2093];
+const notePenta = (fill: number): number => PENTA[Math.max(0, Math.min(PENTA.length - 1, Math.round(fill * (PENTA.length - 1))))]!;
+
+/** Ráfaga corta de ruido filtrado: el «clic» físico de un botón que se hunde. */
+function click(start: number, volume: number, freq: number, duration = 0.012): void {
+  const ac = audio();
+  if (!ac) return;
+  const len = Math.max(1, Math.floor(ac.sampleRate * duration));
+  const buf = ac.createBuffer(1, len, ac.sampleRate);
+  const data = buf.getChannelData(0);
+  for (let i = 0; i < len; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / len) ** 2;
+  const src = ac.createBufferSource();
+  const filter = ac.createBiquadFilter();
+  const gain = ac.createGain();
+  filter.type = 'bandpass';
+  filter.frequency.value = freq;
+  filter.Q.value = 1.2;
+  gain.gain.value = volume;
+  src.buffer = buf;
+  src.connect(filter).connect(gain).connect(ac.destination);
+  src.start(ac.currentTime + start);
+}
+
+let lastPress = 0;
+/** Evita que una ráfaga de pulsaciones (tecla mantenida) se amontone en un zumbido. */
+function throttled(ms: number): boolean {
+  const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
+  if (now - lastPress < ms) return true;
+  lastPress = now;
+  return false;
+}
+
+/** Dar energía (+): clic y una burbuja que sube; más aguda cuanto más llena está la barra. */
+export function playPlus(fill = 0.5): void {
+  if (throttled(35)) return;
+  const n = notePenta(fill);
+  click(0, 0.05, 3200);
+  tone(n, 0.005, 0.11, 0.07, 'sine', n * 1.26);
+  tone(n * 2, 0.02, 0.07, 0.015, 'triangle');
+}
+
+/** Quitar energía (−): clic más grave y una burbuja que baja, un poco más suave. */
+export function playMinus(fill = 0.5): void {
+  if (throttled(35)) return;
+  const n = notePenta(fill) / 2;
+  click(0, 0.04, 1700);
+  tone(n * 1.26, 0.005, 0.11, 0.06, 'triangle', n);
+}
+
+/** La barra llegó a su máximo: un destello de dos notas. */
+export function playFull(): void {
+  tone(1568, 0.06, 0.12, 0.035, 'triangle');
+  tone(2093, 0.13, 0.22, 0.035, 'triangle');
+}
+
+/** No queda energía para dar: un «bonk» amortiguado, que avisa sin regañar. */
+export function playBlocked(): void {
+  if (throttled(120)) return;
+  click(0, 0.03, 600, 0.02);
+  tone(196, 0, 0.14, 0.06, 'triangle', 150);
+}
+
+// ---------- Kit de los minijuegos ----------
+/** Elegir o tocar algo: clic ligero. */
+export function playPick(): void {
+  click(0, 0.04, 2600);
+  tone(1175, 0, 0.05, 0.03, 'triangle');
+}
+
+/** Algo encaja en su sitio (cable, ladrillo, barra): clac y dos notas que suben. */
+export function playSnap(): void {
+  click(0, 0.06, 2000, 0.018);
+  tone(784, 0.01, 0.09, 0.055, 'sine', 830);
+  tone(1175, 0.07, 0.16, 0.05, 'triangle');
+}
+
+/** Acierto (fuga encontrada, cuidado correcto, señal ajustada): arpegio corto y brillante. */
+export function playGood(): void {
+  [659, 880, 1319].forEach((f, i) => tone(f, i * 0.06, 0.18, 0.045, 'triangle'));
+}
+
+/** Fallo pequeño: un «buuu» corto y suave, nunca un error estridente. */
+export function playMiss(): void {
+  tone(330, 0, 0.2, 0.045, 'triangle', 247);
+}
+
+let lastDial = 0;
+/** Girar o deslizar (escudo, brazo, antena): tic fino que sube de tono con la posición (0..1). */
+export function playDial(pos = 0.5): void {
+  const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
+  if (now - lastDial < 45) return;
+  lastDial = now;
+  click(0, 0.025, 2400 + pos * 1600, 0.006);
+  tone(600 + pos * 700, 0, 0.025, 0.018, 'sine');
+}
+
+/** Pulso de radar: más agudo y más fuerte cuanto más cerca de la señal (0..1). */
+export function playPing(closeness = 0.5): void {
+  tone(700 + closeness * 700, 0, 0.25, 0.025 + closeness * 0.03, 'sine', 690 + closeness * 690);
+}
+
+/** Un micrometeorito rebota en el escudo: «ting» metálico. */
+export function playDeflect(): void {
+  tone(1568, 0, 0.25, 0.035, 'sine');
+  tone(2349, 0, 0.18, 0.02, 'sine');
+  click(0, 0.03, 4500, 0.008);
+}
+
+/** Algo golpea sin escudo: golpe sordo y grave (no da miedo). */
+export function playHit(): void {
+  tone(130, 0, 0.16, 0.08, 'sine', 65);
+  click(0, 0.04, 400, 0.04);
+}
+
+/** Movimiento largo (girar el escudo, acercar la nave): soplido que sube. */
+export function playWhoosh(): void {
+  const ac = audio();
+  if (!ac) return;
+  const dur = 0.28;
+  const len = Math.floor(ac.sampleRate * dur);
+  const buf = ac.createBuffer(1, len, ac.sampleRate);
+  const data = buf.getChannelData(0);
+  for (let i = 0; i < len; i++) data[i] = (Math.random() * 2 - 1) * Math.sin((Math.PI * i) / len);
+  const src = ac.createBufferSource();
+  const filter = ac.createBiquadFilter();
+  const gain = ac.createGain();
+  filter.type = 'bandpass';
+  filter.Q.value = 2;
+  const t0 = ac.currentTime;
+  filter.frequency.setValueAtTime(400, t0);
+  filter.frequency.exponentialRampToValueAtTime(2200, t0 + dur);
+  gain.gain.value = 0.05;
+  src.buffer = buf;
+  src.connect(filter).connect(gain).connect(ac.destination);
+  src.start(t0);
+}
+
+/** Acoplamiento o cierre grande: golpe metálico grave y un acorde que confirma. */
+export function playDock(): void {
+  tone(110, 0, 0.3, 0.09, 'sine', 70);
+  click(0, 0.07, 900, 0.05);
+  [523, 659, 784].forEach((f) => tone(f, 0.12, 0.4, 0.03, 'triangle'));
+}

@@ -17,7 +17,7 @@ import type { MenuMode } from '../state/mode';
 import { sourcesOpen } from '../state/sources';
 import { helpOpen } from '../state/tutorial';
 import { CrewPortrait } from './CrewPortrait';
-import { IntroComic } from './IntroComic';
+import { IntroVideo } from './IntroVideo';
 import { PracticeMenu } from './challenges/PracticeMenu';
 import { practiceOpen } from '../state/practice';
 import { SunStatus } from './SunStatus';
@@ -27,7 +27,8 @@ import { MusicControl } from './MusicControl';
 /** Duración de la secuencia de entrada (caminar + vuelo de cámara). */
 const ENTER_MS = 3600;
 const NAME_MAX = 20;
-type Step = 'title' | 'comic' | 'crew';
+/** comic = intro tras «Comenzar» (sigue a la tripulación); intro = «Ver la intro» desde la portada (vuelve a ella). */
+type Step = 'title' | 'comic' | 'intro' | 'crew';
 
 function LanguageButton() {
   return (
@@ -121,6 +122,10 @@ export function Menu() {
     stepRef.current = 'comic';
     setStep('comic');
   };
+  const toIntro = (): void => {
+    stepRef.current = 'intro';
+    setStep('intro');
+  };
   const toTitle = (): void => {
     stepRef.current = 'title';
     placeRef.current();
@@ -151,7 +156,9 @@ export function Menu() {
       <div class="crewscreen__scene" ref={host} aria-hidden="true" />
 
       {step === 'comic' ? (
-        <IntroComic onDone={toCrew} onBack={toTitle} />
+        <IntroVideo onDone={toCrew} onBack={toTitle} />
+      ) : step === 'intro' ? (
+        <IntroVideo onDone={toTitle} onBack={toTitle} />
       ) : step === 'title' ? (
         <main class="title">
           {!has3d && (
@@ -172,6 +179,10 @@ export function Menu() {
             </button>
             <PracticeMenu />
             <nav class="title__links" aria-label={t('crew.more')}>
+              <button type="button" class="linkbtn" onClick={toIntro}>
+                {t('intro.watch')}
+              </button>
+              <span aria-hidden="true">·</span>
               <button type="button" class="linkbtn" onClick={() => (helpOpen.value = true)}>
                 {t('help.button')}
               </button>

@@ -6,6 +6,7 @@ import { t } from '../../i18n';
 import { Icon } from '../icons';
 import type { ChallengeGameProps } from './registry';
 import { numParam, TimeBar, useCountdown } from './shared';
+import { playDial, playSnap } from '../../audio/sfx';
 
 const W = 240;
 const H = 70;
@@ -87,6 +88,8 @@ export function SolarRadar({ params, assist, onDone }: ChallengeGameProps) {
                 onInput={(e) => {
                   if (doneRef.current) return;
                   const nv = Number((e.currentTarget as HTMLInputElement).value);
+                  playDial(nv);
+                  if (!aligned[i] && gap(nv, targets[i]!) <= tol) playSnap();
                   setVals((a) => a.map((x, j) => (j === i ? nv : x)));
                 }}
               />

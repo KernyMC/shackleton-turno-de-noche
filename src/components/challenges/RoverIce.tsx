@@ -5,7 +5,7 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { t } from '../../i18n';
 import { defaultConfig } from '../../sim/config';
-import { playRoverStep } from '../../audio/sfx';
+import { playGood, playMiss, playRoverStep, playSnap } from '../../audio/sfx';
 import { Icon } from '../icons';
 import type { ChallengeGameProps } from './registry';
 import { numParam } from './shared';
@@ -61,9 +61,14 @@ export function RoverIce({ params, onDone }: ChallengeGameProps) {
     if (r.end) return;
     const x = r.x + dx;
     const y = r.y + dy;
-    if (x < 0 || y < 0 || x >= cols || y >= rows || Math.abs(dx) + Math.abs(dy) !== 1) return;
+    if (x < 0 || y < 0 || x >= cols || y >= rows || Math.abs(dx) + Math.abs(dy) !== 1) {
+      playMiss();
+      return;
+    }
     const kind = kindAt(x, y, cols, rows);
     playRoverStep();
+    if (kind === 'ice' && !r.ice) playGood();
+    else if (kind === 'base' && r.ice) playSnap();
     let battery = r.battery;
     let dose = r.dose;
     if (kind === 'sun') {

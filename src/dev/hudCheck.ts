@@ -32,6 +32,8 @@ const BLOCKS = [
   '[class*="ffbar"], .ff-bar',
   '.act-toast',
   '.musicctl__panel',
+  '.introvid__tag',
+  '.introvid__skip',
 ];
 
 /** Pares que SÍ pueden tocarse: uno vive dentro del otro. */
@@ -80,7 +82,7 @@ export function hudCheck(): {
 
   // Un modal a pantalla completa (reto diario, cómic de intro) cubre el resto POR DISEÑO: no cuenta como solape
   // ni como botón tapado lo que queda fuera de él; sí se revisa todo lo de dentro.
-  const modal = document.querySelector('.chl-overlay, .comic-page');
+  const modal = document.querySelector('.chl-overlay, .comic-page, .introvid');
   const insideModal = (el: Element): boolean => !!modal && (modal === el || modal.contains(el));
   // Un panel emergente que el jugador acaba de abrir (volumen de música) tapa lo de debajo POR DISEÑO
   // mientras está abierto: no cuenta como solape ni como botón tapado; sí se revisa que no se salga.

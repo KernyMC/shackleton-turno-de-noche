@@ -10,7 +10,7 @@ import { defaultConfig } from '../../sim/config';
 import { CREW, crewName } from '../../data/crew';
 import type { CrewId } from '../../data/crew';
 import { CrewPortrait } from '../CrewPortrait';
-import { playCarePlace } from '../../audio/sfx';
+import { playCarePlace, playGood, playMiss, playPick } from '../../audio/sfx';
 import { Icon } from '../icons';
 import type { IconName } from '../icons';
 import type { ChallengeGameProps } from './registry';
@@ -105,6 +105,7 @@ export function BiomedCheck({ params, onDone }: ChallengeGameProps) {
     setDrag(null);
     if (!d) return;
     if (!d.moved) {
+      playPick();
       setCare((c) => (c === d.care ? null : d.care));
       return;
     }
@@ -117,6 +118,7 @@ export function BiomedCheck({ params, onDone }: ChallengeGameProps) {
   };
   const take = (i: number): void => {
     if (done) return;
+    playPick();
     setGiven(given.filter((_, j) => j !== i));
   };
 
@@ -131,6 +133,8 @@ export function BiomedCheck({ params, onDone }: ChallengeGameProps) {
       return ok;
     });
     setDone(hits);
+    if (hits.every(Boolean)) playGood();
+    else playMiss();
     const good = hits.filter(Boolean).length;
     const ratio = good / Math.max(1, Math.min(slotsN, needs.size));
     const sc = defaultConfig.challenges.scores;
@@ -166,6 +170,7 @@ export function BiomedCheck({ params, onDone }: ChallengeGameProps) {
             onKeyDown={(e) => {
               if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
+                playPick();
                 setCare(care === k ? null : k);
               }
             }}

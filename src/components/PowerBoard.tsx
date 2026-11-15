@@ -21,6 +21,7 @@ import { CrewPortrait } from './CrewPortrait';
 import { EnergyFlow } from './EnergyFlow';
 import { num, signed } from './format';
 import { Icon } from './icons';
+import { playBlocked } from '../audio/sfx';
 import type { IconName } from './icons';
 
 /** Energía que vale cada bloque de una columna. */
@@ -65,7 +66,12 @@ function Column({ id, game, onClamped }: { id: ModuleId; game: GameState; onClam
 
   const set = (next: number): void => {
     focusModule.value = id;
-    if (setPlanValue(id, next)) onClamped();
+    const before = plan.peek()[id];
+    if (setPlanValue(id, next)) {
+      onClamped();
+      // Quería dar más y no quedaba energía: «bonk» suave (lo que sí cambia ya suena en audio/watch.ts).
+      if (next > before && plan.peek()[id] === before) playBlocked();
+    }
   };
   const onKeyDown = (e: KeyboardEvent): void => {
     if (disabled) return;

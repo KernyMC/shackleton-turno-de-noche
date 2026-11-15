@@ -924,5 +924,9 @@
   "music.button": "Música",
   "music.volume": "Volumen de la música",
   "music.off": "Apagada",
-  "music.muted_note": "El sonido está silenciado. Actívalo con el altavoz."
+  "music.muted_note": "El sonido está silenciado. Actívalo con el altavoz.",
+  "intro.title": "Intro de la misión",
+  "intro.skip": "Saltar intro",
+  "intro.play": "Ver la intro",
+  "intro.watch": "Ver la intro"
 }

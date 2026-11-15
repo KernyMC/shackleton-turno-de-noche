@@ -6,6 +6,7 @@
 // Puntuación: barras en zona / 4 (4 = perfecto, 2–3 = parcial, menos = fallo según los cortes de challenges.json).
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { t } from '../../i18n';
+import { playDial, playDock, playGood, playMiss, playSnap } from '../../audio/sfx';
 import { CREW, crewName } from '../../data/crew';
 import { Icon } from '../icons';
 import type { ChallengeGameProps } from './registry';
@@ -82,6 +83,7 @@ export function RelayDocking({ params, onDone }: ChallengeGameProps) {
 
   const nudge = (i: number, d: number): void => {
     if (ended || fixRef.current[i] !== 'free') return;
+    playDial(Math.max(0, Math.min(100, manual[i] + d)) / 100);
     setManual((m) => m.map((x, k) => (k === i ? Math.max(0, Math.min(100, x + d)) : x)));
   };
 
@@ -90,6 +92,13 @@ export function RelayDocking({ params, onDone }: ChallengeGameProps) {
     const pos = reduced ? manual[i] / 100 : posAt(i, tRef.current);
     const next = fixRef.current.slice();
     next[i] = inZone(i, pos) ? 'in' : 'out';
+    if (next[i] === 'in') {
+      if (next.every((f) => f === 'in')) playDock();
+      else {
+        playSnap();
+        playGood();
+      }
+    } else playMiss();
     fixRef.current = next;
     setFix(next);
     if (next.every((f) => f !== 'free')) finish();

@@ -6,15 +6,18 @@
 //   tormenta solar ..... storm       reto del día .............. minigames (la gran tormenta: storm)
 //   victoria ........... victory     misión abortada ........... lost
 //   evento que pide decidir: un golpe corto (question) mientras la pista de fondo baja.
+//   mientras habla un tripulante (voz del tutorial, voice.ts) la música también baja.
 //
 // Cambios con fundido amortiguado (setTargetAtTime), nunca de golpe. Cada pista se descarga solo
 // cuando suena por primera vez. Respeta el silencio general (muted), la pestaña oculta y la regla
 // del navegador de no sonar antes de la primera interacción. Si un archivo falla, hay silencio.
 import { computed, effect, signal } from '@preact/signals';
 import { defaultConfig } from '../sim/config';
+import { introVideoOpen } from '../state/intro';
 import { practiceChallenge, practiceOpen } from '../state/practice';
 import { activeChallenge, game, screen } from '../state/store';
 import { muted, sharedContext } from './sfx';
+import { voiceSpeaking } from './voice';
 
 export type TrackId = 'main' | 'day' | 'night' | 'storm' | 'minigames' | 'victory' | 'lost';
 
@@ -40,6 +43,8 @@ const TRACKS: Record<TrackId, TrackDef> = {
 const STINGER_GAIN = 0.6;
 /** Cuánto baja la pista de fondo mientras suena el golpe de evento. */
 const DUCK = 0.3;
+/** Cuánto baja la música mientras habla un tripulante (voz del tutorial). */
+const VOICE_DUCK = 0.35;
 /** Constante de tiempo de los fundidos (s): ~3 τ hasta el volumen final. */
 const FADE_IN = 0.6;
 const FADE_OUT = 0.5;
@@ -71,6 +76,8 @@ export function setMusicVolume(v: number): void {
 /** Pista que corresponde al momento del juego (null = silencio). */
 export const musicTrack = computed<TrackId | null>(() => {
   const s = screen.value;
+  // La intro en vídeo trae su propio sonido: la música calla.
+  if (introVideoOpen.value) return null;
   if (s === 'debrief') {
     const r = game.value?.result;
     return r ? (r.outcome === 'win' ? 'victory' : 'lost') : null;
@@ -207,7 +214,7 @@ export function startMusic(): () => void {
       const ch = channels.get(current);
       if (ch) {
         if (ch.el.paused && !ch.el.ended) play(ch);
-        fadeTo(ch, TRACKS[current].gain * duck, FADE_IN);
+        fadeTo(ch, TRACKS[current].gain * Math.min(duck, voiceSpeaking.peek() ? VOICE_DUCK : 1), FADE_IN);
       }
     }
   };
@@ -248,6 +255,10 @@ export function startMusic(): () => void {
     void musicVolume.value;
     applyBus();
   });
+  const stopVoiceDuck = effect(() => {
+    void voiceSpeaking.value;
+    apply();
+  });
   const stopStinger = effect(() => {
     const id = decisionEvent.value;
     if (id && id !== lastStinger) playStinger();
@@ -262,6 +273,7 @@ export function startMusic(): () => void {
     stopTrack();
     stopVolume();
     stopStinger();
+    stopVoiceDuck();
     window.removeEventListener('pointerdown', onFirst, true);
     window.removeEventListener('keydown', onFirst, true);
     document.removeEventListener('visibilitychange', onVisibility);

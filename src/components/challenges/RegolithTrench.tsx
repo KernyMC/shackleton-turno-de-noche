@@ -6,7 +6,7 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { t } from '../../i18n';
 import { defaultConfig } from '../../sim/config';
-import { playCarePlace, playRoverStep } from '../../audio/sfx';
+import { playMiss, playRoverStep, playSnap } from '../../audio/sfx';
 import { Icon } from '../icons';
 import type { ChallengeGameProps } from './registry';
 import { numParam } from './shared';
@@ -77,11 +77,12 @@ export function RegolithTrench({ params, assist, onDone }: ChallengeGameProps) {
       next = { ...r, lives, bumps: r.bumps + 1, end: lives <= 0 ? 'broken' : null };
       setMsg(t('challenge.trench.bump'));
       setShake((n) => n + 1);
+      playMiss();
     } else {
       const got = bit(piles[row], lane);
       next = { ...r, lane, row, piles: r.piles + (got ? 1 : 0), end: row >= steps - 1 ? 'done' : null };
       setMsg(got ? t('challenge.trench.got') : '');
-      if (got) playCarePlace();
+      if (got) playSnap();
       else playRoverStep();
     }
     runRef.current = next;

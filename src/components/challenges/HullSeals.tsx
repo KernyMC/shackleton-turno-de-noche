@@ -9,6 +9,7 @@ import { Icon } from '../icons';
 import type { IconName } from '../icons';
 import type { ChallengeGameProps } from './registry';
 import { numParam } from './shared';
+import { playMiss, playPing, playSnap } from '../../audio/sfx';
 
 type Hint = 1 | 2 | 3;
 
@@ -47,6 +48,7 @@ export function HullSeals({ params, assist, onDone }: ChallengeGameProps) {
     const next = { ...scanned };
     if (hitIdx >= 0) {
       next[key] = 'sealed';
+      playSnap();
       setMsg(t('challenge.seals.msg.sealed'));
     } else {
       let best = Infinity;
@@ -56,6 +58,8 @@ export function HullSeals({ params, assist, onDone }: ChallengeGameProps) {
       }
       const h: Hint = best <= veryClose ? 1 : best <= close ? 2 : 3;
       next[key] = h;
+      if (h === 3) playMiss();
+      else playPing(h === 1 ? 0.9 : 0.5);
       setMsg(t(`challenge.seals.msg.d${h}`));
     }
     setScanned(next);

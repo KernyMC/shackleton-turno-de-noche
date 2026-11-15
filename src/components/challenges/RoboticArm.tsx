@@ -8,7 +8,7 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { t } from '../../i18n';
 import { defaultConfig } from '../../sim/config';
-import { playArmGrab } from '../../audio/sfx';
+import { playArmGrab, playDial, playGood, playHit, playMiss } from '../../audio/sfx';
 import { Icon } from '../icons';
 import type { ChallengeGameProps } from './registry';
 import { numParam, TimeBar, useCountdown } from './shared';
@@ -125,6 +125,7 @@ export function RoboticArm({ params, assist, onDone }: ChallengeGameProps) {
     const [lo, hi] = key === 'sh' ? [shMin, shMax] : [elMin, elMax];
     const nv = clampAngle(v, lo, hi);
     if (nv === runRef.current[key]) return;
+    playDial((nv - lo) / Math.max(1, hi - lo));
     const next = { ...runRef.current, [key]: nv, msg: '' };
     runRef.current = next;
     setRun(next);
@@ -139,9 +140,16 @@ export function RoboticArm({ params, assist, onDone }: ChallengeGameProps) {
     playArmGrab();
     const used = r.used + 1;
     let next: Run = { ...r, used };
-    if (hit) next = { ...next, touched: true, msg: t('challenge.arm.msg.blocked') };
-    else if (dist <= tol) next = { ...next, okAt: used, end: true, msg: t('challenge.arm.msg.ok') };
-    else next = { ...next, msg: t('challenge.arm.msg.miss') };
+    if (hit) {
+      playHit();
+      next = { ...next, touched: true, msg: t('challenge.arm.msg.blocked') };
+    } else if (dist <= tol) {
+      playGood();
+      next = { ...next, okAt: used, end: true, msg: t('challenge.arm.msg.ok') };
+    } else {
+      playMiss();
+      next = { ...next, msg: t('challenge.arm.msg.miss') };
+    }
     if (!next.end && used >= grabsMax) next = { ...next, end: true, msg: t('challenge.arm.end.grabs') };
     runRef.current = next;
     setRun(next);

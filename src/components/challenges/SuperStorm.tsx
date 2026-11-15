@@ -3,6 +3,7 @@
 // La consecuencia de cada elección (def.options en challenges.json) se muestra en el botón y se aplica al terminar.
 import { useState } from 'preact/hooks';
 import { t } from '../../i18n';
+import { playPick } from '../../audio/sfx';
 import type { ChallengeEffect } from '../../sim/types';
 import { Icon } from '../icons';
 import type { ChallengeGameProps } from './registry';
@@ -36,13 +37,19 @@ export function SuperStorm({ params, assist, options, onDone }: ChallengeGamePro
         <p class="chl-howto">{t('challenge.day24_super_storm.how')}</p>
         <h3 class="chl-sector-q">{t('challenge.day24_super_storm.choice.q')}</h3>
         <div class="chl-sector-opts">
-          <button type="button" class="btn chl-sector-opt" onClick={() => setChoice('greenhouse_off')}>
+          <button type="button" class="btn chl-sector-opt" onClick={() => {
+              playPick();
+              setChoice('greenhouse_off');
+            }}>
             <Icon name="greenhouse" size={28} />
             <b>{t('challenge.day24_super_storm.choice.off.title')}</b>
             <span>{t('challenge.day24_super_storm.choice.off.text')}</span>
             <Consequence effects={options?.greenhouse_off ?? []} />
           </button>
-          <button type="button" class="btn chl-sector-opt" onClick={() => setChoice('all_on')}>
+          <button type="button" class="btn chl-sector-opt" onClick={() => {
+              playPick();
+              setChoice('all_on');
+            }}>
             <Icon name="battery" size={28} />
             <b>{t('challenge.day24_super_storm.choice.on.title')}</b>
             <span>{t('challenge.day24_super_storm.choice.on.text')}</span>

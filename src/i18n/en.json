@@ -924,5 +924,9 @@
   "music.button": "Music",
   "music.volume": "Music volume",
   "music.off": "Off",
-  "music.muted_note": "Sound is muted. Turn it on with the speaker."
+  "music.muted_note": "Sound is muted. Turn it on with the speaker.",
+  "intro.title": "Mission intro",
+  "intro.skip": "Skip intro",
+  "intro.play": "Play the intro",
+  "intro.watch": "Watch the intro"
 }

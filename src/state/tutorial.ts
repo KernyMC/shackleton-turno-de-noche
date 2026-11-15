@@ -52,7 +52,8 @@ const MANUAL: ReadonlySet<TutorialStep> = new Set(['welcome', 'd2_flow', 'd3_for
 export const BUBBLE_STEPS: readonly TutorialStep[] = ORDER.slice(1);
 const INTRO_KEY = 'halosur:tutorial:intro:v1';
 /** Energía mínima que pide la guía para dar un paso por hecho. */
-export const TUTORIAL_MIN = { recycler: 20, greenhouse: 15 } as const;
+import { TUTORIAL_MIN } from './coachFacts';
+export { TUTORIAL_MIN };
 
 export const tutorialStep = signal<TutorialStep | null>(null);
 /** La leyenda "¿Cómo se juega?" está abierta. */

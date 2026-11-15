@@ -39,6 +39,8 @@ Otros: Todo modelo o audio añadido se registra aquí con origen y licencia.
 Efectos de sonido generados con IA (ElevenLabs), una sola vez con `npm run sfx`; el juego no llama a su API.
 
 Música de fondo generada con IA (Suno) por el equipo Halo Sur: 8 pistas en `public/audio/music/` (main, day, night, storm, minigames, question, victory, lost), normalizadas y comprimidas con ffmpeg. Uso según los términos de Suno de la cuenta con la que se generaron.
+
+Vídeos de la intro (`public/video/intro-es.mp4`, `intro-en.mp4`): hechos por el equipo Halo Sur con ayuda de IA (Claude, Anthropic); comprimidos con ffmpeg a 720p. Contenido propio del equipo.
 Desarrollado con ayuda de Claude Code (Anthropic). Ver `AI_USAGE.md`.
 
 ## Aviso

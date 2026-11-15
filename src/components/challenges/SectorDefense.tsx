@@ -7,6 +7,7 @@ import { t } from '../../i18n';
 import { Icon } from '../icons';
 import type { ChallengeGameProps } from './registry';
 import { numParam, TimeBar } from './shared';
+import { playDeflect, playHit, playPick, playWhoosh } from '../../audio/sfx';
 
 export interface SectorDefenseProps extends Pick<ChallengeGameProps, 'params' | 'assist' | 'onDone'> {
   /** Clave i18n del «cómo se juega». */
@@ -75,8 +76,9 @@ export function SectorDefense({ params, assist, onDone, howKey, theme, arcBonus 
   const resultsRef = useRef<boolean[]>([]);
   const doneRef = useRef(false);
 
-  const move = (to: number): void => {
+  const move = (to: number, turn = false): void => {
     const c = ((to % n) + n) % n;
+    if (c !== centerRef.current) (turn ? playWhoosh : playPick)();
     centerRef.current = c;
     setCenter(c);
   };
@@ -96,6 +98,7 @@ export function SectorDefense({ params, assist, onDone, howKey, theme, arcBonus 
         for (let w = 0; w <= k; w++) {
           if (into >= w * per + warn && resultsRef.current.length === w) {
             const ok = coveredSectors(centerRef.current, arc, n).includes(seq[w]!);
+            (ok ? playDeflect : playHit)();
             resultsRef.current = [...resultsRef.current, ok];
             setResults(resultsRef.current);
           }
@@ -117,10 +120,10 @@ export function SectorDefense({ params, assist, onDone, howKey, theme, arcBonus 
       if (doneRef.current) return;
       if (ev.key === 'ArrowLeft') {
         ev.preventDefault();
-        move(centerRef.current - 1);
+        move(centerRef.current - 1, true);
       } else if (ev.key === 'ArrowRight') {
         ev.preventDefault();
-        move(centerRef.current + 1);
+        move(centerRef.current + 1, true);
       } else if (/^[1-9]$/.test(ev.key) && Number(ev.key) <= n) {
         move(Number(ev.key) - 1);
       }
@@ -195,7 +198,7 @@ export function SectorDefense({ params, assist, onDone, howKey, theme, arcBonus 
         })}
       </p>
       <div class="chl-sector-btns">
-        <button type="button" class="btn chl-sector-turn" aria-label={t('challenge.sector.left')} onClick={() => move(center - 1)}>
+        <button type="button" class="btn chl-sector-turn" aria-label={t('challenge.sector.left')} onClick={() => move(center - 1, true)}>
           <Icon name="arrow" size={18} />
         </button>
         <div class="chl-sector-nums" role="group" aria-label={t('challenge.sector.pick')}>
@@ -213,7 +216,7 @@ export function SectorDefense({ params, assist, onDone, howKey, theme, arcBonus 
             </button>
           ))}
         </div>
-        <button type="button" class="btn chl-sector-turn chl-sector-turn--r" aria-label={t('challenge.sector.right')} onClick={() => move(center + 1)}>
+        <button type="button" class="btn chl-sector-turn chl-sector-turn--r" aria-label={t('challenge.sector.right')} onClick={() => move(center + 1, true)}>
           <Icon name="arrow" size={18} />
         </button>
       </div>

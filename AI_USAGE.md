@@ -37,5 +37,6 @@ Registro honesto de qué se hizo con ayuda de IA. Añade una línea por sesión 
 | 2026-11-14 | Claude Code (Anthropic) | Cráter Shackleton en el terreno, cosecha que se recoge sola, contador sin recuadro e integración del modelo de astronauta de terceros (CC-BY, no generado con IA) con los colores de la tripulación | Pendiente de revisión del equipo |
 | 2026-11-14 | Claude Code (Anthropic) | Demostración antes de cada minijuego, brazo robótico por ejes, chequeo de tripulación y rover con dibujos, práctica de minijuegos desde la portada, caritas con emociones en el HUD, medallas de hitos y bloques de energía tipo ladrillo; análisis de juego y de UX por agentes | Pendiente de revisión del equipo |
 | 2026-11-14 | Claude Code (Anthropic) · Suno | Música de fondo: 8 pistas generadas por el equipo con Suno; integración por estado del juego, fundidos y control de volumen escritos con Claude Code | Pendiente de revisión del equipo |
+| 2026-11-14 | Claude (Anthropic) | Vídeos de la intro en español e inglés (27 s), hechos por el equipo con Claude; integrados en el juego con Claude Code (intro en vídeo, «Saltar intro», «Ver la intro») | Pendiente de revisión del equipo |
 
 Si se usan modelos 3D o audio generados (por ejemplo Tripo o Suno), anotarlos aquí y en `CREDITS.md`.

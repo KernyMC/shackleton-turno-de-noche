@@ -1,65 +1,30 @@
 // Guía del juego (7–12 años): presentación (Onboarding), burbujas de un tripulante con cara en el modo
 // Tutorial, tarjeta final del tutorial y la leyenda "¿Cómo se juega?", disponible siempre.
 import { useEffect, useRef, useState } from 'preact/hooks';
-import { t } from '../i18n';
+import { lang, t } from '../i18n';
+import { speak, stopVoice } from '../audio/voice';
 import { sceneBridge } from '../scene/bridge';
 import type { ModuleId } from '../sim/types';
-import { defaultConfig } from '../sim/config';
 import { exitToMenu, game, resolving, screen, tabletOpen } from '../state/store';
 import { actCard, toast } from '../state/acts';
 import { dayDone, milestone, reacting } from '../state/rewards';
-import { ackTutorial, helpOpen, onboardingOpen, skipTutorial, TUTORIAL_MIN, tutorialEnd, tutorialStep, tutorialWarn } from '../state/tutorial';
+import { ackTutorial, helpOpen, onboardingOpen, skipTutorial, tutorialEnd, tutorialStep, tutorialWarn } from '../state/tutorial';
+import { coachFacts, COACH_SPEAKER } from '../state/coachFacts';
 import { gameMode, menuMode, TUTORIAL_DAYS } from '../state/mode';
 import type { TutorialStep } from '../state/tutorial';
 import { crewById, crewName } from '../data/crew';
-import type { CrewId } from '../data/crew';
 import { CrewPortrait } from './CrewPortrait';
 import { Icon } from './icons';
 import type { IconName } from './icons';
 import { Onboarding } from './Onboarding';
 import { TutorialDone } from './TutorialDone';
 
-/** Datos del juego que aparecen en los textos: salen de la configuración, no se escriben a mano. */
+/** Datos del juego que aparecen en los textos (src/state/coachFacts.ts, también los usa la voz). */
 function facts() {
   const g = game.value;
-  const cfg = defaultConfig;
-  const d = cfg.balance.difficulty[g?.difficulty ?? 'cadete'];
-  const nights = cfg.light.nightDays;
-  const firstNight = Math.min(...nights);
-  return {
-    personas: d.crew,
-    dias: cfg.balance.days,
-    noche: firstNight,
-    duracion: nights.length,
-    faltan: Math.max(0, firstNight - (g?.day ?? 1)),
-    comida: cfg.balance.crewConsumption.foodPerPerson * d.crew,
-    aire: cfg.balance.crewConsumption.lifeSupportPerPerson * d.crew,
-    reciclador: TUTORIAL_MIN.recycler,
-    invernadero: TUTORIAL_MIN.greenhouse,
-    taller: cfg.balance.effects.workshopMinEnergy,
-    aviso: cfg.balance.events.warningDays,
-    meta: cfg.balance.acts.list[0]?.goal.target ?? 0,
-  };
+  return coachFacts(g?.difficulty ?? 'cadete', g?.day ?? 1);
 }
-
-/** Quién habla en cada paso: el tripulante que cuida lo que se enseña. */
-const SPEAKER: Record<TutorialStep, CrewId> = {
-  welcome: 'valeria',
-  pick_recycler: 'valeria',
-  power_recycler: 'valeria',
-  greenhouse: 'mateo',
-  execute: 'lucia',
-  d2_flow: 'lucia',
-  d2_pass: 'valeria',
-  d3_harvest: 'mateo',
-  d3_forecast: 'lucia',
-  d3_pass: 'lucia',
-  d4_dust: 'amaru',
-  d4_workshop: 'lucia',
-  d4_pass: 'lucia',
-  d5_goal: 'amaru',
-  d5_pass: 'lucia',
-};
+const SPEAKER = COACH_SPEAKER;
 /** Lo que señala el aro de cada paso (si existe en pantalla; si no, no se dibuja). */
 const TARGET: Partial<Record<TutorialStep, string>> = {
   pick_recycler: '.meter[data-module="recycler"]',
@@ -119,6 +84,14 @@ function Bubble({ step }: { step: TutorialStep }) {
   const manual = MANUAL_STEPS.has(step);
   const speaker = crewById(SPEAKER[step]);
   const warn = tutorialWarn.value;
+  // Voz: cada burbuja nueva se dice una vez con la voz de quien habla; el aviso de recurso bajo,
+  // al aparecer, con la voz de quien cuida ese recurso (src/state/coachFacts.ts).
+  const warnKey = warn ? (warn === 'recycler' ? 'coach.low_air' : 'coach.low_food') : null;
+  useEffect(() => speak(`coach.${step}`, t(`coach.${step}`, facts())), [step, lang.value]);
+  useEffect(() => {
+    if (warnKey) speak(warnKey, t(warnKey));
+  }, [warnKey]);
+  useEffect(() => stopVoice, []);
   const target = warn ? WARN_TARGET[warn] : TARGET[step];
   useEffect(() => {
     const onKey = (e: KeyboardEvent): void => {

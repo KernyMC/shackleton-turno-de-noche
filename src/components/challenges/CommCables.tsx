@@ -7,7 +7,7 @@
 // Puntuación: pares conectados / 3.
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { t } from '../../i18n';
-import { playCarePlace } from '../../audio/sfx';
+import { playDial, playMiss, playPick, playSnap } from '../../audio/sfx';
 import { Icon } from '../icons';
 import type { ChallengeGameProps } from './registry';
 import { numParam, TimeBar, useCountdown } from './shared';
@@ -98,13 +98,17 @@ export function CommCables({ params, onDone }: ChallengeGameProps) {
     }
     const o = ownerIn(pathsRef.current, p);
     if (o && !(o.pair === i && o.node)) {
-      if (speak) setMsg(t('challenge.cab.msg.busy'));
+      if (speak) {
+        setMsg(t('challenge.cab.msg.busy'));
+        playMiss();
+      }
       return;
     }
     const next = [...cur, p];
     setPath(i, next);
     setMsg('');
-    if (isDone(i, next)) playCarePlace();
+    if (isDone(i, next)) playSnap();
+    else playDial(p[0] / Math.max(1, size - 1));
   };
 
   /** Se coge lo que haya en la casilla: un conector (el cable sale de ahí) o un tramo (se sigue desde ahí). */
@@ -112,6 +116,7 @@ export function CommCables({ params, onDone }: ChallengeGameProps) {
     const o = ownerIn(pathsRef.current, p);
     if (!o) return false;
     select(o.pair);
+    playPick();
     const cur = pathsRef.current[o.pair]!;
     if (o.node) {
       // Conector donde ya termina el cable: no se toca. Cualquier otro conector: el cable vuelve a salir de él.
